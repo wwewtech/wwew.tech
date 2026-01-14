@@ -79,12 +79,22 @@ html {
 
 /* Selection */
 ::selection {
-  background: rgba(181, 255, 109, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+  color: inherit;
 }
 
 .dark ::selection {
   background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  color: inherit;
+}
+
+/* Fix selection on buttons */
+button::selection,
+a::selection,
+button *::selection,
+a *::selection {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: inherit !important;
 }
 
 /* Scrollbar - minimal */
@@ -114,7 +124,7 @@ html {
   background: rgba(0, 0, 0, 0.25);
 }
 
-/* Pill badge - v2RayTun style */
+/* Pill badge - v2RayTun style with glow */
 .pill-badge {
   display: inline-flex;
   align-items: center;
@@ -127,6 +137,12 @@ html {
   color: var(--muted);
   backdrop-filter: blur(8px);
   transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(181, 255, 109, 0.15), 0 0 40px rgba(181, 255, 109, 0.05);
+}
+
+.pill-badge:hover {
+  box-shadow: 0 0 25px rgba(181, 255, 109, 0.25), 0 0 50px rgba(181, 255, 109, 0.1);
+  border-color: rgba(181, 255, 109, 0.3);
 }
 
 /* Grid dividers - Vercel style */

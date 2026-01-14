@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebGL с эффектом курсора и пончиками</title>
+
+    <!-- СКРИПТ LENIS -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        background-color: #111111;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      }
+
+      .hero-section {
+        padding: 25px;
+        position: relative;
+        z-index: 3;
+      }
+
+      .animation-container {
+        height: 60vh;
+        min-height: 450px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .content-container {
+        background-color: rgb(0, 0, 0);
+        padding: 40px;
+        color: #ffffff;
+        margin: 0 20px 20px 20px;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        position: relative;
+        z-index: 3;
+        /* Добавим немного высоты для комфортного отображения анимации */
+        min-height: 250px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .content-container h1 {
+        margin-top: 0;
+      }
+
+      #gl-canvas,
+      #gl-canvas-new {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        /* Фон */
+      }
+
+      #donuts-canvas-new {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        /* Пончики над фоном */
+        cursor: grab;
+      }
+
+      #donuts-canvas-new:active {
+        cursor: grabbing;
+      }
+
+      .header-container {
+        position: fixed;
+        top: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        /* Хедер НАД всем */
+        width: 95%;
+        max-width: 900px;
+      }
+
+      .glass-surface {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        -webkit-backface-visibility: hidden;
+        -moz-backface-visibility: hidden;
+        -webkit-transform: translate3d(0, 0, 0);
+        -moz-transform: translate3d(0, 0, 0);
+      }
+
+      .glass-surface--svg {
+        --glass-frost: 0.1;
+        --glass-saturation: 1;
+        background: hsl(0 0% 0% / var(--glass-frost, 0));
+        backdrop-filter: var(--filter-id) saturate(var(--glass-saturation, 1));
+        -webkit-backdrop-filter: var(--filter-id)
+          saturate(var(--glass-saturation, 1));
+        box-shadow: inset 0 0 2px 1px rgba(255, 255, 255, 0.35),
+          inset 0 0 10px 4px rgba(255, 255, 255, 0.15),
+          0 4px 16px rgba(17, 17, 26, 0.05), 0 8px 24px rgba(17, 17, 26, 0.05),
+          0 16px 56px rgba(17, 17, 26, 0.05),
+          inset 0 4px 16px rgba(17, 17, 26, 0.05),
+          inset 0 8px 24px rgba(17, 17, 26, 0.05),
+          inset 0 16px 56px rgba(17, 17, 26, 0.05);
+      }
+
+      .glass-surface__filter {
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        z-index: -1;
+      }
+
+      .glass-surface__content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        padding: 0 20px;
+        color: white;
+      }
+
+      #glass-header {
+        height: 64px;
+        border-radius: 50px;
+      }
+
+      #glass-header .glass-surface__content {
+        justify-content: space-between;
+      }
+
+      .header-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo svg {
+        display: block;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 12px;
+      }
+
+      .nav-links a,
+      .glass-button {
+        text-decoration: none;
+        color: white;
+        font-size: 1rem;
+        height: 40px;
+        border-radius: 30px;
+        transition: box-shadow 0.4s ease-out, --glass-frost 0.4s ease-out;
+        padding: 0 15px;
+      }
+
+      .nav-links a::before,
+      .glass-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        background: radial-gradient(
+          ellipse at top,
+          rgba(255, 255, 255, 0.2) 0%,
+          rgba(255, 255, 255, 0) 80%
+        );
+        opacity: 0;
+        transition: opacity 0.4s ease-out;
+        pointer-events: none;
+      }
+
+      /* === НОВЫЙ БЛОК ДЛЯ КНОПОК === */
+      /* Целимся конкретно в кнопки и ссылки в навигации */
+      .nav-links a,
+      .glass-button {
+        /* Делаем ИХ фон темнее по умолчанию */
+        --glass-frost: 0.8;
+
+        /* Добавляем ИМ матовость (размытие фона) по умолчанию */
+        backdrop-filter: var(--filter-id) saturate(var(--glass-saturation, 1))
+          blur(4px);
+        -webkit-backdrop-filter: var(--filter-id)
+          saturate(var(--glass-saturation, 1)) blur(4px);
+      }
+
+      .nav-links a:hover,
+      .glass-button:hover {
+        /* 1. Увеличиваем "морозность" (затемнение) */
+        --glass-frost: 0.4;
+
+        /* 2. Добавляем размытие фона для матового эффекта */
+        -webkit-backdrop-filter: var(--filter-id)
+          saturate(var(--glass-saturation, 1)) blur(5px);
+        backdrop-filter: var(--filter-id) saturate(var(--glass-saturation, 1))
+          blur(5px);
+
+        box-shadow: inset 0 0 15px 3px rgba(255, 255, 255, 0.1),
+          inset 0 0 2px 1px rgba(255, 255, 255, 0.35),
+          inset 0 0 10px 4px rgba(255, 255, 255, 0.15),
+          0 4px 16px rgba(17, 17, 26, 0.05), 0 8px 24px rgba(17, 17, 26, 0.05),
+          0 16px 56px rgba(17, 17, 26, 0.05),
+          inset 0 4px 16px rgba(17, 17, 26, 0.05),
+          inset 0 8px 24px rgba(17, 17, 26, 0.05),
+          inset 0 16px 56px rgba(17, 17, 26, 0.05);
+      }
+
+      .nav-links a:hover::before,
+      .glass-button:hover::before {
+        opacity: 1;
+      }
+
+      .splash-cursor-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 5;
+        pointer-events: none;
+        width: 100%;
+        height: 100%;
+      }
+
+      .shiny-text {
+        --shine-speed: 5s;
+        color: transparent;
+        background-image: linear-gradient(
+          120deg,
+          #ffffff 30%,
+          #b9b9b9 50%,
+          #ffffff 70%
+        );
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        animation: shine-grey-wave var(--shine-speed) linear infinite;
+      }
+
+      @keyframes shine-grey-wave {
+        from {
+          background-position: 0 0;
+        }
+
+        to {
+          background-position: -200% 0;
+        }
+      }
+
+      #fluid-canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+
+      /* === СТИЛИ ДЛЯ АНИМАЦИИ ТЕКСТА === */
+      #morphing-text-container {
+        position: relative;
+        margin-left: auto;
+        margin-right: auto;
+        height: 4rem;
+        /* h-16 */
+        width: 100%;
+        max-width: 768px;
+        /* max-w-screen-md */
+        text-align: center;
+        font-size: 40pt;
+        line-height: 1;
+        /* leading-none */
+        font-weight: 700;
+        /* font-bold */
+        filter: url(#threshold) blur(0.6px);
+        color: #ffffff;
+      }
+
+      #morphing-text-container span {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+        display: inline-block;
+        width: 100%;
+      }
+
+      #filters {
+        position: fixed;
+        height: 0;
+        width: 0;
+      }
+
+      /* Адаптивность для текста */
+      @media (min-width: 768px) {
+        #morphing-text-container {
+          height: 6rem;
+          /* md:h-24 */
+        }
+      }
+
+      @media (min-width: 1024px) {
+        #morphing-text-container {
+          font-size: 6rem;
+          /* lg:text-[6rem] */
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ЭФФЕКТ КУРСОРА -->
+    <div class="splash-cursor-container">
+      <canvas id="fluid-canvas"></canvas>
+    </div>
+
+    <!-- ХЕДЕР -->
+    <header id="glass-header-container" class="header-container">
+      <div id="glass-header" class="glass-surface glass-surface--svg">
+        <svg class="glass-surface__filter" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter
+              id="glass-filter-svg"
+              color-interpolation-filters="sRGB"
+              x="0%"
+              y="0%"
+              width="100%"
+              height="100%"
+            >
+              <feImage
+                class="fe-image"
+                x="0"
+                y="0"
+                width="100%"
+                height="100%"
+                preserveAspectRatio="none"
+                result="map"
+              />
+              <feDisplacementMap
+                class="red-channel"
+                in="SourceGraphic"
+                in2="map"
+                result="dispRed"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+              <feColorMatrix
+                in="dispRed"
+                type="matrix"
+                values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0"
+                result="red"
+              />
+              <feDisplacementMap
+                class="green-channel"
+                in="SourceGraphic"
+                in2="map"
+                result="dispGreen"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+              <feColorMatrix
+                in="dispGreen"
+                type="matrix"
+                values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0"
+                result="green"
+              />
+              <feDisplacementMap
+                class="blue-channel"
+                in="SourceGraphic"
+                in2="map"
+                result="dispBlue"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+              <feColorMatrix
+                in="dispBlue"
+                type="matrix"
+                values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0"
+                result="blue"
+              />
+              <feBlend in="red" in2="green" mode="screen" result="rg" />
+              <feBlend in="rg" in2="blue" mode="screen" result="output" />
+              <feGaussianBlur
+                class="gaussian-blur"
+                in="output"
+                stdDeviation="0.7"
+              />
+            </filter>
+          </defs>
+        </svg>
+        <div class="glass-surface__content">
+          <div class="logo">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM16.8995 15.7895L15.7895 16.8995L12 13.11L8.21053 16.8995L7.10053 15.7895L10.89 12L7.10053 8.21053L8.21053 7.10053L12 10.89L15.7895 7.10053L16.8995 8.21053L13.11 12L16.8995 15.7895Z"
+                fill="white"
+              />
+            </svg>
+          </div>
+          <div class="header-controls">
+            <nav class="nav-links">
+              <a href="#" class="glass-surface glass-surface--svg">
+                <svg
+                  class="glass-surface__filter"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <defs>
+                    <filter
+                      id="glass-filter-svg-link1"
+                      color-interpolation-filters="sRGB"
+                      x="0%"
+                      y="0%"
+                      width="100%"
+                      height="100%"
+                    >
+                      <feImage
+                        class="fe-image"
+                        x="0"
+                        y="0"
+                        width="100%"
+                        height="100%"
+                        preserveAspectRatio="none"
+                        result="map"
+                      />
+                      <feDisplacementMap
+                        class="red-channel"
+                        in="SourceGraphic"
+                        in2="map"
+                        result="dispRed"
+                        xChannelSelector="R"
+                        yChannelSelector="G"
+                      />
+                      <feColorMatrix
+                        in="dispRed"
+                        type="matrix"
+                        values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0"
+                        result="red"
+                      />
+                      <feDisplacementMap
+                        class="green-channel"
+                        in="SourceGraphic"
+                        in2="map"
+                        result="dispGreen"
+                        xChannelSelector="R"
+                        yChannelSelector="G"
+                      />
+                      <feColorMatrix
+                        in="dispGreen"
+                        type="matrix"
+                        values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0"
+                        result="green"
+                      />
+                      <feDisplacementMap
+                        class="blue-channel"
+                        in="SourceGraphic"
+                        in2="map"
+                        result="dispBlue"
+                        xChannelSelector="R"
+                        yChannelSelector="G"
+                      />
+                      <feColorMatrix
+                        in="dispBlue"
+                        type="matrix"
+                        values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0"
+                        result="blue"
+                      />
+                      <feBlend in="red" in2="green" mode="screen" result="rg" />
+                      <feBlend
+                        in="rg"
+                        in2="blue"
+                        mode="screen"
+                        result="output"
+                      />
+                      <feGaussianBlur
+                        class="gaussian-blur"
+                        in="output"
+                        stdDeviation="0.7"
+                      />
+                    </filter>
+                  </defs>
+                </svg>
+                <div class="glass-surface__content">
+                  <span class="shiny-text" style="--shine-speed: 4s"
+                    >Home
+                  </span>
+                </div>
+              </a>
+              <a href="#" class="glass-surface glass-surface--svg">
+                <svg
+                  class="glass-surface__filter"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <defs>
+                    <filter
+                      id="glass-filter-svg-link2"
+                      color-interpolation-filters="sRGB"
+                      x="0%"
+                      y="0%"
+                      width="100%"
+                      height="100%"
+                    >
+                      <feImage
+                        class="fe-image"
+                        x="0"
+                        y="0"
+                        width="100%"
+                        height="100%"
+                        preserveAspectRatio="none"
+                        result="map"
+                      />
+                      <feDisplacementMap
+                        class="red-channel"
+                        in="SourceGraphic"
+                        in2="map"
+                        result="dispRed"
+                        xChannelSelector="R"
+                        yChannelSelector="G"
+                      />
+                      <feColorMatrix
+                        in="dispRed"
+                        type="matrix"
+                        values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0"
+                        result="red"
+                      />
+                      <feDisplacementMap
+                        class="green-channel"
+                        in="SourceGraphic"
+                        in2="map"
+                        result="dispGreen"
+                        xChannelSelector="R"
+                        yChannelSelector="G"
+                      />
+                      <feColorMatrix
+                        in="dispGreen"
+                        type="matrix"
+                        values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0"
+                        result="green"
+                      />
+                      <feDisplacementMap
+                        class="blue-channel"
+                        in="SourceGraphic"
+                        in2="map"
+                        result="dispBlue"
+                        xChannelSelector="R"
+                        yChannelSelector="G"
+                      />
+                      <feColorMatrix
+                        in="dispBlue"
+                        type="matrix"
+                        values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0"
+                        result="blue"
+                      />
+                      <feBlend in="red" in2="green" mode="screen" result="rg" />
+                      <feBlend
+                        in="rg"
+                        in2="blue"
+                        mode="screen"
+                        result="output"
+                      />
+                      <feGaussianBlur
+                        class="gaussian-blur"
+                        in="output"
+                        stdDeviation="0.7"
+                      />
+                    </filter>
+                  </defs>
+                </svg>
+                <div class="glass-surface__content">
+                  <span class="shiny-text" style="--shine-speed: 5s">
+                    Docs
+                  </span>
+                </div>
+              </a>
+            </nav>
+            <a href="#" class="glass-button glass-surface glass-surface--svg">
+              <svg
+                class="glass-surface__filter"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <filter
+                    id="glass-filter-svg-button"
+                    color-interpolation-filters="sRGB"
+                    x="0%"
+                    y="0%"
+                    width="100%"
+                    height="100%"
+                  >
+                    <feImage
+                      class="fe-image"
+                      x="0"
+                      y="0"
+                      width="100%"
+                      height="100%"
+                      preserveAspectRatio="none"
+                      result="map"
+                    />
+                    <feDisplacementMap
+                      class="red-channel"
+                      in="SourceGraphic"
+                      in2="map"
+                      result="dispRed"
+                      xChannelSelector="R"
+                      yChannelSelector="G"
+                    />
+                    <feColorMatrix
+                      in="dispRed"
+                      type="matrix"
+                      values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0"
+                      result="red"
+                    />
+                    <feDisplacementMap
+                      class="green-channel"
+                      in="SourceGraphic"
+                      in2="map"
+                      result="dispGreen"
+                      xChannelSelector="R"
+                      yChannelSelector="G"
+                    />
+                    <feColorMatrix
+                      in="dispGreen"
+                      type="matrix"
+                      values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0"
+                      result="green"
+                    />
+                    <feDisplacementMap
+                      class="blue-channel"
+                      in="SourceGraphic"
+                      in2="map"
+                      result="dispBlue"
+                      xChannelSelector="R"
+                      yChannelSelector="G"
+                    />
+                    <feColorMatrix
+                      in="dispBlue"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0"
+                      result="blue"
+                    />
+                    <feBlend in="red" in2="green" mode="screen" result="rg" />
+                    <feBlend in="rg" in2="blue" mode="screen" result="output" />
+                    <feGaussianBlur
+                      class="gaussian-blur"
+                      in="output"
+                      stdDeviation="0.7"
+                    />
+                  </filter>
+                </defs>
+              </svg>
+              <div class="glass-surface__content">
+                <span class="shiny-text" style="--shine-speed: 6s"> Войти</span>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ВЕРХНИЙ БЛОК -->
+    <div class="hero-section">
+      <div class="animation-container">
+        <canvas id="gl-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ С АНИМАЦИЕЙ ТЕКСТА -->
+    <main class="content-container">
+      <div id="morphing-text-container">
+        <span id="text1"></span>
+        <span id="text2"></span>
+      </div>
+
+      <svg id="filters">
+        <defs>
+          <filter id="threshold">
+            <feColorMatrix
+              in="SourceGraphic"
+              type="matrix"
+              values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 255 -140"
+            ></feColorMatrix>
+          </filter>
+        </defs>
+      </svg>
+    </main>
+
+    <!-- НИЖНИЙ БЛОК С ПОНЧИКОМ -->
+    <div class="hero-section">
+      <div class="animation-container" id="donut-container-new">
+        <canvas id="gl-canvas-new"></canvas>
+        <canvas id="donuts-canvas-new"></canvas>
+      </div>
+    </div>
+
+    <!-- ШЕЙДЕРЫ ДЛЯ ФОНОВОЙ АНИМАЦИИ -->
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      attribute vec2 position;
+      void main() { gl_Position = vec4(position, 0.0, 1.0); }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #ifdef GL_ES
+      precision highp float;
+      #endif
+
+      // Динамические переменные, которые управляются из JS (время, мышь и т.д.)
+      uniform float time;
+      uniform vec2 mouse;
+      uniform vec2 resolution;
+      uniform float mouseRadius;
+      uniform bool enableMouseInteraction;
+
+      // Статические переменные оставлены для совместимости с JS, но их значения в расчетах ниже будут проигнорированы
+      uniform float waveSpeed;
+      uniform float waveFrequency;
+      uniform float waveAmplitude;
+      uniform float pixelSize;
+      uniform float colorNum;
+      uniform vec3 u_colorStart;
+      uniform vec3 u_colorEnd;
+      uniform float u_gradientBias;
+      uniform float u_brightness;
+      uniform float u_contrast;
+      uniform float u_saturation;
+
+      const int OCTAVES = 2;
+
+      // --- Функции для генерации шума (без изменений) ---
+      vec4 mod289(vec4 x) { return x - floor(x * (1.0/209.0)) * 29.0; }
+      vec4 permute(vec4 x) { return mod289(((x * 32.0) + 1.0) * x); }
+      vec4 taylorInvSqrt(vec4 r) { return 1.792391400159 - 0.95373 * r; }
+      vec2 fade(vec2 t) { return t*t*t*(t*(t*6.0-15.0)+10.0); }
+      float cnoise(vec2 P) {
+        vec4 Pi = floor(P.xyxy) + vec4(0.0,0.0,1.0,1.0);
+        vec4 Pf = fract(P.xyxy) - vec4(0.0,0.0,1.0,1.0);
+        Pi = mod289(Pi);
+        vec4 ix = Pi.xzxz;
+        vec4 iy = Pi.yyww;
+        vec4 fx = Pf.xzxz;
+        vec4 fy = Pf.yyww;
+        vec4 i = permute(permute(ix) + iy);
+        vec4 gx = fract(i * (1.0/49.0)) * 3.0 - 1.0;
+        vec4 gy = abs(gx) - 0.5;
+        vec4 tx = floor(gx + 0.5);
+        gx = gx - tx / 2.0;
+        vec2 g00 = vec2(gx.x, gy.x);
+        vec2 g10 = vec2(gx.y, gy.y);
+        vec2 g01 = vec2(gx.z, gy.z);
+        vec2 g11 = vec2(gx.w, gy.w);
+        vec4 norm = taylorInvSqrt(vec4(dot(g00,g00), dot(g01,g01), dot(g10,g10), dot(g11,g11)));
+        g00 *= norm.x; g01 *= norm.y; g10 *= norm.z; g11 *= norm.w;
+        float n00 = dot(g00, vec2(fx.x, fy.x));
+        float n10 = dot(g10, vec2(fx.y, fy.y));
+        float n01 = dot(g01, vec2(fx.z, fy.z));
+        float n11 = dot(g11, vec2(fx.w, fy.w));
+        vec2 fade_xy = fade(Pf.xy);
+        vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+        return 2.1 * mix(n_x.x, n_x.y, fade_xy.y);
+      }
+
+      // --- Функции для создания паттерна с ВСТРОЕННЫМИ значениями ---
+      float fbm(vec2 p) {
+        float value = 0.15;
+        float current_amp = 0.9;
+        // Используем жестко заданную Частоту волн: 0.900
+        float current_freq_multiplier = 0.666666;
+        for (int i = 0; i < OCTAVES; i++) {
+          value += current_amp * abs(cnoise(p * current_freq_multiplier));
+          current_freq_multiplier *= 3.0;
+          // Используем жестко заданную Амплитуду волн: 0.200
+          current_amp *= 0.200;
+        }
+        return value;
+      }
+
+      float pattern(vec2 p_in) {
+        // Используем жестко заданную Скорость волн: 0.070
+        return fbm(p_in - fbm(p_in + fbm(p_in - time * 0.070)));
+      }
+
+      // --- Основная функция шейдера с ВСТРОЕННЫМИ значениями ---
+      void main() {
+          vec2 p_uv = gl_FragCoord.xy / resolution.xy;
+          p_uv -= 0.5;
+          p_uv.x *= resolution.x / resolution.y;
+
+          vec2 m_uv = mouse - 0.5;
+          m_uv.x *= resolution.x / resolution.y;
+
+          float f_val = pattern(p_uv);
+
+          if (enableMouseInteraction) {
+            f_val += 0.123 * (1.0 - smoothstep(0.0, mouseRadius, length(p_uv - m_uv)));
+          }
+
+          // Используем жестко заданное Смещение градиента: 1.160
+          float remapped_f = pow(clamp(f_val, 0.0, 1.0), 1.0 / 1.160);
+
+          // Используем жестко заданные цвета: Фон #000000, Волна #FFFFFF
+          vec3 base_color = mix(vec3(0.0, 0.0, 0.0), vec3(1.0, 1.0, 1.0), remapped_f);
+
+          const vec3 lum_weights = vec3(0.299, 0.587, 0.114);
+          // Используем жестко заданную Насыщенность: 2.000
+          base_color = mix(vec3(dot(base_color, lum_weights)), base_color, 2.000);
+
+          // Используем жестко заданную Контрастность: 1.000
+          base_color = (base_color - 0.5) * 1.000 + 0.5;
+
+          // Используем жестко заданную Яркость: 1.050
+          base_color *= 1.050;
+
+          gl_FragColor = vec4(base_color, 1.0);
+      }
+    </script>
+
+    <!-- ШЕЙДЕРЫ ДЛЯ ПОНЧИКОВ -->
+    <script id="donut-vertex-shader" type="x-shader/x-vertex">
+      varying vec3 vWorldPosition;
+      varying vec3 vViewDirection;
+      varying vec3 vWorldNormal;
+      varying vec4 vScreenCoord;
+
+      void main() {
+          vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+          vWorldPosition = worldPosition.xyz;
+          vViewDirection = normalize(cameraPosition - worldPosition.xyz);
+          vWorldNormal = normalize(mat3(modelMatrix) * normal);
+          gl_Position = projectionMatrix * viewMatrix * worldPosition;
+          vScreenCoord = gl_Position;
+      }
+    </script>
+
+    <script id="donut-fragment-shader" type="x-shader/x-fragment">
+      precision highp float;
+      uniform sampler2D tBackground;
+      uniform samplerCube tEnvMap;
+      uniform float u_ior;
+      uniform float u_aberration;
+      uniform vec3 u_lightPosition;
+      varying vec3 vWorldPosition;
+      varying vec3 vViewDirection;
+      varying vec3 vWorldNormal;
+      varying vec4 vScreenCoord;
+
+      void main() {
+          vec2 screenUV = (vScreenCoord.xy / vScreenCoord.w) * 0.5 + 0.5;
+          vec3 refractedDir = refract(-vViewDirection, vWorldNormal, 1.0 / u_ior);
+          vec2 refractionOffset = refractedDir.xy * 0.1;
+          vec2 refractedUv = screenUV + refractionOffset;
+          vec2 aberrationOffset = refractedDir.xy * u_aberration;
+          float r = texture2D(tBackground, refractedUv + aberrationOffset).r;
+          float g = texture2D(tBackground, refractedUv).g;
+          float b = texture2D(tBackground, refractedUv - aberrationOffset).b;
+          vec3 refractedColor = vec3(r, g, b);
+          vec3 reflectedDir = reflect(vViewDirection, vWorldNormal);
+          vec3 reflectedColor = textureCube(tEnvMap, reflectedDir).rgb;
+          float fresnel = pow(1.0 - abs(dot(vViewDirection, vWorldNormal)), 5.0);
+          fresnel = clamp(fresnel, 0.1, 1.0);
+          vec3 lightDir = normalize(u_lightPosition - vWorldPosition);
+          vec3 halfwayDir = normalize(lightDir + vViewDirection);
+          float spec = pow(max(dot(vWorldNormal, halfwayDir), 0.0), 64.0);
+          vec3 specular = vec3(1.0) * spec * 2.0;
+          vec3 finalColor = mix(refractedColor, reflectedColor, fresnel);
+          finalColor += specular;
+          gl_FragColor = vec4(finalColor, 1.0);
+      }
+    </script>
+
+    <!-- СКРИПТ ДЛЯ ФОНОВОЙ АНИМАЦИИ И "СТЕКЛА" -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        setupWebGL(
+          document.getElementById("gl-canvas"),
+          document.querySelector(".animation-container")
+        );
+        setupWebGL(
+          document.getElementById("gl-canvas-new"),
+          document.getElementById("donut-container-new")
+        );
+        initializeGlassSurfaces();
+      });
+
+      function hexToRgb(hex) {
+        let r = parseInt(hex.substring(1, 3), 16) / 255;
+        let g = parseInt(hex.substring(3, 5), 16) / 255;
+        let b = parseInt(hex.substring(5, 7), 16) / 255;
+        return [r, g, b];
+      }
+
+      function initializeGlassSurfaces() {
+        const glassElements = document.querySelectorAll(".glass-surface--svg");
+        glassElements.forEach((glassEl, index) => {
+          const filterEl = glassEl.querySelector("filter");
+          if (!filterEl) return;
+          const feImageEl = filterEl.querySelector(".fe-image");
+          const redChannelEl = filterEl.querySelector(".red-channel");
+          const greenChannelEl = filterEl.querySelector(".green-channel");
+          const blueChannelEl = filterEl.querySelector(".blue-channel");
+          const gaussianBlurEl = filterEl.querySelector(".gaussian-blur");
+          const uniqueFilterId = `glass-filter-svg-${filterEl.id || index}`;
+          filterEl.setAttribute("id", uniqueFilterId);
+          glassEl.style.setProperty("--filter-id", `url(#${uniqueFilterId})`);
+          const params = {
+            borderRadius: parseFloat(
+              window.getComputedStyle(glassEl).borderRadius
+            ),
+            borderWidth: 0.07,
+            brightness: 50,
+            opacity: 0.93,
+            blur: 11,
+            displace: 0.5,
+            distortionScale: -180,
+            redOffset: 0,
+            greenOffset: 10,
+            blueOffset: 20,
+          };
+          const generateDisplacementMap = () => {
+            const rect = glassEl.getBoundingClientRect();
+            const borderRadius = parseFloat(
+              window.getComputedStyle(glassEl).borderRadius
+            );
+            if (rect.width === 0 || rect.height === 0)
+              return "data:image/svg+xml,";
+            const svgContent = `
+                        <svg viewBox="0 0 ${rect.width} ${
+              rect.height
+            }" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="red-grad-${index}" x1="100%" y1="0%" x2="0%" y2="0%"><stop offset="0%" stop-color="#0000"/><stop offset="100%" stop-color="red"/></linearGradient>
+                                <linearGradient id="blue-grad-${index}" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#0000"/><stop offset="100%" stop-color="blue"/></linearGradient>
+                            </defs>
+                            <rect x="0" y="0" width="${rect.width}" height="${
+              rect.height
+            }" fill="black"></rect>
+                            <rect x="0" y="0" width="${rect.width}" height="${
+              rect.height
+            }" rx="${borderRadius}" fill="url(#red-grad-${index})" />
+                            <rect x="0" y="0" width="${rect.width}" height="${
+              rect.height
+            }" rx="${borderRadius}" fill="url(#blue-grad-${index})" style="mix-blend-mode: difference" />
+                            <rect x="${
+                              rect.width * params.borderWidth * 0.5
+                            }" y="${
+              rect.height * params.borderWidth * 0.5
+            }" width="${rect.width * (1 - params.borderWidth)}" height="${
+              rect.height * (1 - params.borderWidth)
+            }" rx="${
+              borderRadius - rect.width * params.borderWidth * 0.5
+            }" fill="hsl(0 0% ${params.brightness}% / ${
+              params.opacity
+            })" style="filter:blur(${params.blur}px)" />
+                        </svg>
+                    `;
+            return `data:image/svg+xml,${encodeURIComponent(svgContent)}`;
+          };
+          const updateFilter = () => {
+            feImageEl.setAttribute("href", generateDisplacementMap());
+            redChannelEl.setAttribute(
+              "scale",
+              params.distortionScale + params.redOffset
+            );
+            greenChannelEl.setAttribute(
+              "scale",
+              params.distortionScale + params.greenOffset
+            );
+            blueChannelEl.setAttribute(
+              "scale",
+              params.distortionScale + params.blueOffset
+            );
+            gaussianBlurEl.setAttribute("stdDeviation", params.displace);
+          };
+          updateFilter();
+          new ResizeObserver(updateFilter).observe(glassEl);
+        });
+      }
+
+      async function setupWebGL(canvas, container) {
+        const gl = canvas.getContext("webgl");
+        if (!gl) return;
+        const program = createProgram(
+          gl,
+          document.getElementById("vertex-shader").textContent,
+          document.getElementById("fragment-shader").textContent
+        );
+        if (!program) return;
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
+          gl.STATIC_DRAW
+        );
+        const positionLocation = gl.getAttribLocation(program, "position");
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        const uniformLocations = {
+          time: gl.getUniformLocation(program, "time"),
+          mouse: gl.getUniformLocation(program, "mouse"),
+          resolution: gl.getUniformLocation(program, "resolution"),
+          waveSpeed: gl.getUniformLocation(program, "waveSpeed"),
+          waveFrequency: gl.getUniformLocation(program, "waveFrequency"),
+          waveAmplitude: gl.getUniformLocation(program, "waveAmplitude"),
+          pixelSize: gl.getUniformLocation(program, "pixelSize"),
+          colorNum: gl.getUniformLocation(program, "colorNum"),
+          colorStart: gl.getUniformLocation(program, "u_colorStart"),
+          colorEnd: gl.getUniformLocation(program, "u_colorEnd"),
+          gradientBias: gl.getUniformLocation(program, "u_gradientBias"),
+          brightness: gl.getUniformLocation(program, "u_brightness"),
+          contrast: gl.getUniformLocation(program, "u_contrast"),
+          saturation: gl.getUniformLocation(program, "u_saturation"),
+          mouseRadius: gl.getUniformLocation(program, "mouseRadius"),
+          enableMouseInteraction: gl.getUniformLocation(
+            program,
+            "enableMouseInteraction"
+          ),
+        };
+        const uniformValues = {
+          waveSpeed: 0.29,
+          waveFrequency: 1.0,
+          waveAmplitude: 0.2,
+          pixelSize: 1.0,
+          colorNum: 12.0,
+          colorStart: "#000000",
+          colorEnd: "#FFFFFF",
+          gradientBias: 1.46,
+          brightness: 1.0,
+          contrast: 1.0,
+          saturation: 1.0,
+          mouseRadius: 1.0,
+          enableMouseInteraction: true,
+        };
+        const mouse = { x: 0.5, y: 0.5 };
+
+        container.addEventListener("mousemove", (e) => {
+          const rect = container.getBoundingClientRect();
+          mouse.x = (e.clientX - rect.left) / rect.width;
+          mouse.y = 1.0 - (e.clientY - rect.top) / rect.height;
+        });
+
+        function resize() {
+          canvas.width = container.clientWidth;
+          canvas.height = container.clientHeight;
+          gl.viewport(0, 0, canvas.width, canvas.height);
+          gl.useProgram(program);
+          gl.uniform2f(
+            uniformLocations.resolution,
+            canvas.width,
+            canvas.height
+          );
+        }
+        window.addEventListener("resize", resize);
+        resize();
+
+        const startTime = performance.now();
+        function animate() {
+          gl.useProgram(program);
+          gl.uniform1f(
+            uniformLocations.time,
+            (performance.now() - startTime) / 1000
+          );
+          gl.uniform2f(uniformLocations.mouse, mouse.x, mouse.y);
+          gl.uniform1f(uniformLocations.waveSpeed, uniformValues.waveSpeed);
+          gl.uniform1f(
+            uniformLocations.waveFrequency,
+            uniformValues.waveFrequency
+          );
+          gl.uniform1f(
+            uniformLocations.waveAmplitude,
+            uniformValues.waveAmplitude
+          );
+          gl.uniform1f(uniformLocations.pixelSize, uniformValues.pixelSize);
+          gl.uniform1f(uniformLocations.colorNum, uniformValues.colorNum);
+          gl.uniform3fv(
+            uniformLocations.colorStart,
+            hexToRgb(uniformValues.colorStart)
+          );
+          gl.uniform3fv(
+            uniformLocations.colorEnd,
+            hexToRgb(uniformValues.colorEnd)
+          );
+          gl.uniform1f(
+            uniformLocations.gradientBias,
+            uniformValues.gradientBias
+          );
+          gl.uniform1f(uniformLocations.brightness, uniformValues.brightness);
+          gl.uniform1f(uniformLocations.contrast, uniformValues.contrast);
+          gl.uniform1f(uniformLocations.saturation, uniformValues.saturation);
+          gl.uniform1f(uniformLocations.mouseRadius, uniformValues.mouseRadius);
+          gl.uniform1i(
+            uniformLocations.enableMouseInteraction,
+            uniformValues.enableMouseInteraction
+          );
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+          requestAnimationFrame(animate);
+        }
+        animate();
+      }
+
+      function createProgram(gl, vsSource, fsSource) {
+        const vs = compileShader(gl, vsSource, gl.VERTEX_SHADER);
+        const fs = compileShader(gl, fsSource, gl.FRAGMENT_SHADER);
+        if (!vs || !fs) return null;
+        const prog = gl.createProgram();
+        gl.attachShader(prog, vs);
+        gl.attachShader(prog, fs);
+        gl.linkProgram(prog);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+          console.error(`Program link error: ${gl.getProgramInfoLog(prog)}`);
+          return null;
+        }
+        return prog;
+      }
+
+      function compileShader(gl, source, type) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          console.error(`Shader compile error: ${gl.getShaderInfoLog(shader)}`);
+          gl.deleteShader(shader);
+          return null;
+        }
+        return shader;
+      }
+    </script>
+
+    <!-- СКРИПТ ДЛЯ ЭФФЕКТА КУРСОРА -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const canvas = document.getElementById("fluid-canvas");
+        if (!canvas) {
+          console.error("Canvas element not found!");
+          return;
+        }
+
+        const config = {
+          SIM_RESOLUTION: 128,
+          DYE_RESOLUTION: 1024,
+          CAPTURE_RESOLUTION: 512,
+          DENSITY_DISSIPATION: 3.8,
+          VELOCITY_DISSIPATION: 5.0,
+          PRESSURE: 0.05,
+          PRESSURE_ITERATIONS: 20,
+          CURL: 4.0,
+          SPLAT_RADIUS: 0.21,
+          SPLAT_FORCE: 6000,
+          SHADING: true,
+          COLOR_UPDATE_SPEED: 10,
+          BACK_COLOR: { r: 0.5, g: 0, b: 0 },
+          TRANSPARENT: true,
+          PAUSED: false,
+        };
+
+        let userColors = [
+          "#C33737",
+          "#DC562E",
+          "#4B8A71",
+          "#226E92",
+          "#385880",
+        ];
+        let colorIndex = 0;
+
+        function hexToRgb(hex) {
+          let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+          return result
+            ? {
+                r: parseInt(result[1], 16) / 255.0,
+                g: parseInt(result[2], 16) / 255.0,
+                b: parseInt(result[3], 16) / 255.0,
+              }
+            : null;
+        }
+
+        function pointerPrototype() {
+          this.id = -1;
+          this.texcoordX = 0;
+          this.texcoordY = 0;
+          this.prevTexcoordX = 0;
+          this.prevTexcoordY = 0;
+          this.deltaX = 0;
+          this.deltaY = 0;
+          this.down = false;
+          this.moved = false;
+          this.color = [0, 0, 0];
+        }
+
+        let pointers = [new pointerPrototype()];
+
+        const { gl, ext } = getWebGLContext(canvas);
+        if (!ext.supportLinearFiltering) {
+          config.DYE_RESOLUTION = 256;
+          config.SHADING = false;
+        }
+
+        function getWebGLContext(canvas) {
+          const params = {
+            alpha: true,
+            depth: false,
+            stencil: false,
+            antialias: false,
+            preserveDrawingBuffer: false,
+          };
+          let gl = canvas.getContext("webgl2", params);
+          const isWebGL2 = !!gl;
+          if (!isWebGL2)
+            gl =
+              canvas.getContext("webgl", params) ||
+              canvas.getContext("experimental-webgl", params);
+
+          let halfFloat;
+          let supportLinearFiltering;
+          if (isWebGL2) {
+            gl.getExtension("EXT_color_buffer_float");
+            supportLinearFiltering = gl.getExtension(
+              "OES_texture_float_linear"
+            );
+          } else {
+            halfFloat = gl.getExtension("OES_texture_half_float");
+            supportLinearFiltering = gl.getExtension(
+              "OES_texture_half_float_linear"
+            );
+          }
+          gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+          const halfFloatTexType = isWebGL2
+            ? gl.HALF_FLOAT
+            : halfFloat && halfFloat.HALF_FLOAT_OES;
+          let formatRGBA, formatRG, formatR;
+
+          if (isWebGL2) {
+            formatRGBA = getSupportedFormat(
+              gl,
+              gl.RGBA16F,
+              gl.RGBA,
+              halfFloatTexType
+            );
+            formatRG = getSupportedFormat(
+              gl,
+              gl.RG16F,
+              gl.RG,
+              halfFloatTexType
+            );
+            formatR = getSupportedFormat(gl, gl.R16F, gl.RED, halfFloatTexType);
+          } else {
+            formatRGBA = getSupportedFormat(
+              gl,
+              gl.RGBA,
+              gl.RGBA,
+              halfFloatTexType
+            );
+            formatRG = getSupportedFormat(
+              gl,
+              gl.RGBA,
+              gl.RGBA,
+              halfFloatTexType
+            );
+            formatR = getSupportedFormat(
+              gl,
+              gl.RGBA,
+              gl.RGBA,
+              halfFloatTexType
+            );
+          }
+
+          return {
+            gl,
+            ext: {
+              formatRGBA,
+              formatRG,
+              formatR,
+              halfFloatTexType,
+              supportLinearFiltering,
+            },
+          };
+        }
+
+        function getSupportedFormat(gl, internalFormat, format, type) {
+          if (!supportRenderTextureFormat(gl, internalFormat, format, type)) {
+            switch (internalFormat) {
+              case gl.R16F:
+                return getSupportedFormat(gl, gl.RG16F, gl.RG, type);
+              case gl.RG16F:
+                return getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, type);
+              default:
+                return null;
+            }
+          }
+          return { internalFormat, format };
+        }
+
+        function supportRenderTextureFormat(gl, internalFormat, format, type) {
+          const texture = gl.createTexture();
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            internalFormat,
+            4,
+            4,
+            0,
+            format,
+            type,
+            null
+          );
+          const fbo = gl.createFramebuffer();
+          gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.COLOR_ATTACHMENT0,
+            gl.TEXTURE_2D,
+            texture,
+            0
+          );
+          const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+          return status === gl.FRAMEBUFFER_COMPLETE;
+        }
+
+        class Material {
+          constructor(vertexShader, fragmentShaderSource) {
+            this.vertexShader = vertexShader;
+            this.fragmentShaderSource = fragmentShaderSource;
+            this.programs = [];
+            this.activeProgram = null;
+            this.uniforms = [];
+          }
+          setKeywords(keywords) {
+            let hash = 0;
+            for (let i = 0; i < keywords.length; i++)
+              hash += hashCode(keywords[i]);
+            let program = this.programs[hash];
+            if (program == null) {
+              let fragmentShader = compileShader(
+                gl.FRAGMENT_SHADER,
+                this.fragmentShaderSource,
+                keywords
+              );
+              program = createProgram(this.vertexShader, fragmentShader);
+              this.programs[hash] = program;
+            }
+            if (program === this.activeProgram) return;
+            this.uniforms = getUniforms(program);
+            this.activeProgram = program;
+          }
+          bind() {
+            gl.useProgram(this.activeProgram);
+          }
+        }
+
+        class Program {
+          constructor(vertexShader, fragmentShader) {
+            this.uniforms = {};
+            this.program = createProgram(vertexShader, fragmentShader);
+            this.uniforms = getUniforms(this.program);
+          }
+          bind() {
+            gl.useProgram(this.program);
+          }
+        }
+
+        function createProgram(vertexShader, fragmentShader) {
+          let program = gl.createProgram();
+          gl.attachShader(program, vertexShader);
+          gl.attachShader(program, fragmentShader);
+          gl.linkProgram(program);
+          if (!gl.getProgramParameter(program, gl.LINK_STATUS))
+            console.trace(gl.getProgramInfoLog(program));
+          return program;
+        }
+
+        function getUniforms(program) {
+          let uniforms = [];
+          let uniformCount = gl.getProgramParameter(
+            program,
+            gl.ACTIVE_UNIFORMS
+          );
+          for (let i = 0; i < uniformCount; i++) {
+            let uniformName = gl.getActiveUniform(program, i).name;
+            uniforms[uniformName] = gl.getUniformLocation(program, uniformName);
+          }
+          return uniforms;
+        }
+
+        function compileShader(type, source, keywords) {
+          source = addKeywords(source, keywords);
+          const shader = gl.createShader(type);
+          gl.shaderSource(shader, source);
+          gl.compileShader(shader);
+          if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
+            console.trace(gl.getShaderInfoLog(shader));
+          return shader;
+        }
+
+        function addKeywords(source, keywords) {
+          if (!keywords) return source;
+          let keywordsString = "";
+          keywords.forEach((keyword) => {
+            keywordsString += "#define " + keyword + "\n";
+          });
+          return keywordsString + source;
+        }
+
+        const baseVertexShader = compileShader(
+          gl.VERTEX_SHADER,
+          `
+                precision highp float; attribute vec2 aPosition; varying vec2 vUv;
+                varying vec2 vL; varying vec2 vR; varying vec2 vT; varying vec2 vB;
+                uniform vec2 texelSize;
+                void main () {
+                    vUv = aPosition * 0.5 + 0.5;
+                    vL = vUv - vec2(texelSize.x, 0.0); vR = vUv + vec2(texelSize.x, 0.0);
+                    vT = vUv + vec2(0.0, texelSize.y); vB = vUv - vec2(0.0, texelSize.y);
+                    gl_Position = vec4(aPosition, 0.0, 1.0);
+                }`
+        );
+
+        const displayShaderSource = `
+                precision highp float; precision highp sampler2D; varying vec2 vUv;
+                varying vec2 vL; varying vec2 vR; varying vec2 vT; varying vec2 vB;
+                uniform sampler2D uTexture; uniform vec2 texelSize;
+                void main () {
+                    vec3 c = texture2D(uTexture, vUv).rgb;
+                    #ifdef SHADING
+                        vec3 lc = texture2D(uTexture, vL).rgb; vec3 rc = texture2D(uTexture, vR).rgb;
+                        vec3 tc = texture2D(uTexture, vT).rgb; vec3 bc = texture2D(uTexture, vB).rgb;
+                        float dx = length(rc) - length(lc); float dy = length(tc) - length(bc);
+                        vec3 n = normalize(vec3(dx, dy, length(texelSize)));
+                        vec3 l = vec3(0.0, 0.0, 1.0);
+                        float diffuse = clamp(dot(n, l) + 0.7, 0.7, 1.0);
+                        c *= diffuse;
+                    #endif
+                    float a = max(c.r, max(c.g, c.b));
+                    gl_FragColor = vec4(c, a);
+                }`;
+
+        const splatShader = compileShader(
+          gl.FRAGMENT_SHADER,
+          `
+                precision highp float; precision highp sampler2D; varying vec2 vUv;
+                uniform sampler2D uTarget; uniform float aspectRatio; uniform vec3 color;
+                uniform vec2 point; uniform float radius;
+                void main () {
+                    vec2 p = vUv - point.xy; p.x *= aspectRatio;
+                    vec3 splat = exp(-dot(p, p) / radius) * color;
+                    vec3 base = texture2D(uTarget, vUv).xyz;
+                    gl_FragColor = vec4(base + splat, 1.0);
+                }`
+        );
+
+        const advectionShader = compileShader(
+          gl.FRAGMENT_SHADER,
+          `
+                precision highp float; precision highp sampler2D; varying vec2 vUv;
+                uniform sampler2D uVelocity; uniform sampler2D uSource; uniform vec2 texelSize;
+                uniform vec2 dyeTexelSize; uniform float dt; uniform float dissipation;
+                vec4 bilerp (sampler2D sam, vec2 uv, vec2 tsize) {
+                    vec2 st = uv / tsize - 0.5; vec2 iuv = floor(st); vec2 fuv = fract(st);
+                    vec4 a = texture2D(sam, (iuv + vec2(0.5, 0.5)) * tsize); vec4 b = texture2D(sam, (iuv + vec2(1.5, 0.5)) * tsize);
+                    vec4 c = texture2D(sam, (iuv + vec2(0.5, 1.5)) * tsize); vec4 d = texture2D(sam, (iuv + vec2(1.5, 1.5)) * tsize);
+                    return mix(mix(a, b, fuv.x), mix(c, d, fuv.x), fuv.y);
+                }
+                void main () {
+                    #ifdef MANUAL_FILTERING
+                        vec2 coord = vUv - dt * bilerp(uVelocity, vUv, texelSize).xy * texelSize;
+                        vec4 result = bilerp(uSource, coord, dyeTexelSize);
+                    #else
+                        vec2 coord = vUv - dt * texture2D(uVelocity, vUv).xy * texelSize;
+                        vec4 result = texture2D(uSource, coord);
+                    #endif
+                    float decay = 1.0 + dissipation * dt;
+                    gl_FragColor = result / decay;
+                }`,
+          ext.supportLinearFiltering ? null : ["MANUAL_FILTERING"]
+        );
+
+        const divergenceShader = compileShader(
+          gl.FRAGMENT_SHADER,
+          `
+                precision mediump float; precision mediump sampler2D; varying highp vec2 vUv;
+                varying highp vec2 vL; varying highp vec2 vR; varying highp vec2 vT; varying highp vec2 vB;
+                uniform sampler2D uVelocity;
+                void main () {
+                    float L = texture2D(uVelocity, vL).x; float R = texture2D(uVelocity, vR).x;
+                    float T = texture2D(uVelocity, vT).y; float B = texture2D(uVelocity, vB).y;
+                    vec2 C = texture2D(uVelocity, vUv).xy;
+                    if (vL.x < 0.0) { L = -C.x; } if (vR.x > 1.0) { R = -C.x; }
+                    if (vT.y > 1.0) { T = -C.y; } if (vB.y < 0.0) { B = -C.y; }
+                    float div = 0.5 * (R - L + T - B);
+                    gl_FragColor = vec4(div, 0.0, 0.0, 1.0);
+                }`
+        );
+
+        const curlShader = compileShader(
+          gl.FRAGMENT_SHADER,
+          `
+                precision mediump float; precision mediump sampler2D; varying highp vec2 vUv;
+                varying highp vec2 vL; varying highp vec2 vR; varying highp vec2 vT; varying highp vec2 vB;
+                uniform sampler2D uVelocity;
+                void main () {
+                    float L = texture2D(uVelocity, vL).y; float R = texture2D(uVelocity, vR).y;
+                    float T = texture2D(uVelocity, vT).x; float B = texture2D(uVelocity, vB).x;
+                    float vorticity = R - L - T + B;
+                    gl_FragColor = vec4(0.5 * vorticity, 0.0, 0.0, 1.0);
+                }`
+        );
+
+        const vorticityShader = compileShader(
+          gl.FRAGMENT_SHADER,
+          `
+                precision highp float; precision highp sampler2D; varying vec2 vUv;
+                varying vec2 vL; varying vec2 vR; varying vec2 vT; varying vec2 vB;
+                uniform sampler2D uVelocity; uniform sampler2D uCurl;
+                uniform float curl; uniform float dt;
+                void main () {
+                    float L = texture2D(uCurl, vL).x; float R = texture2D(uCurl, vR).x;
+                    float T = texture2D(uCurl, vT).x; float B = texture2D(uCurl, vB).x;
+                    float C = texture2D(uCurl, vUv).x;
+                    vec2 force = 0.5 * vec2(abs(T) - abs(B), abs(R) - abs(L));
+                    force /= length(force) + 0.0001; force *= curl * C; force.y *= -1.0;
+                    vec2 velocity = texture2D(uVelocity, vUv).xy; velocity += force * dt;
+                    velocity = min(max(velocity, -1000.0), 1000.0);
+                    gl_FragColor = vec4(velocity, 0.0, 1.0);
+                }`
+        );
+
+        const pressureShader = compileShader(
+          gl.FRAGMENT_SHADER,
+          `
+                precision mediump float; precision mediump sampler2D; varying highp vec2 vUv;
+                varying highp vec2 vL; varying highp vec2 vR; varying highp vec2 vT; varying highp vec2 vB;
+                uniform sampler2D uPressure; uniform sampler2D uDivergence;
+                void main () {
+                    float L = texture2D(uPressure, vL).x; float R = texture2D(uPressure, vR).x;
+                    float T = texture2D(uPressure, vT).x; float B = texture2D(uPressure, vB).x;
+                    float C = texture2D(uPressure, vUv).x;
+                    float divergence = texture2D(uDivergence, vUv).x;
+                    float pressure = (L + R + B + T - divergence) * 0.25;
+                    gl_FragColor = vec4(pressure, 0.0, 0.0, 1.0);
+                }`
+        );
+
+        const gradientSubtractShader = compileShader(
+          gl.FRAGMENT_SHADER,
+          `
+                precision mediump float; precision mediump sampler2D; varying highp vec2 vUv;
+                varying highp vec2 vL; varying highp vec2 vR; varying highp vec2 vT; varying highp vec2 vB;
+                uniform sampler2D uPressure; uniform sampler2D uVelocity;
+                void main () {
+                    float L = texture2D(uPressure, vL).x; float R = texture2D(uPressure, vR).x;
+                    float T = texture2D(uPressure, vT).x; float B = texture2D(uPressure, vB).x;
+                    vec2 velocity = texture2D(uVelocity, vUv).xy;
+                    velocity.xy -= vec2(R - L, T - B);
+                    gl_FragColor = vec4(velocity, 0.0, 1.0);
+                }`
+        );
+
+        const clearShader = compileShader(
+          gl.FRAGMENT_SHADER,
+          `
+                precision mediump float; precision mediump sampler2D; varying highp vec2 vUv;
+                uniform sampler2D uTexture; uniform float value;
+                void main () { gl_FragColor = value * texture2D(uTexture, vUv); }`
+        );
+
+        const blit = (() => {
+          gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+          gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array([-1, -1, -1, 1, 1, 1, 1, -1]),
+            gl.STATIC_DRAW
+          );
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+          gl.bufferData(
+            gl.ELEMENT_ARRAY_BUFFER,
+            new Uint16Array([0, 1, 2, 0, 2, 3]),
+            gl.STATIC_DRAW
+          );
+          gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+          gl.enableVertexAttribArray(0);
+          return (target, clear = false) => {
+            if (target == null) {
+              gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+              gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            } else {
+              gl.viewport(0, 0, target.width, target.height);
+              gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+            }
+            if (clear) {
+              gl.clearColor(0.0, 0.0, 0.0, 1.0);
+              gl.clear(gl.COLOR_BUFFER_BIT);
+            }
+            gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+          };
+        })();
+
+        let dye, velocity, divergence, curl, pressure;
+        const clearProgram = new Program(baseVertexShader, clearShader);
+        const splatProgram = new Program(baseVertexShader, splatShader);
+        const advectionProgram = new Program(baseVertexShader, advectionShader);
+        const divergenceProgram = new Program(
+          baseVertexShader,
+          divergenceShader
+        );
+        const curlProgram = new Program(baseVertexShader, curlShader);
+        const vorticityProgram = new Program(baseVertexShader, vorticityShader);
+        const pressureProgram = new Program(baseVertexShader, pressureShader);
+        const gradienSubtractProgram = new Program(
+          baseVertexShader,
+          gradientSubtractShader
+        );
+        const displayMaterial = new Material(
+          baseVertexShader,
+          displayShaderSource
+        );
+
+        function initFramebuffers() {
+          let simRes = getResolution(config.SIM_RESOLUTION);
+          let dyeRes = getResolution(config.DYE_RESOLUTION);
+          const texType = ext.halfFloatTexType;
+          const rgba = ext.formatRGBA;
+          const rg = ext.formatRG;
+          const r = ext.formatR;
+          const filtering = ext.supportLinearFiltering ? gl.LINEAR : gl.NEAREST;
+          gl.disable(gl.BLEND);
+          dye = !dye
+            ? createDoubleFBO(
+                dyeRes.width,
+                dyeRes.height,
+                rgba.internalFormat,
+                rgba.format,
+                texType,
+                filtering
+              )
+            : resizeDoubleFBO(
+                dye,
+                dyeRes.width,
+                dyeRes.height,
+                rgba.internalFormat,
+                rgba.format,
+                texType,
+                filtering
+              );
+          velocity = !velocity
+            ? createDoubleFBO(
+                simRes.width,
+                simRes.height,
+                rg.internalFormat,
+                rg.format,
+                texType,
+                filtering
+              )
+            : resizeDoubleFBO(
+                velocity,
+                simRes.width,
+                simRes.height,
+                rg.internalFormat,
+                rg.format,
+                texType,
+                filtering
+              );
+          divergence = createFBO(
+            simRes.width,
+            simRes.height,
+            r.internalFormat,
+            r.format,
+            texType,
+            gl.NEAREST
+          );
+          curl = createFBO(
+            simRes.width,
+            simRes.height,
+            r.internalFormat,
+            r.format,
+            texType,
+            gl.NEAREST
+          );
+          pressure = createDoubleFBO(
+            simRes.width,
+            simRes.height,
+            r.internalFormat,
+            r.format,
+            texType,
+            gl.NEAREST
+          );
+        }
+
+        function createFBO(w, h, internalFormat, format, type, param) {
+          gl.activeTexture(gl.TEXTURE0);
+          let texture = gl.createTexture();
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, param);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, param);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            internalFormat,
+            w,
+            h,
+            0,
+            format,
+            type,
+            null
+          );
+          let fbo = gl.createFramebuffer();
+          gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.COLOR_ATTACHMENT0,
+            gl.TEXTURE_2D,
+            texture,
+            0
+          );
+          gl.viewport(0, 0, w, h);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          return {
+            texture,
+            fbo,
+            width: w,
+            height: h,
+            texelSizeX: 1.0 / w,
+            texelSizeY: 1.0 / h,
+            attach(id) {
+              gl.activeTexture(gl.TEXTURE0 + id);
+              gl.bindTexture(gl.TEXTURE_2D, texture);
+              return id;
+            },
+          };
+        }
+
+        function createDoubleFBO(w, h, internalFormat, format, type, param) {
+          let fbo1 = createFBO(w, h, internalFormat, format, type, param);
+          let fbo2 = createFBO(w, h, internalFormat, format, type, param);
+          return {
+            width: w,
+            height: h,
+            texelSizeX: fbo1.texelSizeX,
+            texelSizeY: fbo1.texelSizeY,
+            get read() {
+              return fbo1;
+            },
+            set read(value) {
+              fbo1 = value;
+            },
+            get write() {
+              return fbo2;
+            },
+            set write(value) {
+              fbo2 = value;
+            },
+            swap() {
+              let temp = fbo1;
+              fbo1 = fbo2;
+              fbo2 = temp;
+            },
+          };
+        }
+
+        function resizeDoubleFBO(
+          target,
+          w,
+          h,
+          internalFormat,
+          format,
+          type,
+          param
+        ) {
+          if (target.width === w && target.height === h) return target;
+          const copyProgram = new Program(
+            baseVertexShader,
+            compileShader(
+              gl.FRAGMENT_SHADER,
+              `precision mediump float; precision mediump sampler2D; varying highp vec2 vUv; uniform sampler2D uTexture; void main () { gl_FragColor = texture2D(uTexture, vUv); }`
+            )
+          );
+          const newFBO = createFBO(w, h, internalFormat, format, type, param);
+          copyProgram.bind();
+          gl.uniform1i(copyProgram.uniforms.uTexture, target.read.attach(0));
+          blit(newFBO);
+          target.read = newFBO;
+          target.write = createFBO(w, h, internalFormat, format, type, param);
+          target.width = w;
+          target.height = h;
+          target.texelSizeX = 1.0 / w;
+          target.texelSizeY = 1.0 / h;
+          return target;
+        }
+
+        function updateKeywords() {
+          let displayKeywords = [];
+          if (config.SHADING) displayKeywords.push("SHADING");
+          displayMaterial.setKeywords(displayKeywords);
+        }
+
+        updateKeywords();
+        initFramebuffers();
+
+        let lastUpdateTime = Date.now();
+        let animationFrameId = null;
+
+        function updateFrame() {
+          const dt = calcDeltaTime();
+          if (resizeCanvas()) initFramebuffers();
+          applyInputs();
+          if (!config.PAUSED) step(dt);
+          render(null);
+          animationFrameId = requestAnimationFrame(updateFrame);
+        }
+
+        function calcDeltaTime() {
+          let now = Date.now();
+          let dt = (now - lastUpdateTime) / 1000;
+          dt = Math.min(dt, 0.016666);
+          lastUpdateTime = now;
+          return dt;
+        }
+
+        function resizeCanvas() {
+          let width = scaleByPixelRatio(canvas.clientWidth);
+          let height = scaleByPixelRatio(canvas.clientHeight);
+          if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width;
+            canvas.height = height;
+            return true;
+          }
+          return false;
+        }
+
+        function applyInputs() {
+          pointers.forEach((p) => {
+            if (p.moved) {
+              p.moved = false;
+              splatPointer(p);
+            }
+          });
+        }
+
+        function step(dt) {
+          gl.disable(gl.BLEND);
+          curlProgram.bind();
+          gl.uniform2f(
+            curlProgram.uniforms.texelSize,
+            velocity.texelSizeX,
+            velocity.texelSizeY
+          );
+          gl.uniform1i(curlProgram.uniforms.uVelocity, velocity.read.attach(0));
+          blit(curl);
+          vorticityProgram.bind();
+          gl.uniform2f(
+            vorticityProgram.uniforms.texelSize,
+            velocity.texelSizeX,
+            velocity.texelSizeY
+          );
+          gl.uniform1i(
+            vorticityProgram.uniforms.uVelocity,
+            velocity.read.attach(0)
+          );
+          gl.uniform1i(vorticityProgram.uniforms.uCurl, curl.attach(1));
+          gl.uniform1f(vorticityProgram.uniforms.curl, config.CURL);
+          gl.uniform1f(vorticityProgram.uniforms.dt, dt);
+          blit(velocity.write);
+          velocity.swap();
+          divergenceProgram.bind();
+          gl.uniform2f(
+            divergenceProgram.uniforms.texelSize,
+            velocity.texelSizeX,
+            velocity.texelSizeY
+          );
+          gl.uniform1i(
+            divergenceProgram.uniforms.uVelocity,
+            velocity.read.attach(0)
+          );
+          blit(divergence);
+          clearProgram.bind();
+          gl.uniform1i(clearProgram.uniforms.uTexture, pressure.read.attach(0));
+          gl.uniform1f(clearProgram.uniforms.value, config.PRESSURE);
+          blit(pressure.write);
+          pressure.swap();
+          pressureProgram.bind();
+          gl.uniform2f(
+            pressureProgram.uniforms.texelSize,
+            velocity.texelSizeX,
+            velocity.texelSizeY
+          );
+          gl.uniform1i(
+            pressureProgram.uniforms.uDivergence,
+            divergence.attach(0)
+          );
+          for (let i = 0; i < config.PRESSURE_ITERATIONS; i++) {
+            gl.uniform1i(
+              pressureProgram.uniforms.uPressure,
+              pressure.read.attach(1)
+            );
+            blit(pressure.write);
+            pressure.swap();
+          }
+          gradienSubtractProgram.bind();
+          gl.uniform2f(
+            gradienSubtractProgram.uniforms.texelSize,
+            velocity.texelSizeX,
+            velocity.texelSizeY
+          );
+          gl.uniform1i(
+            gradienSubtractProgram.uniforms.uPressure,
+            pressure.read.attach(0)
+          );
+          gl.uniform1i(
+            gradienSubtractProgram.uniforms.uVelocity,
+            velocity.read.attach(1)
+          );
+          blit(velocity.write);
+          velocity.swap();
+          advectionProgram.bind();
+          gl.uniform2f(
+            advectionProgram.uniforms.texelSize,
+            velocity.texelSizeX,
+            velocity.texelSizeY
+          );
+          if (!ext.supportLinearFiltering)
+            gl.uniform2f(
+              advectionProgram.uniforms.dyeTexelSize,
+              velocity.texelSizeX,
+              velocity.texelSizeY
+            );
+          let velocityId = velocity.read.attach(0);
+          gl.uniform1i(advectionProgram.uniforms.uVelocity, velocityId);
+          gl.uniform1i(advectionProgram.uniforms.uSource, velocityId);
+          gl.uniform1f(advectionProgram.uniforms.dt, dt);
+          gl.uniform1f(
+            advectionProgram.uniforms.dissipation,
+            config.VELOCITY_DISSIPATION
+          );
+          blit(velocity.write);
+          velocity.swap();
+          if (!ext.supportLinearFiltering)
+            gl.uniform2f(
+              advectionProgram.uniforms.dyeTexelSize,
+              dye.texelSizeX,
+              dye.texelSizeY
+            );
+          gl.uniform1i(
+            advectionProgram.uniforms.uVelocity,
+            velocity.read.attach(0)
+          );
+          gl.uniform1i(advectionProgram.uniforms.uSource, dye.read.attach(1));
+          gl.uniform1f(
+            advectionProgram.uniforms.dissipation,
+            config.DENSITY_DISSIPATION
+          );
+          blit(dye.write);
+          dye.swap();
+        }
+
+        function render(target) {
+          gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+          gl.enable(gl.BLEND);
+          let width = target == null ? gl.drawingBufferWidth : target.width;
+          let height = target == null ? gl.drawingBufferHeight : target.height;
+          displayMaterial.bind();
+          if (config.SHADING)
+            gl.uniform2f(
+              displayMaterial.uniforms.texelSize,
+              1.0 / width,
+              1.0 / height
+            );
+          gl.uniform1i(displayMaterial.uniforms.uTexture, dye.read.attach(0));
+          blit(target);
+        }
+
+        function splatPointer(pointer) {
+          let dx = pointer.deltaX * config.SPLAT_FORCE;
+          let dy = pointer.deltaY * config.SPLAT_FORCE;
+          splat(pointer.texcoordX, pointer.texcoordY, dx, dy, pointer.color);
+        }
+
+        function splat(x, y, dx, dy, color) {
+          splatProgram.bind();
+          gl.uniform1i(splatProgram.uniforms.uTarget, velocity.read.attach(0));
+          gl.uniform1f(
+            splatProgram.uniforms.aspectRatio,
+            canvas.width / canvas.height
+          );
+          gl.uniform2f(splatProgram.uniforms.point, x, y);
+          gl.uniform3f(splatProgram.uniforms.color, dx, dy, 0.0);
+          gl.uniform1f(
+            splatProgram.uniforms.radius,
+            correctRadius(config.SPLAT_RADIUS / 100.0)
+          );
+          blit(velocity.write);
+          velocity.swap();
+          gl.uniform1i(splatProgram.uniforms.uTarget, dye.read.attach(0));
+          gl.uniform3f(splatProgram.uniforms.color, color.r, color.g, color.b);
+          blit(dye.write);
+          dye.swap();
+        }
+
+        function correctRadius(radius) {
+          let aspectRatio = canvas.width / canvas.height;
+          if (aspectRatio > 1) radius *= aspectRatio;
+          return radius;
+        }
+
+        function updatePointerMoveData(pointer, posX, posY) {
+          pointer.prevTexcoordX = pointer.texcoordX;
+          pointer.prevTexcoordY = pointer.texcoordY;
+          pointer.texcoordX = posX / canvas.width;
+          pointer.texcoordY = 1.0 - posY / canvas.height;
+          pointer.deltaX = correctDeltaX(
+            pointer.texcoordX - pointer.prevTexcoordX
+          );
+          pointer.deltaY = correctDeltaY(
+            pointer.texcoordY - pointer.prevTexcoordY
+          );
+          pointer.moved =
+            Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0;
+        }
+
+        function generateColor() {
+          const c = hexToRgb(userColors[colorIndex]);
+          colorIndex = (colorIndex + 1) % userColors.length;
+          if (!c) return { r: 1, g: 0, b: 0 }; // Fallback
+          c.r *= 0.15;
+          c.g *= 0.15;
+          c.b *= 0.15;
+          return c;
+        }
+
+        function hashCode(s) {
+          if (s.length === 0) return 0;
+          let hash = 0;
+          for (let i = 0; i < s.length; i++) {
+            hash = (hash << 5) - hash + s.charCodeAt(i);
+            hash |= 0;
+          }
+          return hash;
+        }
+        function getResolution(resolution) {
+          let aspectRatio = gl.drawingBufferWidth / gl.drawingBufferHeight;
+          if (aspectRatio < 1) aspectRatio = 1.0 / aspectRatio;
+          const min = Math.round(resolution);
+          const max = Math.round(resolution * aspectRatio);
+          if (gl.drawingBufferWidth > gl.drawingBufferHeight)
+            return { width: max, height: min };
+          else return { width: min, height: max };
+        }
+        function scaleByPixelRatio(input) {
+          return Math.floor((window.devicePixelRatio || 1) * input);
+        }
+        function correctDeltaX(delta) {
+          let aspectRatio = canvas.width / canvas.height;
+          if (aspectRatio < 1) delta *= aspectRatio;
+          return delta;
+        }
+        function correctDeltaY(delta) {
+          let aspectRatio = canvas.width / canvas.height;
+          if (aspectRatio > 1) delta /= aspectRatio;
+          return delta;
+        }
+
+        // ====== ИСПРАВЛЕННЫЙ КОД ЗДЕСЬ ======
+        window.addEventListener("mousemove", (e) => {
+          // 1. Сначала мы всегда проверяем, запущена ли анимация.
+          // Это гарантирует, что она запустится при первом же движении мыши.
+          if (animationFrameId === null) {
+            updateFrame();
+          }
+
+          // 2. А уже потом мы проверяем, нужно ли рисовать "кляксу".
+          // Если курсор над запрещенной зоной, мы просто выходим, но анимация УЖЕ работает.
+          if (
+            e.target.closest(".animation-container") ||
+            e.target.closest(".header-container")
+          ) {
+            return;
+          }
+
+          let pointer = pointers[0];
+          let posX = scaleByPixelRatio(e.clientX);
+          let posY = scaleByPixelRatio(e.clientY);
+          updatePointerMoveData(pointer, posX, posY);
+          pointer.color = generateColor();
+        });
+
+        // ====== И ТАКОЕ ЖЕ ИСПРАВЛЕНИЕ ДЛЯ ТАЧ-СОБЫТИЙ ======
+        window.addEventListener(
+          "touchmove",
+          (e) => {
+            const touches = e.targetTouches;
+            if (!touches.length) return;
+            const touchTarget = touches[0].target;
+
+            // 1. Сначала запускаем анимацию
+            if (animationFrameId === null) {
+              updateFrame();
+            }
+
+            // 2. Потом проверяем, где находится палец
+            if (
+              touchTarget.closest(".animation-container") ||
+              touchTarget.closest(".header-container")
+            ) {
+              return;
+            }
+
+            e.preventDefault();
+
+            let pointer = pointers[0];
+            let posX = scaleByPixelRatio(touches[0].clientX);
+            let posY = scaleByPixelRatio(touches[0].clientY);
+            updatePointerMoveData(pointer, posX, posY);
+            pointer.color = generateColor();
+          },
+          false
+        );
+      });
+    </script>
+
+    <!-- СКРИПТ ДЛЯ АНИМАЦИИ ТЕКСТА -->
+    <script>
+      const texts = [
+        "Developer?",
+        "Frontend?",
+        "Backend?",
+        "Fullstack?",
+        "You decide!",
+      ];
+
+      const morphTime = 1.5;
+      const cooldownTime = 0.5;
+
+      let textIndex = 0;
+      let time = new Date();
+      let morph = 0;
+      let cooldown = cooldownTime;
+
+      const text1 = document.getElementById("text1");
+      const text2 = document.getElementById("text2");
+
+      function doMorph() {
+        morph -= cooldown;
+        cooldown = 0;
+
+        let fraction = morph / morphTime;
+
+        if (fraction > 1) {
+          cooldown = cooldownTime;
+          fraction = 1;
+        }
+
+        setStyles(fraction);
+      }
+
+      function setStyles(fraction) {
+        const invertedFraction = 1 - fraction;
+
+        text2.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
+        text2.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
+
+        text1.style.filter = `blur(${Math.min(
+          8 / invertedFraction - 8,
+          100
+        )}px)`;
+        text1.style.opacity = `${Math.pow(invertedFraction, 0.4) * 100}%`;
+
+        text1.textContent = texts[textIndex % texts.length];
+        text2.textContent = texts[(textIndex + 1) % texts.length];
+
+        if (fraction === 1) {
+          textIndex++;
+        }
+      }
+
+      function doCooldown() {
+        morph = 0;
+
+        text2.style.filter = "";
+        text2.style.opacity = "100%";
+
+        text1.style.filter = "";
+        text1.style.opacity = "0%";
+      }
+
+      function animateText() {
+        requestAnimationFrame(animateText);
+
+        let newTime = new Date();
+        let shouldIncrementIndex = cooldown > 0;
+        let dt = (newTime - time) / 1000;
+        time = newTime;
+
+        cooldown -= dt;
+
+        if (cooldown <= 0) {
+          if (shouldIncrementIndex) {
+            // textIndex++;
+          }
+          doMorph();
+        } else {
+          doCooldown();
+        }
+
+        morph += dt;
+      }
+
+      animateText();
+    </script>
+
+    <!-- СКРИПТ ИНИЦИАЛИЗАЦИИ LENIS -->
+    <script>
+      const lenis = new Lenis({
+        // --- ОСНОВА СЕКСУАЛЬНОСТИ ---
+        lerp: 0.06, // Король плавности. Значение по умолчанию 0.1. Чуть-чуть уменьшаем, чтобы получить ту самую "тягучесть" и ощущение скольжения.
+
+        // --- КИНЕМАТОГРАФИЧНОСТЬ ---
+        duration: 2.2, // Длительность перехода по якорям (в секундах). Делаем долгой и величественной, чтобы каждый переход был событием.
+        easing: (t) =>
+          t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, // Функция плавности EaseInOutCubic. Начинает медленно, ускоряется в середине и грациозно замедляется в конце. Максимальная элегантность.
+
+        // --- ОТЗЫВЧИВОСТЬ И КОНТРОЛЬ ---
+        smoothWheel: true, // Разумеется, да.
+        wheelMultiplier: 1.1, // Слегка увеличим чувствительность колеса, чтобы компенсировать низкий lerp и дать ощущение контроля.
+
+        // --- ПРЕМИУМ ДЛЯ МОБИЛОК ---
+        syncTouch: true, // Имитация нативной прокрутки на тач-устройствах. Обязательно для "дорогого" ощущения.
+        syncTouchLerp: 0.07, // Сглаживание инерции после свайпа.
+        touchMultiplier: 1.2, // Чуть-чуть увеличим чувствительность свайпа.
+      });
+
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+
+      requestAnimationFrame(raf);
+    </script>
+  </body>
+</html>

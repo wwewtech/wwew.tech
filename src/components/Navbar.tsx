@@ -128,7 +128,7 @@ export const Navbar = () => {
                 href="https://t.me/your_username"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-5 py-2 ml-2 rounded-full bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 transition-all duration-200"
+                className="flex items-center gap-1.5 px-5 py-2 ml-2 rounded-full bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 transition-all duration-200 select-none"
               >
                 {t('nav.contactBtn')}
                 <ArrowUpRight className="w-4 h-4" />

@@ -10,6 +10,7 @@ export const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 pt-16 overflow-hidden bg-lines">
+
       {/* Decorative curved lines */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-50 dark:opacity-100" preserveAspectRatio="none">
         <path
@@ -33,16 +34,16 @@ export const Hero = () => {
       </svg>
 
       <div className="relative z-10 max-w-5xl mx-auto">
-        {/* Pill Badge - v2RayTun style */}
+        {/* Pill Badge - v2RayTun style with glow */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="pill-badge mb-10"
+          className="pill-badge mb-10 cursor-default"
         >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
           </span>
           <span>{t('hero.available')}</span>
         </motion.div>
@@ -78,7 +79,7 @@ export const Hero = () => {
         >
           <a
             href="#contact"
-            className="group flex items-center gap-2 px-8 py-4 rounded-full bg-[var(--foreground)] text-[var(--background)] font-medium hover:opacity-90 transition-all"
+            className="group flex items-center gap-2 px-8 py-4 rounded-full bg-[var(--foreground)] text-[var(--background)] font-medium hover:opacity-90 transition-all select-none"
           >
             {t('hero.cta1')}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

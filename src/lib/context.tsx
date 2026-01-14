@@ -17,7 +17,7 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.about': 'Обо мне',
     'nav.stack': 'Стек',
     'nav.work': 'Работы',
-    'nav.contact': 'Контакт',
+    'nav.contact': 'Контакты',
     'nav.contactBtn': 'Связаться',
     
     // Hero
@@ -57,7 +57,7 @@ const translations: Record<Language, Record<string, string>> = {
     'projects.viewCode': 'Код',
     
     // Contact
-    'contact.badge': 'Контакт',
+    'contact.badge': 'Контакты',
     'contact.title1': 'Давайте',
     'contact.title2': 'Работать',
     'contact.subtitle': 'Готов обсудить ваш проект. Свяжитесь любым удобным способом.',

@@ -6,3 +6,5 @@ export { Projects } from './Projects';
 export { ContactHub } from './ContactHub';
 export { Footer } from './Footer';
 export { LenisProvider } from './LenisProvider';
+export { InteractiveBackground } from './InteractiveBackground';
+export { FluidCursor } from './FluidCursor';

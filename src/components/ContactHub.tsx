@@ -99,7 +99,7 @@ export const ContactHub = () => {
             href="https://t.me/your_username"
             target="_blank"
             rel="noopener noreferrer"
-            className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-[var(--foreground)] text-[var(--background)] font-medium text-lg hover:opacity-90 transition-all"
+            className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-[var(--foreground)] text-[var(--background)] font-medium text-lg hover:opacity-90 transition-all select-none"
           >
             {t('contact.telegram')}
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
