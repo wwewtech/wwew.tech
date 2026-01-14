@@ -2,6 +2,53 @@
 
 import React, { useEffect, useRef, useCallback } from 'react';
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// НАСТРОЙКИ FLUID CURSOR - Измените параметры здесь
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const CONFIG = {
+  // ─────────────────────────────────────────────────────────────────────────────
+  // СИМУЛЯЦИЯ ЖИДКОСТИ
+  // ─────────────────────────────────────────────────────────────────────────────
+  SIM_RESOLUTION: 128,          // Разрешение симуляции (64-256). Выше = детальнее, но тяжелее
+  DYE_RESOLUTION: 1024,         // Разрешение цвета (512-2048). Выше = четче цвета
+  
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ПОВЕДЕНИЕ ЖИДКОСТИ
+  // ─────────────────────────────────────────────────────────────────────────────
+  DENSITY_DISSIPATION: 3.5,     // Скорость затухания цвета (0.5-5). Выше = быстрее исчезает
+  VELOCITY_DISSIPATION: 4.5,    // Скорость затухания движения (0.5-5). Выше = быстрее останавливается
+  PRESSURE: 0.05,               // Давление жидкости (0.01-0.5)
+  PRESSURE_ITERATIONS: 20,      // Итерации давления (10-50). Больше = точнее, но тяжелее
+  CURL: 3,                      // Завихрения/турбулентность (0-10). Выше = больше вихрей
+  
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ВНЕШНИЙ ВИД КУРСОРА
+  // ─────────────────────────────────────────────────────────────────────────────
+  SPLAT_RADIUS: 0.2,            // Размер "кляксы" (0.05-0.5). Выше = больше пятно
+  SPLAT_FORCE: 6000,            // Сила разбрызгивания (1000-10000). Выше = мощнее след
+  COLOR_INTENSITY: 0.15,        // Интенсивность цвета (0.05-0.3). Выше = ярче
+  
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ВИЗУАЛЬНЫЕ ЭФФЕКТЫ
+  // ─────────────────────────────────────────────────────────────────────────────
+  SHADING: true,                // Включить 3D-освещение эффект
+  TRANSPARENT: true,            // Прозрачный фон (для наложения на контент)
+  
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ПАЛИТРА ЦВЕТОВ (HEX формат)
+  // ─────────────────────────────────────────────────────────────────────────────
+  COLORS: [
+    '#b5ff6d',                  // Зеленый (лайм)
+    '#6dffb5',                  // Бирюзовый
+    '#6db5ff',                  // Голубой
+    '#ff6db5',                  // Розовый
+    '#ffb56d',                  // Оранжевый
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+
 interface Pointer {
   id: number;
   texcoordX: number;
@@ -14,23 +61,6 @@ interface Pointer {
   moved: boolean;
   color: { r: number; g: number; b: number };
 }
-
-const config = {
-  SIM_RESOLUTION: 128,
-  DYE_RESOLUTION: 1024,
-  DENSITY_DISSIPATION: 3.5,
-  VELOCITY_DISSIPATION: 4.5,
-  PRESSURE: 0.05,
-  PRESSURE_ITERATIONS: 20,
-  CURL: 3,
-  SPLAT_RADIUS: 0.2,
-  SPLAT_FORCE: 6000,
-  SHADING: true,
-  BACK_COLOR: { r: 0, g: 0, b: 0 },
-  TRANSPARENT: true,
-};
-
-const userColors = ['#b5ff6d', '#6dffb5', '#6db5ff', '#ff6db5', '#ffb56d'];
 
 export const FluidCursor: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -50,9 +80,9 @@ export const FluidCursor: React.FC = () => {
   }, []);
 
   const generateColor = useCallback(() => {
-    const c = hexToRgb(userColors[colorIndexRef.current]);
-    colorIndexRef.current = (colorIndexRef.current + 1) % userColors.length;
-    return { r: c.r * 0.15, g: c.g * 0.15, b: c.b * 0.15 };
+    const c = hexToRgb(CONFIG.COLORS[colorIndexRef.current]);
+    colorIndexRef.current = (colorIndexRef.current + 1) % CONFIG.COLORS.length;
+    return { r: c.r * CONFIG.COLOR_INTENSITY, g: c.g * CONFIG.COLOR_INTENSITY, b: c.b * CONFIG.COLOR_INTENSITY };
   }, [hexToRgb]);
 
   useEffect(() => {
@@ -450,7 +480,7 @@ export const FluidCursor: React.FC = () => {
     const gradientSubtractProgram = createProgram(baseVertexShader, gradientSubtractShader);
 
     // Display program with shading
-    const displayFragmentShader = compileShader(gl.FRAGMENT_SHADER, displayShaderSource, config.SHADING ? ['SHADING'] : undefined);
+    const displayFragmentShader = compileShader(gl.FRAGMENT_SHADER, displayShaderSource, CONFIG.SHADING ? ['SHADING'] : undefined);
     const displayProgram = displayFragmentShader ? createProgram(baseVertexShader, displayFragmentShader) : null;
 
     if (!clearProgram || !splatProgram || !advectionProgram || 
@@ -567,8 +597,8 @@ export const FluidCursor: React.FC = () => {
     };
 
     // Initialize framebuffers
-    const simRes = getResolution(config.SIM_RESOLUTION);
-    const dyeRes = getResolution(config.DYE_RESOLUTION);
+    const simRes = getResolution(CONFIG.SIM_RESOLUTION);
+    const dyeRes = getResolution(CONFIG.DYE_RESOLUTION);
     const filtering = supportLinearFiltering ? gl.LINEAR : gl.NEAREST;
 
     gl.disable(gl.BLEND);
@@ -588,7 +618,7 @@ export const FluidCursor: React.FC = () => {
       gl.uniform1f(splatUniforms.aspectRatio, canvas.width / canvas.height);
       gl.uniform2f(splatUniforms.point, x, y);
       gl.uniform3f(splatUniforms.color, dx, dy, 0.0);
-      gl.uniform1f(splatUniforms.radius, config.SPLAT_RADIUS / 100.0);
+      gl.uniform1f(splatUniforms.radius, CONFIG.SPLAT_RADIUS / 100.0);
       blit(velocity!.write);
       velocity!.swap();
 
@@ -613,7 +643,7 @@ export const FluidCursor: React.FC = () => {
       gl.uniform2f(vorticityUniforms.texelSize, velocity!.texelSizeX, velocity!.texelSizeY);
       gl.uniform1i(vorticityUniforms.uVelocity, velocity!.read.attach(0));
       gl.uniform1i(vorticityUniforms.uCurl, curl!.attach(1));
-      gl.uniform1f(vorticityUniforms.curl, config.CURL);
+      gl.uniform1f(vorticityUniforms.curl, CONFIG.CURL);
       gl.uniform1f(vorticityUniforms.dt, dt);
       blit(velocity!.write);
       velocity!.swap();
@@ -627,7 +657,7 @@ export const FluidCursor: React.FC = () => {
       // Clear pressure
       gl.useProgram(clearProgram);
       gl.uniform1i(clearUniforms.uTexture, pressure!.read.attach(0));
-      gl.uniform1f(clearUniforms.value, config.PRESSURE);
+      gl.uniform1f(clearUniforms.value, CONFIG.PRESSURE);
       blit(pressure!.write);
       pressure!.swap();
 
@@ -635,7 +665,7 @@ export const FluidCursor: React.FC = () => {
       gl.useProgram(pressureProgram);
       gl.uniform2f(pressureUniforms.texelSize, velocity!.texelSizeX, velocity!.texelSizeY);
       gl.uniform1i(pressureUniforms.uDivergence, divergence!.attach(0));
-      for (let i = 0; i < config.PRESSURE_ITERATIONS; i++) {
+      for (let i = 0; i < CONFIG.PRESSURE_ITERATIONS; i++) {
         gl.uniform1i(pressureUniforms.uPressure, pressure!.read.attach(1));
         blit(pressure!.write);
         pressure!.swap();
@@ -659,7 +689,7 @@ export const FluidCursor: React.FC = () => {
       gl.uniform1i(advectionUniforms.uVelocity, velocityId);
       gl.uniform1i(advectionUniforms.uSource, velocityId);
       gl.uniform1f(advectionUniforms.dt, dt);
-      gl.uniform1f(advectionUniforms.dissipation, config.VELOCITY_DISSIPATION);
+      gl.uniform1f(advectionUniforms.dissipation, CONFIG.VELOCITY_DISSIPATION);
       blit(velocity!.write);
       velocity!.swap();
 
@@ -669,7 +699,7 @@ export const FluidCursor: React.FC = () => {
       }
       gl.uniform1i(advectionUniforms.uVelocity, velocity!.read.attach(0));
       gl.uniform1i(advectionUniforms.uSource, dye!.read.attach(1));
-      gl.uniform1f(advectionUniforms.dissipation, config.DENSITY_DISSIPATION);
+      gl.uniform1f(advectionUniforms.dissipation, CONFIG.DENSITY_DISSIPATION);
       blit(dye!.write);
       dye!.swap();
     };
@@ -679,7 +709,7 @@ export const FluidCursor: React.FC = () => {
       gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
       gl.enable(gl.BLEND);
       gl.useProgram(displayProgram);
-      if (config.SHADING) {
+      if (CONFIG.SHADING) {
         gl.uniform2f(displayUniforms.texelSize, 1.0 / gl.drawingBufferWidth, 1.0 / gl.drawingBufferHeight);
       }
       gl.uniform1i(displayUniforms.uTexture, dye!.read.attach(0));
@@ -742,8 +772,8 @@ export const FluidCursor: React.FC = () => {
       pointers.forEach((pointer) => {
         if (pointer.moved) {
           pointer.moved = false;
-          const dx = pointer.deltaX * config.SPLAT_FORCE;
-          const dy = pointer.deltaY * config.SPLAT_FORCE;
+          const dx = pointer.deltaX * CONFIG.SPLAT_FORCE;
+          const dy = pointer.deltaY * CONFIG.SPLAT_FORCE;
           splat(pointer.texcoordX, pointer.texcoordY, dx, dy, pointer.color);
         }
       });
@@ -793,7 +823,7 @@ export const FluidCursor: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-5"
+      className="fixed inset-0 w-full h-full pointer-events-none z-0"
       style={{ background: 'transparent' }}
     />
   );
