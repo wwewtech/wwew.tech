@@ -8,20 +8,20 @@ import { useLanguage } from '@/lib/context';
 const contacts = [
   { 
     name: 'Telegram', 
-    value: '@username',
-    href: 'https://t.me/your_username', 
+    value: '@wwew_tech',
+    href: 'https://t.me/wwew_tech', 
     icon: Send,
   },
   { 
     name: 'Email', 
-    value: 'hello@wwew.tech',
-    href: 'mailto:hello@wwew.tech', 
+    value: 'loiwerde666@gmail.com',
+    href: 'mailto:loiwerde666@gmail.com', 
     icon: Mail,
   },
   { 
     name: 'GitHub', 
-    value: 'github.com/username',
-    href: 'https://github.com/username', 
+    value: 'github.com/wwewtech',
+    href: 'https://github.com/wwewtech', 
     icon: Github,
   },
 ];
@@ -96,7 +96,7 @@ export const ContactHub = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <a
-            href="https://t.me/your_username"
+            href="https://t.me/wwew_tech"
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-[var(--foreground)] text-[var(--background)] font-medium text-lg hover:opacity-90 transition-all select-none"

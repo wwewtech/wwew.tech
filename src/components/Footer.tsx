@@ -29,7 +29,7 @@ export const Footer = () => {
           <p className="text-sm text-[var(--muted)]">
             {language === 'ru' ? 'Создано ' : 'Built by '}
             <a 
-              href="https://t.me/your_username" 
+              href="https://t.me/wwew_tech" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-[var(--foreground)] underline underline-offset-4 hover:opacity-70 transition-opacity"

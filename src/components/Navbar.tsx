@@ -158,7 +158,7 @@ export const Navbar = () => {
 
               {/* CTA Button */}
               <a
-                href="https://t.me/your_username"
+                href="https://t.me/wwew_tech"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-5 py-2 ml-2 rounded-full bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 transition-all duration-200 select-none"
@@ -248,7 +248,7 @@ export const Navbar = () => {
               ))}
               <div className="mt-6">
                 <a
-                  href="https://t.me/your_username"
+                  href="https://t.me/wwew_tech"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 py-4 rounded-full bg-[var(--foreground)] text-[var(--background)] text-sm font-medium"
