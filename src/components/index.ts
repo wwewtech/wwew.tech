@@ -8,3 +8,5 @@ export { Footer } from './Footer';
 export { LenisProvider } from './LenisProvider';
 export { InteractiveBackground } from './InteractiveBackground';
 export { FluidCursor } from './FluidCursor';
+export { InteractiveBlob } from './InteractiveBlob';
+export { ShinyText } from './ShinyText';

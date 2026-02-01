@@ -19,34 +19,36 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.work': 'Работы',
     'nav.contact': 'Контакты',
     'nav.contactBtn': 'Связаться',
+    'nav.cursorOn': 'Эффект вкл',
+    'nav.cursorOff': 'Эффект выкл',
     
     // Hero
     'hero.available': 'Открыт для проектов',
-    'hero.title1': 'Создаю',
-    'hero.title2': 'Цифровые',
-    'hero.title3': 'Продукты',
-    'hero.subtitle': 'Full-stack разработка от идеи до продакшена. Создаю быстрые, масштабируемые приложения с современной архитектурой.',
+    'hero.title1': 'Разработка',
+    'hero.title2': 'Цифровых',
+    'hero.title3': 'Продуктов',
+    'hero.subtitle': 'Full-stack разработка от идеи до продакшена. Создаю быстрые, масштабируемые решения с современной архитектурой.',
     'hero.cta1': 'Начать проект',
     'hero.cta2': 'Смотреть работы',
     
     // Philosophy
     'philosophy.badge': 'Философия',
-    'philosophy.title1': 'Код решает',
-    'philosophy.title2': 'Проблемы',
-    'philosophy.text1': 'Мой путь — не о запоминании синтаксиса, а о создании решений. От фриланса до co-founding Open-Space, я понял, что',
-    'philosophy.highlight1': 'код — это инструмент, а не цель.',
-    'philosophy.text2': 'Сегодня я объединяю мощь',
-    'philosophy.backend': 'Python/FastAPI',
-    'philosophy.text3': 'бэкенда с магией',
-    'philosophy.frontend': 'React/Next.js',
-    'philosophy.text4': 'фронтенда. Создаю продукты, которые работают, масштабируются и имеют значение.',
+    'philosophy.title1': 'Цифровая',
+    'philosophy.title2': 'Эстетика',
+    'philosophy.text1': 'Разработка — это процесс поиска баланса между функциональностью и формой. Хороший продукт должен быть незаметным, интуитивным и надежным,',
+    'philosophy.highlight1': 'решая задачи без лишнего шума.',
+    'philosophy.text2': 'Современные приложения строятся на фундаменте',
+    'philosophy.backend': 'стабильной логики',
+    'philosophy.text3': 'и',
+    'philosophy.frontend': 'визуальной гармонии.',
+    'philosophy.text4': 'Цифровые пространства должны служить людям, а технологии — расширять возможности, не усложняя взаимодействия.',
     'philosophy.stat1': 'Проектов',
     'philosophy.stat2': 'Года',
     'philosophy.stat3': 'Идей',
     
     // Stack
     'stack.badge': 'Технологии',
-    'stack.title': 'Мой арсенал',
+    'stack.title': 'Мой стек',
     'stack.subtitle': 'Инструменты, которые я использую для создания масштабируемых продуктов.',
     
     // Projects
@@ -76,6 +78,8 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.work': 'Work',
     'nav.contact': 'Contact',
     'nav.contactBtn': 'Contact',
+    'nav.cursorOn': 'Effect on',
+    'nav.cursorOff': 'Effect off',
     
     // Hero
     'hero.available': 'Available for Projects',
@@ -88,22 +92,22 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Philosophy
     'philosophy.badge': 'Philosophy',
-    'philosophy.title1': 'Code Solves',
-    'philosophy.title2': 'Problems',
-    'philosophy.text1': "My journey isn't about memorizing syntax—it's about building solutions. From scrappy freelancing to co-founding Open-Space, I've learned that",
-    'philosophy.highlight1': 'code is a tool, not the goal.',
-    'philosophy.text2': 'Today I combine',
-    'philosophy.backend': 'Python/FastAPI',
-    'philosophy.text3': 'backend power with',
-    'philosophy.frontend': 'React/Next.js',
-    'philosophy.text4': 'frontend magic. Building products that work, scale, and matter.',
+    'philosophy.title1': 'Digital',
+    'philosophy.title2': 'Aesthetics',
+    'philosophy.text1': 'Development is the process of finding balance between function and form. A great product should be invisible, intuitive, and reliable,',
+    'philosophy.highlight1': 'solving problems without noise.',
+    'philosophy.text2': 'Modern applications are built on a foundation of',
+    'philosophy.backend': 'stable logic',
+    'philosophy.text3': 'and',
+    'philosophy.frontend': 'visual harmony.',
+    'philosophy.text4': 'Digital spaces should serve people, while technology extends capabilities without complicating interactions.',
     'philosophy.stat1': 'Projects',
     'philosophy.stat2': 'Years',
     'philosophy.stat3': 'Ideas',
     
     // Stack
     'stack.badge': 'Technologies',
-    'stack.title': 'My Arsenal',
+    'stack.title': 'My stack',
     'stack.subtitle': 'Tools I use to build scalable products.',
     
     // Projects
@@ -141,6 +145,16 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// ========== FLUID CURSOR CONTEXT ==========
+interface FluidCursorContextType {
+  isFluidCursorEnabled: boolean;
+  setFluidCursorEnabled: (enabled: boolean) => void;
+  toggleFluidCursor: () => void;
+  mounted: boolean;
+}
+
+const FluidCursorContext = createContext<FluidCursorContextType | undefined>(undefined);
+
 // ========== PROVIDER ==========
 interface AppProviderProps {
   children: ReactNode;
@@ -149,6 +163,7 @@ interface AppProviderProps {
 export const AppProvider = ({ children }: AppProviderProps) => {
   const [language, setLanguage] = useState<Language>('ru');
   const [theme, setTheme] = useState<Theme>('dark');
+  const [isFluidCursorEnabled, setFluidCursorEnabled] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -156,8 +171,10 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     // Load from localStorage
     const savedLang = localStorage.getItem('language') as Language;
     const savedTheme = localStorage.getItem('theme') as Theme;
+    const savedCursor = localStorage.getItem('fluidCursor');
     if (savedLang) setLanguage(savedLang);
     if (savedTheme) setTheme(savedTheme);
+    if (savedCursor !== null) setFluidCursorEnabled(savedCursor === 'true');
   }, []);
 
   useEffect(() => {
@@ -182,10 +199,20 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
+  const toggleFluidCursor = () => {
+    setFluidCursorEnabled(prev => {
+      const newValue = !prev;
+      if (mounted) localStorage.setItem('fluidCursor', String(newValue));
+      return newValue;
+    });
+  };
+
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
       <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
-        {children}
+        <FluidCursorContext.Provider value={{ isFluidCursorEnabled, setFluidCursorEnabled, toggleFluidCursor, mounted }}>
+          {children}
+        </FluidCursorContext.Provider>
       </ThemeContext.Provider>
     </LanguageContext.Provider>
   );
@@ -201,5 +228,11 @@ export const useLanguage = () => {
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) throw new Error('useTheme must be used within AppProvider');
+  return context;
+};
+
+export const useFluidCursor = () => {
+  const context = useContext(FluidCursorContext);
+  if (!context) throw new Error('useFluidCursor must be used within AppProvider');
   return context;
 };

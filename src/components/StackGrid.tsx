@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { motion, useInView } from 'framer-motion';
 
 const stackCards = [
@@ -109,6 +109,15 @@ export const StackGrid = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    card.style.setProperty('--mouse-x', `${x}%`);
+    card.style.setProperty('--mouse-y', `${y}%`);
+  }, []);
+
   return (
     <div ref={ref}>
       {/* Grid with dividers - Vercel style */}
@@ -119,31 +128,42 @@ export const StackGrid = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: idx * 0.05 }}
+            onMouseMove={handleMouseMove}
             className="group feature-card border-l border-[var(--border-subtle)] first:border-l-0 md:[&:nth-child(2)]:border-l md:[&:nth-child(5)]:border-l-0 lg:[&:nth-child(5)]:border-l"
           >
-            {/* Icon */}
-            <div className="text-[var(--muted)] group-hover:text-[var(--foreground)] transition-colors duration-300 mb-6">
-              {card.icon}
+            {/* Icon with pulse effect */}
+            <div className="text-[var(--muted)] group-hover:text-[var(--foreground)] transition-all duration-500 mb-6 relative">
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500">
+                {card.icon}
+              </div>
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                {card.icon}
+              </motion.div>
             </div>
 
             {/* Content */}
-            <h3 className="text-xl font-medium text-[var(--foreground)] mb-2 opacity-90 group-hover:opacity-100 transition-colors">
+            <h3 className="text-xl font-medium text-[var(--foreground)] mb-2 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1">
               {card.title}
             </h3>
             
-            <p className="text-[var(--muted)] text-sm leading-relaxed mb-5">
+            <p className="text-[var(--muted)] text-sm leading-relaxed mb-5 group-hover:text-[var(--foreground)] transition-colors duration-500">
               {card.desc}
             </p>
 
-            {/* Tech Tags */}
+            {/* Tech Tags with stagger animation */}
             <div className="flex flex-wrap gap-2">
               {card.tech.map((tech, techIdx) => (
-                <span
+                <motion.span
                   key={techIdx}
-                  className="text-xs text-[var(--muted-foreground)] group-hover:text-[var(--muted)] transition-colors"
+                  initial={{ opacity: 0.6 }}
+                  whileHover={{ opacity: 1, scale: 1.05 }}
+                  className="text-xs text-[var(--muted-foreground)] group-hover:text-[var(--muted)] transition-colors cursor-default"
                 >
                   {tech}{techIdx < card.tech.length - 1 && ' ·'}
-                </span>
+                </motion.span>
               ))}
             </div>
           </motion.div>

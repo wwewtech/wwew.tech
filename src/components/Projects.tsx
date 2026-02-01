@@ -49,8 +49,8 @@ export const Projects = () => {
         <div className="pill-badge mx-auto mb-8">
           <span>{t('projects.badge')}</span>
         </div>
-        <h2 className="text-5xl md:text-7xl font-medium tracking-tight mb-6">
-          <span className="text-gradient">{t('projects.title')}</span>
+        <h2 className="text-5xl md:text-7xl font-medium tracking-tight mb-6 leading-[1.05]">
+          <span className="text-gradient block pb-1">{t('projects.title')}</span>
         </h2>
         <p className="text-[var(--muted)] text-lg max-w-2xl mx-auto">
           {t('projects.subtitle')}

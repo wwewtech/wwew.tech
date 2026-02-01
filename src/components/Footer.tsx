@@ -13,7 +13,7 @@ export const Footer = () => {
           {/* Logo & Year */}
           <div className="flex items-center gap-3 text-[var(--foreground)]">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L2 19.5h20L12 2z" />
+              <rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)" />
             </svg>
             <span className="font-medium tracking-wide">WWEW.TECH</span>
             <span className="text-[var(--muted-foreground)]">//</span>

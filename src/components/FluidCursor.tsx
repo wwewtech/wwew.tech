@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useCallback } from 'react';
+import { useFluidCursor, useTheme } from '@/lib/context';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // НАСТРОЙКИ FLUID CURSOR - Измените параметры здесь
@@ -27,7 +28,6 @@ const CONFIG = {
   // ─────────────────────────────────────────────────────────────────────────────
   SPLAT_RADIUS: 0.2,            // Размер "кляксы" (0.05-0.5). Выше = больше пятно
   SPLAT_FORCE: 6000,            // Сила разбрызгивания (1000-10000). Выше = мощнее след
-  COLOR_INTENSITY: 0.15,        // Интенсивность цвета (0.05-0.3). Выше = ярче
   
   // ─────────────────────────────────────────────────────────────────────────────
   // ВИЗУАЛЬНЫЕ ЭФФЕКТЫ
@@ -36,15 +36,28 @@ const CONFIG = {
   TRANSPARENT: true,            // Прозрачный фон (для наложения на контент)
   
   // ─────────────────────────────────────────────────────────────────────────────
-  // ПАЛИТРА ЦВЕТОВ (HEX формат)
+  // ПАЛИТРА ЦВЕТОВ ДЛЯ ТЁМНОЙ ТЕМЫ (HEX формат)
   // ─────────────────────────────────────────────────────────────────────────────
-  COLORS: [
+  COLORS_DARK: [
     '#b5ff6d',                  // Зеленый (лайм)
     '#6dffb5',                  // Бирюзовый
     '#6db5ff',                  // Голубой
     '#ff6db5',                  // Розовый
     '#ffb56d',                  // Оранжевый
   ],
+  COLOR_INTENSITY_DARK: 0.15,   // Интенсивность цвета для тёмной темы
+  
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ПАЛИТРА ЦВЕТОВ ДЛЯ СВЕТЛОЙ ТЕМЫ (HEX формат)
+  // ─────────────────────────────────────────────────────────────────────────────
+  COLORS_LIGHT: [
+    '#2d7a00',                  // Тёмно-зелёный
+    '#007a4d',                  // Тёмно-бирюзовый  
+    '#0066cc',                  // Тёмно-синий
+    '#cc3399',                  // Тёмно-розовый
+    '#cc6600',                  // Тёмно-оранжевый
+  ],
+  COLOR_INTENSITY_LIGHT: 0.25,  // Интенсивность цвета для светлой темы (выше для контраста)
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -67,6 +80,12 @@ export const FluidCursor: React.FC = () => {
   const animationRef = useRef<number | null>(null);
   const pointersRef = useRef<Pointer[]>([]);
   const colorIndexRef = useRef(0);
+  const { isFluidCursorEnabled } = useFluidCursor();
+  const { theme } = useTheme();
+  
+  // Выбираем цвета и интенсивность в зависимости от темы
+  const colors = theme === 'light' ? CONFIG.COLORS_LIGHT : CONFIG.COLORS_DARK;
+  const colorIntensity = theme === 'light' ? CONFIG.COLOR_INTENSITY_LIGHT : CONFIG.COLOR_INTENSITY_DARK;
 
   const hexToRgb = useCallback((hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -80,10 +99,10 @@ export const FluidCursor: React.FC = () => {
   }, []);
 
   const generateColor = useCallback(() => {
-    const c = hexToRgb(CONFIG.COLORS[colorIndexRef.current]);
-    colorIndexRef.current = (colorIndexRef.current + 1) % CONFIG.COLORS.length;
-    return { r: c.r * CONFIG.COLOR_INTENSITY, g: c.g * CONFIG.COLOR_INTENSITY, b: c.b * CONFIG.COLOR_INTENSITY };
-  }, [hexToRgb]);
+    const c = hexToRgb(colors[colorIndexRef.current]);
+    colorIndexRef.current = (colorIndexRef.current + 1) % colors.length;
+    return { r: c.r * colorIntensity, g: c.g * colorIntensity, b: c.b * colorIntensity };
+  }, [hexToRgb, colors, colorIntensity]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -818,12 +837,16 @@ export const FluidCursor: React.FC = () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [generateColor]);
+  }, [generateColor, theme]);
 
+  // Скрываем canvas если эффект выключен
   return (
     <canvas
+      key={`fluid-cursor-canvas-${theme}`}
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-0"
+      className={`fixed inset-0 w-full h-full pointer-events-none z-0 transition-opacity duration-300 ${
+        isFluidCursorEnabled ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      }`}
       style={{ background: 'transparent' }}
     />
   );

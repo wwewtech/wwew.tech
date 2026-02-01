@@ -79,7 +79,7 @@ html {
 
 /* Selection */
 ::selection {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.1);
   color: inherit;
 }
 
@@ -93,9 +93,18 @@ button::selection,
 a::selection,
 button *::selection,
 a *::selection {
+  background: rgba(0, 0, 0, 0.1) !important;
+  color: inherit !important;
+}
+
+.dark button::selection,
+.dark a::selection,
+.dark button *::selection,
+.dark a *::selection {
   background: rgba(255, 255, 255, 0.15) !important;
   color: inherit !important;
 }
+
 
 /* Scrollbar - minimal */
 ::-webkit-scrollbar {
@@ -153,11 +162,23 @@ a *::selection {
   background-size: 1px 100%, 100% 1px;
 }
 
+/* Shimmer animation for text */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}
+
 /* Feature card with top border accent */
 .feature-card {
   position: relative;
   padding: 2rem;
   border-top: 1px solid var(--border-subtle);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent;
 }
 
 .feature-card::before {
@@ -168,14 +189,82 @@ a *::selection {
   right: 2rem;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border), transparent);
+  transition: all 0.4s ease;
+}
+
+.feature-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.03), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.feature-card:hover::after {
+  opacity: 1;
+}
+
+.feature-card:hover {
+  background: var(--border-subtle);
+}
+
+.feature-card:hover::before {
+  left: 1rem;
+  right: 1rem;
+  background: linear-gradient(90deg, transparent, var(--muted), transparent);
 }
 
 /* Text gradient - premium */
 .text-gradient {
-  background: linear-gradient(180deg, var(--foreground) 0%, var(--muted) 100%);
+  background-image: linear-gradient(180deg, #0d0d0d 0%, #404040 100%);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.dark .text-gradient {
+  background-image: linear-gradient(180deg, var(--foreground) 0%, var(--muted) 100%);
+}
+
+
+/* Shimmer text - animated silver shine left to right */
+@keyframes shimmer-sweep {
+  0% {
+    background-position: -100% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.text-shimmer {
+  --shimmer-base: #888888;
+  --shimmer-mid: #cccccc;
+  --shimmer-highlight: #ffffff;
+  background: linear-gradient(
+    90deg,
+    var(--shimmer-base) 0%,
+    var(--shimmer-base) 40%,
+    var(--shimmer-mid) 45%,
+    var(--shimmer-highlight) 50%,
+    var(--shimmer-mid) 55%,
+    var(--shimmer-base) 60%,
+    var(--shimmer-base) 100%
+  ) !important;
+  background-size: 200% 100% !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  animation: shimmer-sweep 2.5s linear infinite !important;
+}
+
+.dark .text-shimmer {
+  --shimmer-base: #666666;
+  --shimmer-mid: #aaaaaa;
+  --shimmer-highlight: #ffffff;
 }
 
 /* Section divider line */

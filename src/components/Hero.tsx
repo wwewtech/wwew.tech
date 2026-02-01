@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/lib/context';
+import { ShinyText } from './ShinyText';
 
 export const Hero = () => {
   const { t } = useLanguage();
@@ -53,11 +54,17 @@ export const Hero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="text-6xl md:text-8xl lg:text-9xl font-medium tracking-tight mb-8 leading-[0.9]"
+          className="text-6xl md:text-8xl lg:text-9xl font-medium tracking-tight mb-8 leading-[1.05]"
         >
-          <span className="text-gradient block">{t('hero.title1')}</span>
-          <span className="text-gradient block">{t('hero.title2')}</span>
-          <span className="text-[var(--muted)] block">{t('hero.title3')}</span>
+          <span className="block pb-1">
+            <ShinyText text={t('hero.title1')} />
+          </span>
+          <span className="block pb-1">
+            <ShinyText text={t('hero.title2')} />
+          </span>
+          <span className="block pb-1">
+            <ShinyText text={t('hero.title3')} />
+          </span>
         </motion.h1>
 
         {/* Subtitle */}

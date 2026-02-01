@@ -59,9 +59,9 @@ export const ContactHub = () => {
           <div className="pill-badge mx-auto mb-8">
             <span>{t('contact.badge')}</span>
           </div>
-          <h2 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-6">
-            <span className="text-gradient block">{t('contact.title1')}</span>
-            <span className="text-[var(--muted)] block">{t('contact.title2')}</span>
+          <h2 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-6 leading-[1.05]">
+            <span className="text-gradient block pb-1">{t('contact.title1')}</span>
+            <span className="text-[var(--muted)] block pb-1">{t('contact.title2')}</span>
           </h2>
           <p className="text-[var(--muted)] text-lg max-w-xl mx-auto mb-12">
             {t('contact.subtitle')}

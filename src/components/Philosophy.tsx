@@ -3,6 +3,7 @@
 import React, { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { useLanguage } from '@/lib/context';
+import { InteractiveBlob } from './InteractiveBlob';
 
 export const Philosophy = () => {
   const ref = useRef(null);
@@ -22,38 +23,14 @@ export const Philosophy = () => {
       </svg>
 
       <div className="grid lg:grid-cols-2 gap-20 items-center relative">
-        {/* Left: Visual */}
+        {/* Left: Interactive 3D Visual */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={isInView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.7 }}
           className="relative order-2 lg:order-1"
         >
-          <div className="relative aspect-square max-w-md mx-auto">
-            {/* Abstract 3D-like visual */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative w-64 h-64">
-                {/* Radial lines effect - like v2RayTun turbine */}
-                {[...Array(36)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="absolute left-1/2 top-1/2 w-32 h-[1px] origin-left"
-                    style={{
-                      transform: `rotate(${i * 10}deg)`,
-                      background: `linear-gradient(90deg, var(--muted) 0%, transparent 100%)`,
-                      opacity: 0.1 + (i % 3) * 0.05
-                    }}
-                  />
-                ))}
-                {/* Center circle */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-8 h-8 rounded-full bg-[var(--border-subtle)] border border-[var(--border)]" />
-                </div>
-              </div>
-            </div>
-            {/* Glow */}
-            <div className="absolute inset-0 bg-gradient-radial from-[var(--border-subtle)] to-transparent rounded-full blur-3xl" />
-          </div>
+          <InteractiveBlob />
         </motion.div>
 
         {/* Right: Text Content */}
@@ -67,9 +44,9 @@ export const Philosophy = () => {
             <span>{t('philosophy.badge')}</span>
           </div>
           
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-medium tracking-tight mb-8 leading-[0.95]">
-            <span className="text-gradient block">{t('philosophy.title1')}</span>
-            <span className="text-[var(--muted)] block">{t('philosophy.title2')}</span>
+          <h2 className="text-5xl md:text-6xl lg:text-7xl font-medium tracking-tight mb-8 leading-[1.05]">
+            <span className="text-gradient block pb-1">{t('philosophy.title1')}</span>
+            <span className="text-[var(--muted)] block pb-1">{t('philosophy.title2')}</span>
           </h2>
           
           <div className="space-y-6 text-[var(--muted)] leading-relaxed">

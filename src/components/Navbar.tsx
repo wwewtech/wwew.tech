@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ArrowUpRight, Sun, Moon, Languages } from 'lucide-react';
-import { useLanguage, useTheme } from '@/lib/context';
+import { Menu, X, ArrowUpRight, Sun, Moon, Languages, Droplet, DropletOff } from 'lucide-react';
+import { useLanguage, useTheme, useFluidCursor } from '@/lib/context';
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { isFluidCursorEnabled, toggleFluidCursor } = useFluidCursor();
 
   const navItems = [
     { label: t('nav.about'), href: '#about' },
@@ -49,7 +50,7 @@ export const Navbar = () => {
             {/* Logo */}
             <a href="#" className="flex items-center gap-2.5 group">
               <svg className="w-6 h-6 text-[var(--foreground)]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L2 19.5h20L12 2z" />
+                <rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)" />
               </svg>
               <span className="font-medium text-[var(--foreground)]">
                 wwew.tech
@@ -71,6 +72,38 @@ export const Navbar = () => {
 
             {/* Right Side: Theme, Language, CTA */}
             <div className="hidden md:flex items-center gap-2">
+              {/* Fluid Cursor Toggle */}
+              <button
+                onClick={toggleFluidCursor}
+                className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border-subtle)] transition-all duration-200"
+                aria-label="Toggle fluid cursor"
+                title={isFluidCursorEnabled ? t('nav.cursorOff') : t('nav.cursorOn')}
+              >
+                <AnimatePresence mode="wait">
+                  {isFluidCursorEnabled ? (
+                    <motion.div
+                      key="droplet"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Droplet className="w-4 h-4" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="droplet-off"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <DropletOff className="w-4 h-4" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
+
               {/* Language Toggle */}
               <button
                 onClick={handleLanguageToggle}
@@ -137,6 +170,15 @@ export const Navbar = () => {
 
             {/* Mobile: Theme, Language & Menu Toggle */}
             <div className="md:hidden flex items-center gap-1">
+              {/* Fluid Cursor Toggle Mobile */}
+              <button
+                onClick={toggleFluidCursor}
+                className="p-2 rounded-full text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border-subtle)] transition-colors"
+                aria-label="Toggle fluid cursor"
+              >
+                {isFluidCursorEnabled ? <Droplet className="w-5 h-5" /> : <DropletOff className="w-5 h-5" />}
+              </button>
+
               {/* Language Toggle Mobile */}
               <button
                 onClick={handleLanguageToggle}
