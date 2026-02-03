@@ -201,6 +201,7 @@ export const Navbar = () => {
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-full hover:bg-[var(--border-subtle)] transition-colors"
+                aria-label={isMobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
               >
                 {isMobileMenuOpen ? (
                   <X className="w-5 h-5 text-[var(--muted)]" />
