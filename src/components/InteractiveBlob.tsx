@@ -17,11 +17,20 @@ interface ProjectedPoint {
   size: number;
 }
 
+// Определение мобильного устройства
+const isMobileDevice = () => {
+  if (typeof window === 'undefined') return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+    || window.matchMedia('(max-width: 768px)').matches
+    || 'ontouchstart' in window;
+};
+
 export const InteractiveBlob = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { theme } = useTheme();
   
   const rotationRef = useRef({ x: 0.3, y: 0.5 });
@@ -32,11 +41,16 @@ export const InteractiveBlob = () => {
   const morphRef = useRef(0.3);
   const isVisibleRef = useRef(true);
   const animationIdRef = useRef<number>(0);
+
+  useEffect(() => {
+    setIsMobile(isMobileDevice());
+  }, []);
   
-  // Generate optimized points - much fewer
+  // Generate optimized points - меньше на мобильных
   const generatePoints = useCallback(() => {
     const points: Point3D[] = [];
-    const detail = 10;
+    // На мобильных используем меньше точек
+    const detail = isMobile ? 6 : 10;
     
     for (let i = 0; i <= detail; i++) {
       for (let j = 0; j <= detail; j++) {
@@ -51,8 +65,9 @@ export const InteractiveBlob = () => {
       }
     }
     
-    // Add spiral
-    for (let t = 0; t < Math.PI * 4; t += 0.4) {
+    // Add spiral - меньше шагов на мобильных
+    const spiralStep = isMobile ? 0.6 : 0.4;
+    for (let t = 0; t < Math.PI * 4; t += spiralStep) {
       const r = 0.3 + t * 0.1;
       points.push({
         x: Math.cos(t) * r * 0.4,
@@ -62,7 +77,7 @@ export const InteractiveBlob = () => {
     }
     
     return points;
-  }, []);
+  }, [isMobile]);
 
   // Simple morph
   const morphPoint = useCallback((point: Point3D, time: number, morph: number): Point3D => {
@@ -93,7 +108,7 @@ export const InteractiveBlob = () => {
 
   useEffect(() => {
     pointsRef.current = generatePoints();
-  }, [generatePoints]);
+  }, [generatePoints, isMobile]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -117,7 +132,8 @@ export const InteractiveBlob = () => {
 
     const resize = () => {
       const rect = container.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // Ограничиваем DPR для мобильных
+      const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2);
       width = rect.width;
       height = rect.height;
       canvas.width = width * dpr;

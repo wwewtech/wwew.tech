@@ -301,3 +301,36 @@ a *::selection {
   display: block;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* Slow bounce animation for scroll indicator */
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
+/* Reduced motion - отключаем анимации для пользователей с prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-shimmer,
+  .animate-ping,
+  .animate-bounce-slow,
+  .text-shimmer {
+    animation: none !important;
+  }
+}

@@ -75,7 +75,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Navbar
     'nav.about': 'About',
     'nav.stack': 'Stack',
-    'nav.work': 'Work',
+    'nav.work': 'Works',
     'nav.contact': 'Contact',
     'nav.contactBtn': 'Contact',
     'nav.cursorOn': 'Effect on',
@@ -151,9 +151,25 @@ interface FluidCursorContextType {
   setFluidCursorEnabled: (enabled: boolean) => void;
   toggleFluidCursor: () => void;
   mounted: boolean;
+  isMobile: boolean;
+  prefersReducedMotion: boolean;
 }
 
 const FluidCursorContext = createContext<FluidCursorContextType | undefined>(undefined);
+
+// Определение мобильного устройства
+const isMobileDevice = () => {
+  if (typeof window === 'undefined') return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+    || window.matchMedia('(max-width: 768px)').matches
+    || 'ontouchstart' in window;
+};
+
+// Проверка prefers-reduced-motion
+const checkReducedMotion = () => {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+};
 
 // ========== PROVIDER ==========
 interface AppProviderProps {
@@ -165,16 +181,41 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const [theme, setTheme] = useState<Theme>('dark');
   const [isFluidCursorEnabled, setFluidCursorEnabled] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    
+    // Определяем мобильное устройство и reduced motion
+    const mobile = isMobileDevice();
+    const reducedMotion = checkReducedMotion();
+    setIsMobile(mobile);
+    setPrefersReducedMotion(reducedMotion);
+    
     // Load from localStorage
     const savedLang = localStorage.getItem('language') as Language;
     const savedTheme = localStorage.getItem('theme') as Theme;
     const savedCursor = localStorage.getItem('fluidCursor');
     if (savedLang) setLanguage(savedLang);
     if (savedTheme) setTheme(savedTheme);
-    if (savedCursor !== null) setFluidCursorEnabled(savedCursor === 'true');
+    
+    // На мобильных и при reduced motion отключаем по умолчанию
+    if (mobile || reducedMotion) {
+      setFluidCursorEnabled(false);
+    } else if (savedCursor !== null) {
+      setFluidCursorEnabled(savedCursor === 'true');
+    }
+    
+    // Слушаем изменения prefers-reduced-motion
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+      if (e.matches) setFluidCursorEnabled(false);
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    
+    return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
   useEffect(() => {
@@ -210,7 +251,14 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
       <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
-        <FluidCursorContext.Provider value={{ isFluidCursorEnabled, setFluidCursorEnabled, toggleFluidCursor, mounted }}>
+        <FluidCursorContext.Provider value={{ 
+          isFluidCursorEnabled, 
+          setFluidCursorEnabled, 
+          toggleFluidCursor, 
+          mounted,
+          isMobile,
+          prefersReducedMotion 
+        }}>
           {children}
         </FluidCursorContext.Provider>
       </ThemeContext.Provider>

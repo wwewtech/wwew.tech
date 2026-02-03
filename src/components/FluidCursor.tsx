@@ -75,6 +75,14 @@ interface Pointer {
   color: { r: number; g: number; b: number };
 }
 
+// Определение мобильного устройства
+const isMobileDevice = () => {
+  if (typeof window === 'undefined') return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+    || window.matchMedia('(max-width: 768px)').matches
+    || 'ontouchstart' in window;
+};
+
 export const FluidCursor: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
@@ -82,6 +90,12 @@ export const FluidCursor: React.FC = () => {
   const colorIndexRef = useRef(0);
   const { isFluidCursorEnabled } = useFluidCursor();
   const { theme } = useTheme();
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  // Проверяем мобильное устройство после монтирования
+  useEffect(() => {
+    setIsMobile(isMobileDevice());
+  }, []);
   
   // Выбираем цвета и интенсивность в зависимости от темы
   const colors = theme === 'light' ? CONFIG.COLORS_LIGHT : CONFIG.COLORS_DARK;
@@ -106,7 +120,8 @@ export const FluidCursor: React.FC = () => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    // Полностью отключаем на мобильных устройствах
+    if (!canvas || isMobile) return;
 
     // Initialize pointer
     pointersRef.current = [{
@@ -815,11 +830,11 @@ export const FluidCursor: React.FC = () => {
       pointer.color = generateColor();
     };
 
-    // Touch handlers
+    // Touch handlers - БЕЗ preventDefault чтобы не блокировать скролл!
     const handleTouchMove = (e: TouchEvent) => {
       const touches = e.targetTouches;
       if (!touches.length) return;
-      e.preventDefault();
+      // НЕ вызываем preventDefault() - это блокировало скролл!
       const pointer = pointersRef.current[0];
       const posX = scaleByPixelRatio(touches[0].clientX);
       const posY = scaleByPixelRatio(touches[0].clientY);
@@ -828,7 +843,8 @@ export const FluidCursor: React.FC = () => {
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    // passive: true позволяет браузеру оптимизировать скролл
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     return () => {
       if (animationRef.current) {
@@ -837,7 +853,12 @@ export const FluidCursor: React.FC = () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [generateColor, theme]);
+  }, [generateColor, theme, isMobile]);
+
+  // Не рендерим на мобильных устройствах вообще
+  if (isMobile) {
+    return null;
+  }
 
   // Скрываем canvas если эффект выключен
   return (

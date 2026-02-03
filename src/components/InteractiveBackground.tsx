@@ -12,10 +12,19 @@ const particlePositions = [
   { x: 25, y: 80 },
 ];
 
+// Определение мобильного устройства
+const isMobileDevice = () => {
+  if (typeof window === 'undefined') return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+    || window.matchMedia('(max-width: 768px)').matches
+    || 'ontouchstart' in window;
+};
+
 export const InteractiveBackground = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -26,9 +35,13 @@ export const InteractiveBackground = () => {
 
   useEffect(() => {
     setIsMounted(true);
+    setIsMobile(isMobileDevice());
   }, []);
 
   useEffect(() => {
+    // На мобильных не следим за мышью
+    if (isMobile) return;
+    
     const container = containerRef.current;
     if (!container) return;
 
@@ -41,7 +54,7 @@ export const InteractiveBackground = () => {
     const handleMouseEnter = () => setIsHovering(true);
     const handleMouseLeave = () => setIsHovering(false);
 
-    container.addEventListener('mousemove', handleMouseMove);
+    container.addEventListener('mousemove', handleMouseMove, { passive: true });
     container.addEventListener('mouseenter', handleMouseEnter);
     container.addEventListener('mouseleave', handleMouseLeave);
 
@@ -50,7 +63,12 @@ export const InteractiveBackground = () => {
       container.removeEventListener('mouseenter', handleMouseEnter);
       container.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [mouseX, mouseY]);
+  }, [mouseX, mouseY, isMobile]);
+
+  // На мобильных устройствах возвращаем пустой контейнер
+  if (isMobile) {
+    return <div ref={containerRef} className="absolute inset-0 overflow-hidden pointer-events-none" />;
+  }
 
   return (
     <div ref={containerRef} className="absolute inset-0 overflow-hidden pointer-events-auto">
