@@ -34,7 +34,7 @@ export default function Home() {
         {/* Секция 3: Стек технологий (Bento Grid) */}
         <section id="stack" className="px-6 max-w-7xl mx-auto w-full">
           <div className="mb-12">
-            <span className="text-sm font-medium tracking-wider uppercase mb-4 block text-transparent bg-clip-text bg-gradient-to-r from-[var(--foreground)] via-[var(--muted)] to-[var(--foreground)] animate-shimmer bg-[length:200%_100%]">
+            <span className="text-sm font-medium tracking-wider uppercase mb-4 block text-[var(--muted)]">
               {t('stack.badge')}
             </span>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-[var(--foreground)]">

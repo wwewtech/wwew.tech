@@ -3,13 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/lib/context";
 import { LenisProvider } from "@/components/LenisProvider";
-import dynamic from 'next/dynamic';
-
-// Ленивая загрузка тяжёлого WebGL компонента
-const FluidCursor = dynamic(
-  () => import('@/components/FluidCursor').then(mod => mod.FluidCursor),
-  { ssr: false }
-);
+import { FluidCursorWrapper } from "@/components/FluidCursorWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -146,7 +140,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AppProvider>
-          <FluidCursor />
+          {/* FluidCursor загружается отложенно для лучшей производительности */}
+          <FluidCursorWrapper />
           <LenisProvider>
             {children}
           </LenisProvider>

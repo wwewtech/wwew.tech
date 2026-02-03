@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ArrowUpRight, Sun, Moon, Languages, Droplet, DropletOff } from 'lucide-react';
 import { useLanguage, useTheme, useFluidCursor } from '@/lib/context';
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { isFluidCursorEnabled, toggleFluidCursor } = useFluidCursor();
@@ -20,8 +20,11 @@ export const Navbar = () => {
   ];
 
   useEffect(() => {
+    // Анимация появления
+    setIsVisible(true);
+    
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -32,10 +35,12 @@ export const Navbar = () => {
   return (
     <>
       {/* Navbar - Premium minimal */}
-      <motion.div
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      <div
+        style={{
+          transform: isVisible ? 'translateY(0)' : 'translateY(-100px)',
+          opacity: isVisible ? 1 : 0,
+          transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
         className="fixed top-0 left-0 right-0 z-50"
       >
         <nav
@@ -79,29 +84,11 @@ export const Navbar = () => {
                 aria-label="Toggle fluid cursor"
                 title={isFluidCursorEnabled ? t('nav.cursorOff') : t('nav.cursorOn')}
               >
-                <AnimatePresence mode="wait">
-                  {isFluidCursorEnabled ? (
-                    <motion.div
-                      key="droplet"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Droplet className="w-4 h-4" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="droplet-off"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <DropletOff className="w-4 h-4" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {isFluidCursorEnabled ? (
+                  <Droplet className="w-4 h-4" />
+                ) : (
+                  <DropletOff className="w-4 h-4" />
+                )}
               </button>
 
               {/* Language Toggle */}
@@ -111,18 +98,9 @@ export const Navbar = () => {
                 aria-label="Toggle language"
               >
                 <Languages className="w-4 h-4" />
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={language}
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -10, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="uppercase font-medium"
-                  >
-                    {language}
-                  </motion.span>
-                </AnimatePresence>
+                <span className="uppercase font-medium">
+                  {language}
+                </span>
               </button>
 
               {/* Theme Toggle */}
@@ -131,29 +109,11 @@ export const Navbar = () => {
                 className="p-2 rounded-full text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border-subtle)] transition-all duration-200 theme-toggle"
                 aria-label="Toggle theme"
               >
-                <AnimatePresence mode="wait">
-                  {theme === 'dark' ? (
-                    <motion.div
-                      key="sun"
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Sun className="w-5 h-5" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="moon"
-                      initial={{ rotate: 90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: -90, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Moon className="w-5 h-5" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {theme === 'dark' ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
               </button>
 
               {/* CTA Button */}
@@ -212,56 +172,45 @@ export const Navbar = () => {
             </div>
           </div>
         </nav>
-      </motion.div>
+      </div>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 md:hidden"
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div
+            className="absolute inset-0 bg-[var(--background)]/98"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <div
+            className="absolute top-16 left-0 right-0 p-6 border-b border-[var(--border)]"
+            style={{
+              animation: 'fadeIn 0.2s ease',
+            }}
           >
-            <div
-              className="absolute inset-0 bg-[var(--background)]/98"
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="absolute top-16 left-0 right-0 p-6 border-b border-[var(--border)]"
-            >
-              {navItems.map((item, idx) => (
-                <motion.a
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="block px-4 py-4 text-[var(--muted)] hover:text-[var(--foreground)] border-b border-[var(--border-subtle)] transition-colors"
-                >
-                  {item.label}
-                </motion.a>
-              ))}
-              <div className="mt-6">
-                <a
-                  href="https://t.me/wwew_tech"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 py-4 rounded-full bg-[var(--foreground)] text-[var(--background)] text-sm font-medium"
-                >
-                  {t('nav.contactBtn')}
-                  <ArrowUpRight className="w-4 h-4" />
-                </a>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {navItems.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block px-4 py-4 text-[var(--muted)] hover:text-[var(--foreground)] border-b border-[var(--border-subtle)] transition-colors"
+              >
+                {item.label}
+              </a>
+            ))}
+            <div className="mt-6">
+              <a
+                href="https://t.me/wwew_tech"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 py-4 rounded-full bg-[var(--foreground)] text-[var(--background)] text-sm font-medium"
+              >
+                {t('nav.contactBtn')}
+                <ArrowUpRight className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

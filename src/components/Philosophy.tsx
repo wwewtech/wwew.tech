@@ -1,14 +1,45 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import React, { useRef, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useLanguage } from '@/lib/context';
-import { InteractiveBlob } from './InteractiveBlob';
+
+// Lazy load InteractiveBlob для улучшения TBT
+const InteractiveBlob = dynamic(
+  () => import('./InteractiveBlob').then(mod => mod.InteractiveBlob),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="aspect-square max-w-md mx-auto flex items-center justify-center">
+        <div className="w-48 h-48 rounded-full border border-[var(--border)] opacity-20" />
+      </div>
+    )
+  }
+);
 
 export const Philosophy = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const ref = useRef<HTMLElement>(null);
+  const [isInView, setIsInView] = useState(false);
   const { t } = useLanguage();
+
+  // IntersectionObserver вместо framer-motion
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1, rootMargin: '-100px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section ref={ref} className="relative">
@@ -24,20 +55,24 @@ export const Philosophy = () => {
 
       <div className="grid lg:grid-cols-2 gap-20 items-center relative">
         {/* Left: Interactive 3D Visual */}
-        <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.7 }}
+        <div
+          style={{
+            opacity: isInView ? 1 : 0,
+            transform: isInView ? 'translateX(0)' : 'translateX(-30px)',
+            transition: 'opacity 0.7s ease, transform 0.7s ease',
+          }}
           className="relative order-2 lg:order-1"
         >
           <InteractiveBlob />
-        </motion.div>
+        </div>
 
         {/* Right: Text Content */}
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.7 }}
+        <div
+          style={{
+            opacity: isInView ? 1 : 0,
+            transform: isInView ? 'translateX(0)' : 'translateX(30px)',
+            transition: 'opacity 0.7s ease, transform 0.7s ease',
+          }}
           className="order-1 lg:order-2"
         >
           <div className="pill-badge mb-8">
@@ -67,18 +102,20 @@ export const Philosophy = () => {
               { value: '3+', label: t('philosophy.stat2') },
               { value: '∞', label: t('philosophy.stat3') },
             ].map((stat, idx) => (
-              <motion.div
+              <div
                 key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.3 + idx * 0.1 }}
+                style={{
+                  opacity: isInView ? 1 : 0,
+                  transform: isInView ? 'translateY(0)' : 'translateY(20px)',
+                  transition: `opacity 0.5s ease ${0.3 + idx * 0.1}s, transform 0.5s ease ${0.3 + idx * 0.1}s`,
+                }}
               >
                 <p className="text-4xl font-medium text-[var(--foreground)] tracking-tight">{stat.value}</p>
                 <p className="text-sm text-[var(--muted)] mt-1">{stat.label}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

@@ -4,6 +4,12 @@ const nextConfig: NextConfig = {
   // Включить сжатие для production
   compress: true,
   
+  // Экспериментальные оптимизации
+  experimental: {
+    // Оптимизация пакетов
+    optimizePackageImports: ['framer-motion', 'lucide-react', 'lenis'],
+  },
+  
   // Оптимизация изображений
   images: {
     formats: ["image/avif", "image/webp"],
@@ -34,6 +40,16 @@ const nextConfig: NextConfig = {
       {
         // Кэширование статических ассетов
         source: "/(.*)\\.(ico|png|jpg|jpeg|gif|svg|webp|avif|woff|woff2)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        // Кэширование JS/CSS
+        source: "/_next/static/(.*)",
         headers: [
           {
             key: "Cache-Control",

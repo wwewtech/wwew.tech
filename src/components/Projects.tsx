@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import React, { useRef, useEffect, useState } from 'react';
 import { ArrowUpRight, Github } from 'lucide-react';
 import { useLanguage } from '@/lib/context';
 
@@ -33,17 +32,37 @@ const projects = [
 ];
 
 export const Projects = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const ref = useRef<HTMLElement>(null);
+  const [isInView, setIsInView] = useState(false);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1, rootMargin: '-100px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section ref={ref} className="relative">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.6 }}
+      <div
+        style={{
+          opacity: isInView ? 1 : 0,
+          transform: isInView ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'opacity 0.6s ease, transform 0.6s ease',
+        }}
         className="text-center mb-16"
       >
         <div className="pill-badge mx-auto mb-8">
@@ -55,16 +74,18 @@ export const Projects = () => {
         <p className="text-[var(--muted)] text-lg max-w-2xl mx-auto">
           {t('projects.subtitle')}
         </p>
-      </motion.div>
+      </div>
 
       {/* Projects List - Clean rows like Vercel */}
       <div className="border-t border-[var(--border)]">
         {projects.map((project, idx) => (
-          <motion.article
+          <article
             key={idx}
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: idx * 0.1 }}
+            style={{
+              opacity: isInView ? 1 : 0,
+              transform: isInView ? 'translateY(0)' : 'translateY(20px)',
+              transition: `opacity 0.5s ease ${idx * 0.1}s, transform 0.5s ease ${idx * 0.1}s`,
+            }}
             className="group border-b border-[var(--border)] py-10 md:py-14"
           >
             <div className="grid md:grid-cols-12 gap-8 items-center">
@@ -123,15 +144,16 @@ export const Projects = () => {
                 </a>
               </div>
             </div>
-          </motion.article>
+          </article>
         ))}
       </div>
 
       {/* View All */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: 0.5 }}
+      <div
+        style={{
+          opacity: isInView ? 1 : 0,
+          transition: 'opacity 0.5s ease 0.5s',
+        }}
         className="mt-12 text-center"
       >
         <a
@@ -141,7 +163,7 @@ export const Projects = () => {
           View all projects
           <ArrowUpRight className="w-4 h-4" />
         </a>
-      </motion.div>
+      </div>
     </section>
   );
 };

@@ -31,6 +31,7 @@ export const InteractiveBlob = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const { theme } = useTheme();
   
   const rotationRef = useRef({ x: 0.3, y: 0.5 });
@@ -44,6 +45,9 @@ export const InteractiveBlob = () => {
 
   useEffect(() => {
     setIsMobile(isMobileDevice());
+    // Задержка для улучшения TBT
+    const timer = setTimeout(() => setIsReady(true), 500);
+    return () => clearTimeout(timer);
   }, []);
   
   // Generate optimized points - меньше на мобильных
@@ -113,7 +117,8 @@ export const InteractiveBlob = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
-    if (!canvas || !container) return;
+    // Не запускаем пока не готов
+    if (!canvas || !container || !isReady) return;
 
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
@@ -232,7 +237,7 @@ export const InteractiveBlob = () => {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animationIdRef.current);
     };
-  }, [isDragging, isHovered, morphPoint, rotatePoint, project, theme]);
+  }, [isDragging, isHovered, morphPoint, rotatePoint, project, theme, isReady]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     setIsDragging(true);

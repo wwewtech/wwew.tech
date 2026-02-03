@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import React, { useRef, useEffect, useState } from 'react';
 import { Send, Mail, Github, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/lib/context';
 
@@ -27,9 +26,27 @@ const contacts = [
 ];
 
 export const ContactHub = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const ref = useRef<HTMLElement>(null);
+  const [isInView, setIsInView] = useState(false);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1, rootMargin: '-100px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section ref={ref} className="relative">
@@ -51,10 +68,12 @@ export const ContactHub = () => {
 
       <div className="relative max-w-4xl mx-auto text-center">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+        <div
+          style={{
+            opacity: isInView ? 1 : 0,
+            transform: isInView ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'opacity 0.6s ease, transform 0.6s ease',
+          }}
         >
           <div className="pill-badge mx-auto mb-8">
             <span>{t('contact.badge')}</span>
@@ -66,16 +85,18 @@ export const ContactHub = () => {
           <p className="text-[var(--muted)] text-lg max-w-xl mx-auto mb-12">
             {t('contact.subtitle')}
           </p>
-        </motion.div>
+        </div>
 
         {/* Contact Links - horizontal */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.2 }}
+        <div
+          style={{
+            opacity: isInView ? 1 : 0,
+            transform: isInView ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s',
+          }}
           className="flex flex-wrap justify-center gap-6 mb-14"
         >
-          {contacts.map((contact, idx) => (
+          {contacts.map((contact) => (
             <a
               key={contact.name}
               href={contact.href}
@@ -87,13 +108,14 @@ export const ContactHub = () => {
               <span className="text-[var(--muted)] group-hover:text-[var(--foreground)] transition-colors">{contact.value}</span>
             </a>
           ))}
-        </motion.div>
+        </div>
 
         {/* CTA Button */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.5, delay: 0.4 }}
+        <div
+          style={{
+            opacity: isInView ? 1 : 0,
+            transition: 'opacity 0.5s ease 0.4s',
+          }}
         >
           <a
             href="https://t.me/wwew_tech"
@@ -104,7 +126,7 @@ export const ContactHub = () => {
             {t('contact.telegram')}
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </a>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

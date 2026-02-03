@@ -6,11 +6,14 @@ import { useTheme } from '@/lib/context';
 interface ShinyTextProps {
   text: string;
   className?: string;
+  /** Отключить анимацию shimmer для улучшения производительности */
+  disableAnimation?: boolean;
 }
 
 export const ShinyText: React.FC<ShinyTextProps> = ({
   text,
   className = '',
+  disableAnimation = false,
 }) => {
   const id = useId();
   const { theme } = useTheme();
@@ -18,10 +21,31 @@ export const ShinyText: React.FC<ShinyTextProps> = ({
   const animationId = `shimmer${id.replace(/:/g, '')}`;
 
   useEffect(() => {
-    setMounted(true);
+    // Задержка анимации для улучшения FCP/TBT
+    const timer = setTimeout(() => setMounted(true), 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   const isDark = theme === 'dark';
+
+  // Статичный градиент без анимации - лучшая производительность
+  const staticStyle = {
+    background: `linear-gradient(180deg, ${isDark ? '#ffffff' : '#000000'} 0%, ${isDark ? '#b0b0b0' : '#4a4a4a'} 50%, ${isDark ? '#808080' : '#888888'} 100%)`,
+    WebkitBackgroundClip: 'text',
+    backgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    color: 'transparent',
+    display: 'inline-block',
+  } as const;
+
+  // Не анимируем до монтирования или если отключено
+  if (!mounted || disableAnimation) {
+    return (
+      <span className={className} style={staticStyle}>
+        {text}
+      </span>
+    );
+  }
 
   // GPU-accelerated анимация через transform вместо background-position
   const keyframes = `
@@ -35,38 +59,12 @@ export const ShinyText: React.FC<ShinyTextProps> = ({
     }
   `;
 
-  // Не анимируем до монтирования для лучшего FCP
-  if (!mounted) {
-    return (
-      <span 
-        className={className}
-        style={{
-          background: `linear-gradient(180deg, ${isDark ? '#ffffff' : '#000000'} 0%, ${isDark ? '#b0b0b0' : '#4a4a4a'} 50%, ${isDark ? '#808080' : '#888888'} 100%)`,
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          color: 'transparent',
-          display: 'inline-block',
-        }}
-      >
-        {text}
-      </span>
-    );
-  }
-
   return (
     <>
       <style>{keyframes}</style>
       <span 
         className={`${className} relative overflow-hidden`}
-        style={{
-          background: `linear-gradient(180deg, ${isDark ? '#ffffff' : '#000000'} 0%, ${isDark ? '#b0b0b0' : '#4a4a4a'} 50%, ${isDark ? '#808080' : '#888888'} 100%)`,
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          color: 'transparent',
-          display: 'inline-block',
-        }}
+        style={staticStyle}
       >
         {text}
         {/* Блик через pseudo-element с transform (GPU-accelerated) */}
@@ -75,8 +73,8 @@ export const ShinyText: React.FC<ShinyTextProps> = ({
           style={{
             position: 'absolute',
             inset: 0,
-            background: `linear-gradient(90deg, transparent 0%, transparent 25%, ${isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.15)'} 50%, transparent 75%, transparent 100%)`,
-            animation: `${animationId} 4s ease-in-out infinite`,
+            background: `linear-gradient(90deg, transparent 0%, transparent 25%, ${isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.1)'} 50%, transparent 75%, transparent 100%)`,
+            animation: `${animationId} 5s ease-in-out infinite`,
             willChange: 'transform',
             pointerEvents: 'none',
           }}

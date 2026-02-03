@@ -179,7 +179,7 @@ interface AppProviderProps {
 export const AppProvider = ({ children }: AppProviderProps) => {
   const [language, setLanguage] = useState<Language>('ru');
   const [theme, setTheme] = useState<Theme>('dark');
-  const [isFluidCursorEnabled, setFluidCursorEnabled] = useState(true);
+  const [isFluidCursorEnabled, setFluidCursorEnabled] = useState(false); // Выключен по умолчанию
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -200,12 +200,14 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     if (savedLang) setLanguage(savedLang);
     if (savedTheme) setTheme(savedTheme);
     
-    // На мобильных и при reduced motion отключаем по умолчанию
+    // На мобильных и при reduced motion всегда отключён
     if (mobile || reducedMotion) {
       setFluidCursorEnabled(false);
     } else if (savedCursor !== null) {
+      // Загружаем сохранённое значение только если оно есть
       setFluidCursorEnabled(savedCursor === 'true');
     }
+    // Если нет сохранённого значения - оставляем выключенным (дефолт)
     
     // Слушаем изменения prefers-reduced-motion
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');

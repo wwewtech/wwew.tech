@@ -11,17 +11,17 @@ const CONFIG = {
   // ─────────────────────────────────────────────────────────────────────────────
   // СИМУЛЯЦИЯ ЖИДКОСТИ
   // ─────────────────────────────────────────────────────────────────────────────
-  SIM_RESOLUTION: 128,          // Разрешение симуляции (64-256). Выше = детальнее, но тяжелее
-  DYE_RESOLUTION: 1024,         // Разрешение цвета (512-2048). Выше = четче цвета
+  SIM_RESOLUTION: 64,           // Уменьшено для производительности (было 128)
+  DYE_RESOLUTION: 512,          // Уменьшено для производительности (было 1024)
   
   // ─────────────────────────────────────────────────────────────────────────────
   // ПОВЕДЕНИЕ ЖИДКОСТИ
   // ─────────────────────────────────────────────────────────────────────────────
-  DENSITY_DISSIPATION: 3.5,     // Скорость затухания цвета (0.5-5). Выше = быстрее исчезает
-  VELOCITY_DISSIPATION: 4.5,    // Скорость затухания движения (0.5-5). Выше = быстрее останавливается
+  DENSITY_DISSIPATION: 4,       // Увеличено для быстрого затухания
+  VELOCITY_DISSIPATION: 5,      // Увеличено для быстрого затухания
   PRESSURE: 0.05,               // Давление жидкости (0.01-0.5)
-  PRESSURE_ITERATIONS: 20,      // Итерации давления (10-50). Больше = точнее, но тяжелее
-  CURL: 3,                      // Завихрения/турбулентность (0-10). Выше = больше вихрей
+  PRESSURE_ITERATIONS: 10,      // Уменьшено для производительности (было 20)
+  CURL: 2,                      // Уменьшено для производительности (было 3)
   
   // ─────────────────────────────────────────────────────────────────────────────
   // ВНЕШНИЙ ВИД КУРСОРА
@@ -91,11 +91,24 @@ export const FluidCursor: React.FC = () => {
   const { isFluidCursorEnabled } = useFluidCursor();
   const { theme } = useTheme();
   const [isMobile, setIsMobile] = React.useState(false);
+  const [isReady, setIsReady] = React.useState(false);
 
   // Проверяем мобильное устройство после монтирования
   useEffect(() => {
     setIsMobile(isMobileDevice());
   }, []);
+
+  // Небольшая задержка для плавного появления
+  useEffect(() => {
+    if (isMobile) return;
+    
+    // Небольшая задержка для плавного появления после загрузки компонента
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [isMobile]);
   
   // Выбираем цвета и интенсивность в зависимости от темы
   const colors = theme === 'light' ? CONFIG.COLORS_LIGHT : CONFIG.COLORS_DARK;
@@ -120,8 +133,8 @@ export const FluidCursor: React.FC = () => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    // Полностью отключаем на мобильных устройствах
-    if (!canvas || isMobile) return;
+    // Полностью отключаем на мобильных устройствах или пока не готов
+    if (!canvas || isMobile || !isReady) return;
 
     // Initialize pointer
     pointersRef.current = [{
@@ -853,10 +866,15 @@ export const FluidCursor: React.FC = () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [generateColor, theme, isMobile]);
+  }, [generateColor, theme, isMobile, isReady]);
 
   // Не рендерим на мобильных устройствах вообще
   if (isMobile) {
+    return null;
+  }
+
+  // Не рендерим пока не готов (улучшает TBT)
+  if (!isReady) {
     return null;
   }
 
@@ -865,7 +883,7 @@ export const FluidCursor: React.FC = () => {
     <canvas
       key={`fluid-cursor-canvas-${theme}`}
       ref={canvasRef}
-      className={`fixed inset-0 w-full h-full pointer-events-none z-0 transition-opacity duration-300 ${
+      className={`fixed inset-0 w-full h-full pointer-events-none z-0 transition-opacity duration-500 ${
         isFluidCursorEnabled ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
       style={{ background: 'transparent' }}

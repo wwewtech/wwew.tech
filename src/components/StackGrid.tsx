@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useRef, useCallback } from 'react';
-import { motion, useInView } from 'framer-motion';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 
 const stackCards = [
   {
@@ -106,8 +105,27 @@ const stackCards = [
 ];
 
 export const StackGrid = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const ref = useRef<HTMLDivElement>(null);
+  const [isInView, setIsInView] = useState(false);
+
+  // Простой IntersectionObserver вместо framer-motion useInView
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect(); // once: true
+        }
+      },
+      { threshold: 0.1, rootMargin: '-100px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const card = e.currentTarget;
@@ -123,11 +141,13 @@ export const StackGrid = () => {
       {/* Grid with dividers - Vercel style */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         {stackCards.map((card, idx) => (
-          <motion.div
+          <div
             key={idx}
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: idx * 0.05 }}
+            style={{
+              opacity: isInView ? 1 : 0,
+              transform: isInView ? 'translateY(0)' : 'translateY(20px)',
+              transition: `opacity 0.5s ease ${idx * 0.05}s, transform 0.5s ease ${idx * 0.05}s`,
+            }}
             onMouseMove={handleMouseMove}
             className="group feature-card border-l border-[var(--border-subtle)] first:border-l-0 md:[&:nth-child(2)]:border-l md:[&:nth-child(5)]:border-l-0 lg:[&:nth-child(5)]:border-l"
           >
@@ -136,12 +156,9 @@ export const StackGrid = () => {
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500">
                 {card.icon}
               </div>
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
+              <div className="transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[5deg]">
                 {card.icon}
-              </motion.div>
+              </div>
             </div>
 
             {/* Content */}
@@ -153,20 +170,18 @@ export const StackGrid = () => {
               {card.desc}
             </p>
 
-            {/* Tech Tags with stagger animation */}
+            {/* Tech Tags - без анимации для производительности */}
             <div className="flex flex-wrap gap-2">
               {card.tech.map((tech, techIdx) => (
-                <motion.span
+                <span
                   key={techIdx}
-                  initial={{ opacity: 0.6 }}
-                  whileHover={{ opacity: 1, scale: 1.05 }}
-                  className="text-xs text-[var(--muted-foreground)] group-hover:text-[var(--muted)] transition-colors cursor-default"
+                  className="text-xs text-[var(--muted-foreground)] group-hover:text-[var(--muted)] transition-colors"
                 >
                   {tech}{techIdx < card.tech.length - 1 && ' ·'}
-                </motion.span>
+                </span>
               ))}
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>

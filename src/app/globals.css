@@ -3,9 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --muted: #525252;
-  --muted-foreground: #737373;
-  --border: rgba(0, 0, 0, 0.1);
+  --muted: #404040;
+  --muted-foreground: #525252;
+  --border: rgba(0, 0, 0, 0.12);
   --border-subtle: rgba(0, 0, 0, 0.06);
   --accent: #B5FF6D;
 }
@@ -13,9 +13,9 @@
 .dark {
   --background: #050505;
   --foreground: #ededed;
-  --muted: #a3a3a3;
-  --muted-foreground: #8a8a8a;
-  --border: rgba(255, 255, 255, 0.1);
+  --muted: #b3b3b3;
+  --muted-foreground: #9a9a9a;
+  --border: rgba(255, 255, 255, 0.12);
   --border-subtle: rgba(255, 255, 255, 0.06);
   --accent: #B5FF6D;
 }
@@ -162,14 +162,15 @@ a *::selection {
   background-size: 1px 100%, 100% 1px;
 }
 
-/* Shimmer animation for text */
+/* Shimmer animation for text - GPU accelerated */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
 .animate-shimmer {
-  animation: shimmer 3s ease-in-out infinite;
+  animation: shimmer 4s ease-in-out infinite;
+  will-change: background-position;
 }
 
 /* Feature card with top border accent */
@@ -332,5 +333,17 @@ a *::selection {
   .animate-bounce-slow,
   .text-shimmer {
     animation: none !important;
+  }
+}
+
+/* Simple fadeIn animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
