@@ -8,6 +8,10 @@
   --border: rgba(0, 0, 0, 0.12);
   --border-subtle: rgba(0, 0, 0, 0.06);
   --accent: #B5FF6D;
+  
+  /* ShinyText - светлая тема: серый текст с тёмным блеском */
+  --shiny-base-color: #888888;
+  --shiny-shine-color: rgba(0, 0, 0, 0.9);
 }
 
 .dark {
@@ -18,6 +22,10 @@
   --border: rgba(255, 255, 255, 0.12);
   --border-subtle: rgba(255, 255, 255, 0.06);
   --accent: #B5FF6D;
+  
+  /* ShinyText - тёмная тема: серебряный градиент с ярким белым блеском */
+  --shiny-base-color: #a0a0a0;
+  --shiny-shine-color: rgba(255, 255, 255, 0.95);
 }
 
 @theme inline {
@@ -160,6 +168,34 @@ a *::selection {
     linear-gradient(var(--border-subtle) 1px, transparent 1px),
     linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
   background-size: 1px 100%, 100% 1px;
+}
+
+/* Shiny Text Effect - яркий блеск слева направо */
+.shiny-text {
+  display: inline-block;
+  color: var(--shiny-base-color);
+  background: linear-gradient(
+    var(--shiny-spread, 120deg),
+    var(--shiny-base-color) 0%,
+    var(--shiny-base-color) 35%,
+    var(--shiny-shine-color) 50%,
+    var(--shiny-base-color) 65%,
+    var(--shiny-base-color) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny-shine var(--shiny-speed, 4s) linear infinite;
+}
+
+@keyframes shiny-shine {
+  0% {
+    background-position: 100% center;
+  }
+  100% {
+    background-position: -100% center;
+  }
 }
 
 /* Shimmer animation for text - GPU accelerated */
