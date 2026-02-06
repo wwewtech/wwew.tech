@@ -153,13 +153,7 @@ a *::selection {
   font-size: 0.875rem;
   color: var(--muted);
   backdrop-filter: blur(8px);
-  transition: all 0.3s ease;
-  box-shadow: 0 0 20px rgba(181, 255, 109, 0.15), 0 0 40px rgba(181, 255, 109, 0.05);
-}
-
-.pill-badge:hover {
-  box-shadow: 0 0 25px rgba(181, 255, 109, 0.25), 0 0 50px rgba(181, 255, 109, 0.1);
-  border-color: rgba(181, 255, 109, 0.3);
+  pointer-events: none;
 }
 
 /* Grid dividers - Vercel style */

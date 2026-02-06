@@ -103,16 +103,7 @@ export const Hero = () => {
         </div>
       </div>
 
-      {/* Scroll Indicator - CSS animation */}
-      <div
-        className={`absolute bottom-10 left-1/2 -translate-x-1/2 transition-opacity duration-600 delay-700 ${
-          isVisible ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <div className="w-6 h-10 rounded-full border border-[var(--border)] flex items-start justify-center p-2 animate-bounce-slow">
-          <div className="w-1 h-2 bg-[var(--muted)] rounded-full" />
-        </div>
-      </div>
+
     </section>
   );
 };

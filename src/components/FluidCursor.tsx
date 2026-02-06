@@ -17,17 +17,17 @@ const CONFIG = {
   // ─────────────────────────────────────────────────────────────────────────────
   // ПОВЕДЕНИЕ ЖИДКОСТИ
   // ─────────────────────────────────────────────────────────────────────────────
-  DENSITY_DISSIPATION: 4,       // Увеличено для быстрого затухания
-  VELOCITY_DISSIPATION: 5,      // Увеличено для быстрого затухания
-  PRESSURE: 0.05,               // Давление жидкости (0.01-0.5)
-  PRESSURE_ITERATIONS: 10,      // Уменьшено для производительности (было 20)
-  CURL: 2,                      // Уменьшено для производительности (было 3)
+  DENSITY_DISSIPATION: 5,       // Умеренное затухание
+  VELOCITY_DISSIPATION: 6,      // Умеренное затухание скорости
+  PRESSURE: 0.04,               // Давление жидкости (0.01-0.5)
+  PRESSURE_ITERATIONS: 10,      // Итерации давления
+  CURL: 1.5,                    // Лёгкие завихрения
   
   // ─────────────────────────────────────────────────────────────────────────────
   // ВНЕШНИЙ ВИД КУРСОРА
   // ─────────────────────────────────────────────────────────────────────────────
-  SPLAT_RADIUS: 0.2,            // Размер "кляксы" (0.05-0.5). Выше = больше пятно
-  SPLAT_FORCE: 6000,            // Сила разбрызгивания (1000-10000). Выше = мощнее след
+  SPLAT_RADIUS: 0.12,           // Аккуратный размер "кляксы"
+  SPLAT_FORCE: 3500,            // Умеренная сила разбрызгивания
   
   // ─────────────────────────────────────────────────────────────────────────────
   // ВИЗУАЛЬНЫЕ ЭФФЕКТЫ
@@ -45,19 +45,19 @@ const CONFIG = {
     '#ff6db5',                  // Розовый
     '#ffb56d',                  // Оранжевый
   ],
-  COLOR_INTENSITY_DARK: 0.15,   // Интенсивность цвета для тёмной темы
+  COLOR_INTENSITY_DARK: 0.10,   // Умеренная интенсивность цвета для тёмной темы
   
   // ─────────────────────────────────────────────────────────────────────────────
   // ПАЛИТРА ЦВЕТОВ ДЛЯ СВЕТЛОЙ ТЕМЫ (HEX формат)
   // ─────────────────────────────────────────────────────────────────────────────
   COLORS_LIGHT: [
-    '#2d7a00',                  // Тёмно-зелёный
-    '#007a4d',                  // Тёмно-бирюзовый  
-    '#0066cc',                  // Тёмно-синий
-    '#cc3399',                  // Тёмно-розовый
-    '#cc6600',                  // Тёмно-оранжевый
+    '#86efac',                  // Мягкий мятный
+    '#7dd3fc',                  // Нежный голубой  
+    '#a5b4fc',                  // Лавандовый
+    '#f9a8d4',                  // Нежно-розовый
+    '#fcd34d',                  // Мягкий золотистый
   ],
-  COLOR_INTENSITY_LIGHT: 0.25,  // Интенсивность цвета для светлой темы (выше для контраста)
+  COLOR_INTENSITY_LIGHT: 0.1,  // Умеренная интенсивность для мягкого эффекта
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -320,6 +320,10 @@ export const FluidCursor: React.FC = () => {
           c *= diffuse;
         #endif
         float a = max(c.r, max(c.g, c.b));
+        #ifdef LIGHT_THEME
+          a = min(a * 1.8, 0.7);
+          c = min(c * 1.3, vec3(1.0));
+        #endif
         gl_FragColor = vec4(c, a);
       }
     `;
@@ -527,7 +531,10 @@ export const FluidCursor: React.FC = () => {
     const gradientSubtractProgram = createProgram(baseVertexShader, gradientSubtractShader);
 
     // Display program with shading
-    const displayFragmentShader = compileShader(gl.FRAGMENT_SHADER, displayShaderSource, CONFIG.SHADING ? ['SHADING'] : undefined);
+    const displayKeywords: string[] = [];
+    if (CONFIG.SHADING) displayKeywords.push('SHADING');
+    if (theme === 'light') displayKeywords.push('LIGHT_THEME');
+    const displayFragmentShader = compileShader(gl.FRAGMENT_SHADER, displayShaderSource, displayKeywords.length > 0 ? displayKeywords : undefined);
     const displayProgram = displayFragmentShader ? createProgram(baseVertexShader, displayFragmentShader) : null;
 
     if (!clearProgram || !splatProgram || !advectionProgram || 
@@ -886,7 +893,10 @@ export const FluidCursor: React.FC = () => {
       className={`fixed inset-0 w-full h-full pointer-events-none z-0 transition-opacity duration-500 ${
         isFluidCursorEnabled ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
-      style={{ background: 'transparent' }}
+      style={{
+        background: 'transparent',
+        mixBlendMode: theme === 'light' ? 'multiply' : 'normal',
+      }}
     />
   );
 };
