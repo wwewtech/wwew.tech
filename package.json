@@ -9,8 +9,9 @@
     "lint": "eslint"
   },
   "browserslist": [
-    "defaults and fully supports es6-module",
-    "maintained node versions"
+    "defaults",
+    "not IE 11",
+    "not op_mini all"
   ],
   "dependencies": {
     "clsx": "^2.1.1",
