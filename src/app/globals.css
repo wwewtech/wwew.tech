@@ -9,9 +9,10 @@
   --border-subtle: rgba(0, 0, 0, 0.06);
   --accent: #B5FF6D;
   
-  /* ShinyText - светлая тема: серый текст с тёмным блеском */
+  /* ShinyText - светлая тема: серый текст с плавным блеском */
   --shiny-base-color: #6b6b6b;
-  --shiny-shine-color: #1a1a1a;
+  --shiny-shine-color: #3a3a3a;
+  --shiny-peak-color: #1a1a1a;
 }
 
 .dark {
@@ -25,7 +26,8 @@
   
   /* ShinyText - тёмная тема: серебряный градиент с ярким белым блеском */
   --shiny-base-color: #7a7a7a;
-  --shiny-shine-color: #f0f0f0;
+  --shiny-shine-color: #c0c0c0;
+  --shiny-peak-color: #ffffff;
 }
 
 @theme inline {
@@ -172,14 +174,19 @@ a *::selection {
   background: linear-gradient(
     90deg,
     var(--shiny-base-color) 0%,
-    var(--shiny-base-color) 27%,
-    var(--shiny-shine-color) 43%,
-    #ffffff 50%,
-    var(--shiny-shine-color) 57%,
-    var(--shiny-base-color) 73%,
+    var(--shiny-base-color) 15%,
+    var(--shiny-shine-color) 22%,
+    var(--shiny-peak-color) 25%,
+    var(--shiny-shine-color) 28%,
+    var(--shiny-base-color) 35%,
+    var(--shiny-base-color) 65%,
+    var(--shiny-shine-color) 72%,
+    var(--shiny-peak-color) 75%,
+    var(--shiny-shine-color) 78%,
+    var(--shiny-base-color) 85%,
     var(--shiny-base-color) 100%
   );
-  background-size: 300% 100%;
+  background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   animation: shiny-sweep var(--shiny-speed, 1.5s) linear infinite;
@@ -188,10 +195,10 @@ a *::selection {
 
 @keyframes shiny-sweep {
   0% {
-    background-position: 100% 0;
+    background-position: 0% 0;
   }
   100% {
-    background-position: 0% 0;
+    background-position: -100% 0;
   }
 }
 
