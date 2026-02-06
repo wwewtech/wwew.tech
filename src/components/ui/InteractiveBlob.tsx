@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '@/lib/context';
+import { useTheme } from '@/context/AppContext';
 
 interface Point3D {
   x: number;
@@ -281,7 +281,7 @@ export const InteractiveBlob = () => {
       <canvas ref={canvasRef} className="w-full h-full" />
       
       <motion.div
-        className="absolute inset-12 rounded-full border border-[var(--border)] opacity-20 pointer-events-none"
+        className="absolute inset-12 rounded-full border border-(--border) opacity-20 pointer-events-none"
         animate={{ rotate: 360 }}
         transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
       />

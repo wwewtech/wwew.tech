@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { useLanguage } from '@/lib/context';
-import { ShinyText } from './ShinyText';
+import { useLanguage } from '@/context/AppContext';
+import { ShinyText } from '@/components/ui/ShinyText';
 
 export const Hero = () => {
   const { t } = useLanguage();
@@ -73,7 +73,7 @@ export const Hero = () => {
 
         {/* Subtitle - CSS transition */}
         <p
-          className={`text-[var(--muted)] text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-12 transition-all duration-600 ease-out delay-200 ${
+          className={`text-(--muted) text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-12 transition-all duration-600 ease-out delay-200 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
           }`}
         >
@@ -88,7 +88,7 @@ export const Hero = () => {
         >
           <a
             href="#contact"
-            className="group flex items-center gap-2 px-8 py-4 rounded-full bg-[var(--foreground)] text-[var(--background)] font-medium hover:opacity-90 transition-all select-none"
+            className="group flex items-center gap-2 px-8 py-4 rounded-full bg-foreground text-background font-medium hover:opacity-90 transition-all select-none"
           >
             {t('hero.cta1')}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -96,7 +96,7 @@ export const Hero = () => {
 
           <a
             href="#projects"
-            className="flex items-center gap-2 px-8 py-4 rounded-full border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--foreground)]/30 transition-all"
+            className="flex items-center gap-2 px-8 py-4 rounded-full border border-(--border) text-(--muted) hover:text-foreground hover:border-(--foreground)/30 transition-all"
           >
             {t('hero.cta2')}
           </a>

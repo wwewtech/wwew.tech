@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { ArrowUpRight, Github } from 'lucide-react';
-import { useLanguage } from '@/lib/context';
+import { useLanguage } from '@/context/AppContext';
 
 const projects = [
   {
@@ -71,13 +71,13 @@ export const Projects = () => {
         <h2 className="text-5xl md:text-7xl font-medium tracking-tight mb-6 leading-[1.05]">
           <span className="text-gradient block pb-1">{t('projects.title')}</span>
         </h2>
-        <p className="text-[var(--muted)] text-lg max-w-2xl mx-auto">
+        <p className="text-(--muted) text-lg max-w-2xl mx-auto">
           {t('projects.subtitle')}
         </p>
       </div>
 
       {/* Projects List - Clean rows like Vercel */}
-      <div className="border-t border-[var(--border)]">
+      <div className="border-t border-(--border)">
         {projects.map((project, idx) => (
           <article
             key={idx}
@@ -86,20 +86,20 @@ export const Projects = () => {
               transform: isInView ? 'translateY(0)' : 'translateY(20px)',
               transition: `opacity 0.5s ease ${idx * 0.1}s, transform 0.5s ease ${idx * 0.1}s`,
             }}
-            className="group border-b border-[var(--border)] py-10 md:py-14"
+            className="group border-b border-(--border) py-10 md:py-14"
           >
             <div className="grid md:grid-cols-12 gap-8 items-center">
               {/* Project Info */}
               <div className="md:col-span-5">
-                <h3 className="text-2xl md:text-3xl font-medium text-[var(--foreground)] mb-3 group-hover:opacity-80 transition-colors">
+                <h3 className="text-2xl md:text-3xl font-medium text-foreground mb-3 group-hover:opacity-80 transition-colors">
                   {project.title}
                 </h3>
-                <p className="text-[var(--muted)] leading-relaxed mb-4">
+                <p className="text-(--muted) leading-relaxed mb-4">
                   {project.desc}
                 </p>
                 <div className="flex items-center gap-3">
                   {project.tags.map((tag, tagIdx) => (
-                    <span key={tagIdx} className="text-sm text-[var(--muted-foreground)]">
+                    <span key={tagIdx} className="text-sm text-(--muted-foreground)">
                       {tag}{tagIdx < project.tags.length - 1 && ' ·'}
                     </span>
                   ))}
@@ -108,11 +108,11 @@ export const Projects = () => {
 
               {/* Preview */}
               <div className="md:col-span-5">
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-[var(--border-subtle)] border border-[var(--border)]">
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-(--border-subtle) border border-(--border)">
                   {/* Placeholder visual */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-lg border border-[var(--border)] bg-[var(--border-subtle)] flex items-center justify-center">
-                      <span className="text-xl text-[var(--muted)]">⬡</span>
+                    <div className="w-12 h-12 rounded-lg border border-(--border) bg-(--border-subtle) flex items-center justify-center">
+                      <span className="text-xl text-(--muted)">⬡</span>
                     </div>
                   </div>
                   {/* Grid pattern */}
@@ -130,14 +130,14 @@ export const Projects = () => {
               <div className="md:col-span-2 flex md:flex-col items-center md:items-end gap-3">
                 <a
                   href={project.link}
-                  className="flex items-center gap-2 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                  className="flex items-center gap-2 text-sm text-(--muted) hover:text-foreground transition-colors"
                 >
                   {t('projects.viewProject')}
                   <ArrowUpRight className="w-4 h-4" />
                 </a>
                 <a
                   href={project.github}
-                  className="flex items-center gap-2 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                  className="flex items-center gap-2 text-sm text-(--muted) hover:text-foreground transition-colors"
                 >
                   {t('projects.viewCode')}
                   <Github className="w-4 h-4" />
@@ -158,7 +158,7 @@ export const Projects = () => {
       >
         <a
           href="#"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--foreground)]/30 transition-all"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-(--border) text-(--muted) hover:text-foreground hover:border-(--foreground)/30 transition-all"
         >
           View all projects
           <ArrowUpRight className="w-4 h-4" />

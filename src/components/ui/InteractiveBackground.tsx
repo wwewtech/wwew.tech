@@ -88,7 +88,7 @@ export const InteractiveBackground = () => {
             opacity: isHovering ? 1 : 0.3,
           }}
           transition={{ duration: 0.4 }}
-          className="w-[500px] h-[500px] rounded-full"
+          className="w-125 h-125 rounded-full"
           style={{
             background: 'radial-gradient(circle, rgba(181, 255, 109, 0.15) 0%, rgba(181, 255, 109, 0.05) 40%, transparent 70%)',
             filter: 'blur(40px)',
@@ -112,7 +112,7 @@ export const InteractiveBackground = () => {
             opacity: isHovering ? 0.8 : 0.2,
           }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="w-[300px] h-[300px] rounded-full"
+          className="w-75 h-75 rounded-full"
           style={{
             background: 'radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%)',
             filter: 'blur(30px)',

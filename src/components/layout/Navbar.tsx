@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ArrowUpRight, Sun, Moon, Languages, Droplet, DropletOff } from 'lucide-react';
-import { useLanguage, useTheme, useFluidCursor } from '@/lib/context';
+import { useLanguage, useTheme, useFluidCursor } from '@/context/AppContext';
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -46,7 +46,7 @@ export const Navbar = () => {
         <nav
           className={`transition-all duration-300 border-b ${
             isScrolled
-              ? 'bg-[var(--background)]/90 backdrop-blur-xl border-[var(--border)]'
+              ? 'bg-(--background)/90 backdrop-blur-xl border-(--border)'
               : 'bg-transparent border-transparent'
           }`}
         >
@@ -54,10 +54,10 @@ export const Navbar = () => {
           <div className="max-w-7xl mx-auto h-16 flex items-center justify-between px-6">
             {/* Logo */}
             <a href="#" className="flex items-center gap-2.5 group">
-              <svg className="w-6 h-6 text-[var(--foreground)]" viewBox="0 0 24 24" fill="currentColor">
+              <svg className="w-6 h-6 text-foreground" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)" />
               </svg>
-              <span className="font-medium text-[var(--foreground)]">
+              <span className="font-medium text-foreground">
                 wwew.tech
               </span>
             </a>
@@ -68,7 +68,7 @@ export const Navbar = () => {
                 <a
                   key={item.label}
                   href={item.href}
-                  className="px-4 py-2 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors duration-200"
+                  className="px-4 py-2 text-sm text-(--muted) hover:text-foreground transition-colors duration-200"
                 >
                   {item.label}
                 </a>
@@ -80,7 +80,7 @@ export const Navbar = () => {
               {/* Fluid Cursor Toggle */}
               <button
                 onClick={toggleFluidCursor}
-                className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border-subtle)] transition-all duration-200"
+                className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200"
                 aria-label="Toggle fluid cursor"
                 title={isFluidCursorEnabled ? t('nav.cursorOff') : t('nav.cursorOn')}
               >
@@ -94,7 +94,7 @@ export const Navbar = () => {
               {/* Language Toggle */}
               <button
                 onClick={handleLanguageToggle}
-                className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border-subtle)] transition-all duration-200"
+                className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200"
                 aria-label="Toggle language"
               >
                 <Languages className="w-4 h-4" />
@@ -106,7 +106,7 @@ export const Navbar = () => {
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-full text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border-subtle)] transition-all duration-200 theme-toggle"
+                className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200 theme-toggle"
                 aria-label="Toggle theme"
               >
                 {theme === 'dark' ? (
@@ -121,7 +121,7 @@ export const Navbar = () => {
                 href="https://t.me/wwew_tech"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-5 py-2 ml-2 rounded-full bg-[var(--foreground)] text-[var(--background)] text-sm font-medium hover:opacity-90 transition-all duration-200 select-none"
+                className="flex items-center gap-1.5 px-5 py-2 ml-2 rounded-full bg-foreground text-background text-sm font-medium hover:opacity-90 transition-all duration-200 select-none"
               >
                 {t('nav.contactBtn')}
                 <ArrowUpRight className="w-4 h-4" />
@@ -133,7 +133,7 @@ export const Navbar = () => {
               {/* Fluid Cursor Toggle Mobile */}
               <button
                 onClick={toggleFluidCursor}
-                className="p-2 rounded-full text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border-subtle)] transition-colors"
+                className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
                 aria-label="Toggle fluid cursor"
               >
                 {isFluidCursorEnabled ? <Droplet className="w-5 h-5" /> : <DropletOff className="w-5 h-5" />}
@@ -142,7 +142,7 @@ export const Navbar = () => {
               {/* Language Toggle Mobile */}
               <button
                 onClick={handleLanguageToggle}
-                className="p-2 rounded-full text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border-subtle)] transition-colors"
+                className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
                 aria-label="Toggle language"
               >
                 <span className="text-xs font-medium uppercase">{language}</span>
@@ -151,7 +151,7 @@ export const Navbar = () => {
               {/* Theme Toggle Mobile */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-full text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border-subtle)] transition-colors"
+                className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
                 aria-label="Toggle theme"
               >
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -160,13 +160,13 @@ export const Navbar = () => {
               {/* Menu Toggle */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-full hover:bg-[var(--border-subtle)] transition-colors"
+                className="p-2 rounded-full hover:bg-(--border-subtle) transition-colors"
                 aria-label={isMobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
               >
                 {isMobileMenuOpen ? (
-                  <X className="w-5 h-5 text-[var(--muted)]" />
+                  <X className="w-5 h-5 text-(--muted)" />
                 ) : (
-                  <Menu className="w-5 h-5 text-[var(--muted)]" />
+                  <Menu className="w-5 h-5 text-(--muted)" />
                 )}
               </button>
             </div>
@@ -178,11 +178,11 @@ export const Navbar = () => {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div
-            className="absolute inset-0 bg-[var(--background)]/98"
+            className="absolute inset-0 bg-(--background)/98"
             onClick={() => setIsMobileMenuOpen(false)}
           />
           <div
-            className="absolute top-16 left-0 right-0 p-6 border-b border-[var(--border)]"
+            className="absolute top-16 left-0 right-0 p-6 border-b border-(--border)"
             style={{
               animation: 'fadeIn 0.2s ease',
             }}
@@ -192,7 +192,7 @@ export const Navbar = () => {
                 key={item.label}
                 href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-4 py-4 text-[var(--muted)] hover:text-[var(--foreground)] border-b border-[var(--border-subtle)] transition-colors"
+                className="block px-4 py-4 text-(--muted) hover:text-foreground border-b border-(--border-subtle) transition-colors"
               >
                 {item.label}
               </a>
@@ -202,7 +202,7 @@ export const Navbar = () => {
                 href="https://t.me/wwew_tech"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 py-4 rounded-full bg-[var(--foreground)] text-[var(--background)] text-sm font-medium"
+                className="flex items-center justify-center gap-2 py-4 rounded-full bg-foreground text-background text-sm font-medium"
               >
                 {t('nav.contactBtn')}
                 <ArrowUpRight className="w-4 h-4" />

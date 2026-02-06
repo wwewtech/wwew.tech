@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useCallback } from 'react';
-import { useFluidCursor, useTheme } from '@/lib/context';
+import { useFluidCursor, useTheme } from '@/context/AppContext';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // НАСТРОЙКИ FLUID CURSOR - Измените параметры здесь

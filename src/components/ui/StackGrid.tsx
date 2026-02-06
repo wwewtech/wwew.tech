@@ -149,10 +149,10 @@ export const StackGrid = () => {
               transition: `opacity 0.5s ease ${idx * 0.05}s, transform 0.5s ease ${idx * 0.05}s`,
             }}
             onMouseMove={handleMouseMove}
-            className="group feature-card border-l border-[var(--border-subtle)] first:border-l-0 md:[&:nth-child(2)]:border-l md:[&:nth-child(5)]:border-l-0 lg:[&:nth-child(5)]:border-l"
+            className="group feature-card border-l border-(--border-subtle) first:border-l-0 md:nth-2:border-l md:nth-5:border-l-0 lg:nth-5:border-l"
           >
             {/* Icon with pulse effect */}
-            <div className="text-[var(--muted)] group-hover:text-[var(--foreground)] transition-all duration-500 mb-6 relative">
+            <div className="text-(--muted) group-hover:text-foreground transition-all duration-500 mb-6 relative">
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500">
                 {card.icon}
               </div>
@@ -162,11 +162,11 @@ export const StackGrid = () => {
             </div>
 
             {/* Content */}
-            <h3 className="text-xl font-medium text-[var(--foreground)] mb-2 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1">
+            <h3 className="text-xl font-medium text-foreground mb-2 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1">
               {card.title}
             </h3>
             
-            <p className="text-[var(--muted)] text-sm leading-relaxed mb-5 group-hover:text-[var(--foreground)] transition-colors duration-500">
+            <p className="text-(--muted) text-sm leading-relaxed mb-5 group-hover:text-foreground transition-colors duration-500">
               {card.desc}
             </p>
 
@@ -175,7 +175,7 @@ export const StackGrid = () => {
               {card.tech.map((tech, techIdx) => (
                 <span
                   key={techIdx}
-                  className="text-xs text-[var(--muted-foreground)] group-hover:text-[var(--muted)] transition-colors"
+                  className="text-xs text-(--muted-foreground) group-hover:text-(--muted) transition-colors"
                 >
                   {tech}{techIdx < card.tech.length - 1 && ' ·'}
                 </span>

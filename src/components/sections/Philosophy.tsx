@@ -2,16 +2,16 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useLanguage } from '@/lib/context';
+import { useLanguage } from '@/context/AppContext';
 
 // Lazy load InteractiveBlob для улучшения TBT
 const InteractiveBlob = dynamic(
-  () => import('./InteractiveBlob').then(mod => mod.InteractiveBlob),
+  () => import('@/components/ui/InteractiveBlob').then(mod => mod.InteractiveBlob),
   { 
     ssr: false,
     loading: () => (
       <div className="aspect-square max-w-md mx-auto flex items-center justify-center">
-        <div className="w-48 h-48 rounded-full border border-[var(--border)] opacity-20" />
+        <div className="w-48 h-48 rounded-full border border-(--border) opacity-20" />
       </div>
     )
   }
@@ -81,22 +81,22 @@ export const Philosophy = () => {
           
           <h2 className="text-5xl md:text-6xl lg:text-7xl font-medium tracking-tight mb-8 leading-[1.05]">
             <span className="text-gradient block pb-1">{t('philosophy.title1')}</span>
-            <span className="text-[var(--muted)] block pb-1">{t('philosophy.title2')}</span>
+            <span className="text-(--muted) block pb-1">{t('philosophy.title2')}</span>
           </h2>
           
-          <div className="space-y-6 text-[var(--muted)] leading-relaxed">
+          <div className="space-y-6 text-(--muted) leading-relaxed">
             <p>
               {t('philosophy.text1')}{' '}
-              <span className="text-[var(--foreground)]">{t('philosophy.highlight1')}</span>
+              <span className="text-foreground">{t('philosophy.highlight1')}</span>
             </p>
             <p>
-              {t('philosophy.text2')} <span className="text-[var(--foreground)]">{t('philosophy.backend')}</span> {t('philosophy.text3')}{' '}
-              <span className="text-[var(--foreground)]">{t('philosophy.frontend')}</span> {t('philosophy.text4')}
+              {t('philosophy.text2')} <span className="text-foreground">{t('philosophy.backend')}</span> {t('philosophy.text3')}{' '}
+              <span className="text-foreground">{t('philosophy.frontend')}</span> {t('philosophy.text4')}
             </p>
           </div>
 
           {/* Stats */}
-          <div className="mt-12 pt-8 border-t border-[var(--border)] flex gap-16">
+          <div className="mt-12 pt-8 border-t border-(--border) flex gap-16">
             {[
               { value: '50+', label: t('philosophy.stat1') },
               { value: '3+', label: t('philosophy.stat2') },
@@ -110,8 +110,8 @@ export const Philosophy = () => {
                   transition: `opacity 0.5s ease ${0.3 + idx * 0.1}s, transform 0.5s ease ${0.3 + idx * 0.1}s`,
                 }}
               >
-                <p className="text-4xl font-medium text-[var(--foreground)] tracking-tight">{stat.value}</p>
-                <p className="text-sm text-[var(--muted)] mt-1">{stat.label}</p>
+                <p className="text-4xl font-medium text-foreground tracking-tight">{stat.value}</p>
+                <p className="text-sm text-(--muted) mt-1">{stat.label}</p>
               </div>
             ))}
           </div>

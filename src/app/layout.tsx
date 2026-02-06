@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AppProvider } from "@/lib/context";
-import { LenisProvider } from "@/components/LenisProvider";
-import { FluidCursorWrapper } from "@/components/FluidCursorWrapper";
+import { AppProvider } from "@/context/AppContext";
+import { LenisProvider } from "@/components/providers/LenisProvider";
+import { FluidCursorWrapper } from "@/components/providers/FluidCursorWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

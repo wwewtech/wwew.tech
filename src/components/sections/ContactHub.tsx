@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { Send, Mail, Github, ArrowRight } from 'lucide-react';
-import { useLanguage } from '@/lib/context';
+import { useLanguage } from '@/context/AppContext';
 
 const contacts = [
   { 
@@ -80,9 +80,9 @@ export const ContactHub = () => {
           </div>
           <h2 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-6 leading-[1.05]">
             <span className="text-gradient block pb-1">{t('contact.title1')}</span>
-            <span className="text-[var(--muted)] block pb-1">{t('contact.title2')}</span>
+            <span className="text-(--muted) block pb-1">{t('contact.title2')}</span>
           </h2>
-          <p className="text-[var(--muted)] text-lg max-w-xl mx-auto mb-12">
+          <p className="text-(--muted) text-lg max-w-xl mx-auto mb-12">
             {t('contact.subtitle')}
           </p>
         </div>
@@ -102,10 +102,10 @@ export const ContactHub = () => {
               href={contact.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center gap-3 px-5 py-3 rounded-full border border-[var(--border)] hover:border-[var(--foreground)]/20 bg-[var(--border-subtle)] hover:bg-[var(--border)] transition-all"
+              className="group flex items-center gap-3 px-5 py-3 rounded-full border border-(--border) hover:border-(--foreground)/20 bg-(--border-subtle) hover:bg-(--border) transition-all"
             >
-              <contact.icon className="w-5 h-5 text-[var(--muted)] group-hover:text-[var(--foreground)] transition-colors" />
-              <span className="text-[var(--muted)] group-hover:text-[var(--foreground)] transition-colors">{contact.value}</span>
+              <contact.icon className="w-5 h-5 text-(--muted) group-hover:text-foreground transition-colors" />
+              <span className="text-(--muted) group-hover:text-foreground transition-colors">{contact.value}</span>
             </a>
           ))}
         </div>
@@ -121,7 +121,7 @@ export const ContactHub = () => {
             href="https://t.me/wwew_tech"
             target="_blank"
             rel="noopener noreferrer"
-            className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-[var(--foreground)] text-[var(--background)] font-medium text-lg hover:opacity-90 transition-all select-none"
+            className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-foreground text-background font-medium text-lg hover:opacity-90 transition-all select-none"
           >
             {t('contact.telegram')}
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />

@@ -1,12 +1,12 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useFluidCursor } from '@/lib/context';
+import { useFluidCursor } from '@/context/AppContext';
 import { useEffect, useState } from 'react';
 
 // Ленивая загрузка тяжёлого WebGL компонента - ТОЛЬКО когда включён
 const FluidCursor = dynamic(
-  () => import('./FluidCursor').then(mod => mod.FluidCursor),
+  () => import('@/components/ui/FluidCursor').then(mod => mod.FluidCursor),
   { 
     ssr: false,
     loading: () => null

@@ -1,21 +1,19 @@
 'use client';
 
-import { 
-  Navbar, 
-  Hero, 
-  Philosophy, 
-  StackGrid, 
-  Projects,
-  ContactHub,
-  Footer 
-} from '@/components';
-import { useLanguage } from '@/lib/context';
+import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
+import { Hero } from '@/components/sections/Hero';
+import { Philosophy } from '@/components/sections/Philosophy';
+import { Projects } from '@/components/sections/Projects';
+import { ContactHub } from '@/components/sections/ContactHub';
+import { StackGrid } from '@/components/ui/StackGrid';
+import { useLanguage } from '@/context/AppContext';
 
 export default function Home() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground font-sans transition-colors duration-300">
       {/* Навигация (sticky, glass effect) */}
       <Navbar />
 
@@ -34,13 +32,13 @@ export default function Home() {
         {/* Секция 3: Стек технологий (Bento Grid) */}
         <section id="stack" className="px-6 max-w-7xl mx-auto w-full">
           <div className="mb-12">
-            <span className="text-sm font-medium tracking-wider uppercase mb-4 block text-[var(--muted)]">
+            <span className="text-sm font-medium tracking-wider uppercase mb-4 block text-(--muted)">
               {t('stack.badge')}
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-[var(--foreground)]">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-foreground">
               {t('stack.title')}
             </h2>
-            <p className="text-[var(--muted)] max-w-xl">
+            <p className="text-(--muted) max-w-xl">
               {t('stack.subtitle')}
             </p>
           </div>
