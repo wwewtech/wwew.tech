@@ -172,33 +172,26 @@ a *::selection {
   position: relative;
   color: transparent;
   background: linear-gradient(
-    90deg,
+    120deg,
     var(--shiny-base-color) 0%,
-    var(--shiny-base-color) 15%,
-    var(--shiny-shine-color) 22%,
-    var(--shiny-peak-color) 25%,
-    var(--shiny-shine-color) 28%,
-    var(--shiny-base-color) 35%,
-    var(--shiny-base-color) 65%,
-    var(--shiny-shine-color) 72%,
-    var(--shiny-peak-color) 75%,
-    var(--shiny-shine-color) 78%,
-    var(--shiny-base-color) 85%,
+    var(--shiny-shine-color) 40%,
+    var(--shiny-peak-color) 50%,
+    var(--shiny-shine-color) 60%,
     var(--shiny-base-color) 100%
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: shiny-sweep var(--shiny-speed, 1.5s) linear infinite;
+  animation: shiny-sweep var(--shiny-speed, 2s) linear infinite;
   will-change: background-position;
 }
 
 @keyframes shiny-sweep {
   0% {
-    background-position: 0% 0;
+    background-position: 100% 50%;
   }
   100% {
-    background-position: -100% 0;
+    background-position: -100% 50%;
   }
 }
 
@@ -386,4 +379,21 @@ a *::selection {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Hero fade-in animation - for secondary elements only, not LCP */
+@keyframes hero-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-fade-in {
+  animation: hero-fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
 }
