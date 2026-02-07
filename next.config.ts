@@ -4,10 +4,20 @@ const nextConfig: NextConfig = {
   // Включить сжатие для production
   compress: true,
   
+  // Генерировать source maps для production (в отдельных файлах, не увеличивает bundle)
+  productionBrowserSourceMaps: true,
+  
   // Экспериментальные оптимизации
   experimental: {
-    // Оптимизация пакетов
-    optimizePackageImports: ['framer-motion', 'lucide-react', 'lenis'],
+    // Оптимизация пакетов - tree-shake barrel files
+    optimizePackageImports: [
+      'framer-motion',
+      'lucide-react',
+      'lenis',
+      '@react-three/drei',
+      '@react-three/fiber',
+      'three',
+    ],
   },
   
   // Оптимизация изображений

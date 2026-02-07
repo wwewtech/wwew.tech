@@ -4,7 +4,6 @@ import React, { useRef, useMemo, Suspense, useCallback, useEffect, useState } fr
 import { Canvas, useFrame, useThree, invalidate } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
 import * as THREE from 'three';
-import { motion } from 'framer-motion';
 import { useTheme } from '@/context/AppContext';
 
 /* ══════════════════════════════════════════════════
@@ -345,12 +344,14 @@ export const HolographicScene = ({ className = '' }: { className?: string }) => 
   }, []);
 
   return (
-    <motion.div
+    <div
       ref={containerRef}
       className={`relative aspect-square max-w-lg mx-auto overflow-visible ${className}`}
-      initial={{ opacity: 0, scale: 0.92 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 1, ease: 'easeOut' }}
+      style={{
+        opacity: ready ? 1 : 0,
+        transform: ready ? 'scale(1)' : 'scale(0.92)',
+        transition: 'opacity 1s ease-out, transform 1s ease-out',
+      }}
     >
       {/* Мягкое свечение за объектом — сливается с фоном страницы */}
       <div
@@ -418,6 +419,6 @@ export const HolographicScene = ({ className = '' }: { className?: string }) => 
         </Suspense>
       </Canvas>
       </div>
-    </motion.div>
+    </div>
   );
 };

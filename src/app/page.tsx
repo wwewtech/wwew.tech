@@ -9,7 +9,20 @@ const defaultTranslations = {
 
 export default function Home() {
   return (
-    <ClientHomePage defaultTranslations={defaultTranslations} />
+    <>
+      {/* 
+        Server-rendered Hero skeleton для мгновенного LCP.
+        Текст отрисовывается до загрузки JS, обеспечивая быстрый FCP/LCP.
+        ClientHomePage гидратирует поверх этого контента.
+        noscript fallback обеспечивает видимость без JS.
+      */}
+      <noscript>
+        <style>{`
+          .hero-ssr-skeleton { display: none !important; }
+        `}</style>
+      </noscript>
+      <ClientHomePage defaultTranslations={defaultTranslations} />
+    </>
   );
 }
 

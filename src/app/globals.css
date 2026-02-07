@@ -197,7 +197,6 @@ a *::selection {
   -webkit-background-clip: text;
   background-clip: text;
   animation: shiny-sweep var(--shiny-speed, 2s) linear infinite;
-  will-change: background-position;
   /* Smooth appearance from fallback state */
   animation-delay: 0.1s;
 }
@@ -219,7 +218,6 @@ a *::selection {
 
 .animate-shimmer {
   animation: shimmer 4s ease-in-out infinite;
-  will-change: background-position;
 }
 
 /* Feature card with top border accent */
@@ -385,6 +383,12 @@ a *::selection {
   }
 }
 
+/* Content-visibility for below-fold sections — skip rendering until visible */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
 /* Simple fadeIn animation */
 @keyframes fadeIn {
   from {
@@ -411,5 +415,4 @@ a *::selection {
 
 .animate-hero-fade-in {
   animation: hero-fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-  will-change: opacity, transform;
 }

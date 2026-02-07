@@ -1,13 +1,44 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Hero } from '@/components/sections/Hero';
-import { Philosophy } from '@/components/sections/Philosophy';
-import { Projects } from '@/components/sections/Projects';
-import { ContactHub } from '@/components/sections/ContactHub';
-import { StackGrid } from '@/components/ui/StackGrid';
 import { useLanguage } from '@/context/AppContext';
+
+// Lazy load below-fold sections - код выделяется в отдельные чанки
+// SSR сохраняется для SEO, но JS загружается отдельными чанками
+const Philosophy = dynamic(
+  () => import('@/components/sections/Philosophy').then(m => ({ default: m.Philosophy })),
+  {
+    loading: () => (
+      <div className="min-h-150 flex items-center justify-center">
+        <div className="w-32 h-32 rounded-full border border-(--border) opacity-10 animate-pulse" />
+      </div>
+    ),
+  }
+);
+
+const Projects = dynamic(
+  () => import('@/components/sections/Projects').then(m => ({ default: m.Projects })),
+  {
+    loading: () => <div className="min-h-100" />,
+  }
+);
+
+const ContactHub = dynamic(
+  () => import('@/components/sections/ContactHub').then(m => ({ default: m.ContactHub })),
+  {
+    loading: () => <div className="min-h-100" />,
+  }
+);
+
+const StackGrid = dynamic(
+  () => import('@/components/ui/StackGrid').then(m => ({ default: m.StackGrid })),
+  {
+    loading: () => <div className="min-h-75" />,
+  }
+);
 
 interface ClientHomePageProps {
   /** Default translations for SSR - will be hydrated with client state */
@@ -28,18 +59,18 @@ export function ClientHomePage({ defaultTranslations }: ClientHomePageProps) {
 
       <main className="flex flex-col gap-32 pb-20">
         
-        {/* Секция 1: Hero */}
+        {/* Секция 1: Hero — critical, loaded eagerly */}
         <section id="home" className="relative pt-20 px-6 max-w-7xl mx-auto w-full">
           <Hero />
         </section>
 
-        {/* Секция 2: О себе (Философия) */}
-        <section id="about" className="px-6 max-w-7xl mx-auto w-full">
+        {/* Секция 2: О себе (Философия) — lazy loaded */}
+        <section id="about" className="px-6 max-w-7xl mx-auto w-full cv-auto">
           <Philosophy />
         </section>
 
-        {/* Секция 3: Стек технологий (Bento Grid) */}
-        <section id="stack" className="px-6 max-w-7xl mx-auto w-full">
+        {/* Секция 3: Стек технологий (Bento Grid) — lazy loaded */}
+        <section id="stack" className="px-6 max-w-7xl mx-auto w-full cv-auto">
           <div className="mb-12">
             <span className="text-sm font-medium tracking-wider uppercase mb-4 block text-(--muted)">
               {t('stack.badge') || defaultTranslations.stackBadge}
@@ -54,13 +85,13 @@ export function ClientHomePage({ defaultTranslations }: ClientHomePageProps) {
           <StackGrid />
         </section>
 
-        {/* Секция 4: Проекты */}
-        <section id="projects" className="px-6 max-w-7xl mx-auto w-full">
+        {/* Секция 4: Проекты — lazy loaded */}
+        <section id="projects" className="px-6 max-w-7xl mx-auto w-full cv-auto">
           <Projects />
         </section>
 
-        {/* Секция 5: Контакты */}
-        <section id="contact" className="px-6 max-w-7xl mx-auto w-full">
+        {/* Секция 5: Контакты — lazy loaded */}
+        <section id="contact" className="px-6 max-w-7xl mx-auto w-full cv-auto">
           <ContactHub />
         </section>
 
