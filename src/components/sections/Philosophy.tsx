@@ -10,7 +10,7 @@ const HolographicScene = dynamic(
   { 
     ssr: false,
     loading: () => (
-      <div className="aspect-square max-w-md mx-auto flex items-center justify-center">
+      <div className="aspect-square max-w-lg mx-auto flex items-center justify-center">
         <div className="w-32 h-32 rounded-full border border-(--border) opacity-20 animate-pulse" />
       </div>
     )
@@ -58,10 +58,9 @@ export const Philosophy = () => {
         <div
           style={{
             opacity: isInView ? 1 : 0,
-            transform: isInView ? 'translateX(0)' : 'translateX(-30px)',
-            transition: 'opacity 0.7s ease, transform 0.7s ease',
+            transition: 'opacity 0.8s ease',
           }}
-          className="relative order-2 lg:order-1 overflow-visible"
+          className="relative order-2 lg:order-1"
         >
           <HolographicScene />
         </div>

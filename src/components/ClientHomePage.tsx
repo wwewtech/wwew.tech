@@ -64,8 +64,8 @@ export function ClientHomePage({ defaultTranslations }: ClientHomePageProps) {
           <Hero />
         </section>
 
-        {/* Секция 2: О себе (Философия) — lazy loaded */}
-        <section id="about" className="px-6 max-w-7xl mx-auto w-full cv-auto">
+        {/* Секция 2: О себе (Философия) — без cv-auto, т.к. 3D canvas чувствителен к resize */}
+        <section id="about" className="px-6 max-w-7xl mx-auto w-full">
           <Philosophy />
         </section>
 

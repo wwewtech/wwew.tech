@@ -173,7 +173,10 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
   const { pointer } = useThree();
   // Accumulated time — only ticks when frame actually renders (no jump after tab switch)
   const accTime = useRef(0);
-  const autoAngle = useRef(0);
+
+  // Smooth mouse tilt values (separate from auto-rotation)
+  const smoothTiltX = useRef(0);
+  const smoothTiltY = useRef(0);
 
   const uniforms = useMemo(
     () => ({
@@ -191,18 +194,28 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
     if (!groupRef.current) return;
     // Clamp delta to avoid huge jumps after tab switch (max ~2 frames at 60fps)
     const dt = Math.min(delta, 0.05);
-
     accTime.current += dt;
-    autoAngle.current += dt * 0.1;  // slow auto-rotate
 
     const g = groupRef.current;
-    // Smooth mouse follow — purely lerp-based, no absolute target
-    const targetRx = pointer.y * 0.2;
-    const targetRy = pointer.x * 0.3 + autoAngle.current;
 
-    g.rotation.x += (targetRx - g.rotation.x) * 0.02;
-    g.rotation.y += (targetRy - g.rotation.y) * 0.02;
-    g.rotation.z = Math.sin(accTime.current * 0.12) * 0.06;
+    // Auto-rotation: slow constant speed, always forward
+    // Uses time directly — predictable, no accumulation drift
+    const autoY = accTime.current * 0.15;
+
+    // Mouse tilt: smooth follow towards cursor position
+    // pointer.x/y are in [-1, 1] range — map to a small tilt angle
+    const targetTiltX = pointer.y * 0.25;  // tilt up/down toward cursor
+    const targetTiltY = pointer.x * 0.25;  // tilt left/right toward cursor
+
+    // Smooth lerp for natural feel (faster response = more responsive)
+    const lerpFactor = 1 - Math.pow(0.03, dt); // framerate-independent lerp
+    smoothTiltX.current += (targetTiltX - smoothTiltX.current) * lerpFactor;
+    smoothTiltY.current += (targetTiltY - smoothTiltY.current) * lerpFactor;
+
+    // Combine: auto-rotation on Y + mouse tilt overlay
+    g.rotation.x = smoothTiltX.current;
+    g.rotation.y = autoY + smoothTiltY.current;
+    g.rotation.z = Math.sin(accTime.current * 0.12) * 0.04;
 
     if (matRef.current) matRef.current.uniforms.uTime.value = accTime.current;
   });
@@ -346,12 +359,7 @@ export const HolographicScene = ({ className = '' }: { className?: string }) => 
   return (
     <div
       ref={containerRef}
-      className={`relative aspect-square max-w-lg mx-auto overflow-visible ${className}`}
-      style={{
-        opacity: ready ? 1 : 0,
-        transform: ready ? 'scale(1)' : 'scale(0.92)',
-        transition: 'opacity 1s ease-out, transform 1s ease-out',
-      }}
+      className={`relative aspect-square max-w-lg mx-auto ${className}`}
     >
       {/* Мягкое свечение за объектом — сливается с фоном страницы */}
       <div
@@ -371,14 +379,18 @@ export const HolographicScene = ({ className = '' }: { className?: string }) => 
         </div>
       )}
 
-      {/* Canvas расширен на 30% за пределы контейнера чтобы объект не обрезался */}
+      {/* Canvas — inset-0 fills parent exactly, no resize possible */}
       <div
-        className="absolute pointer-events-auto"
-        style={{ inset: '-15%', overflow: 'visible' }}
+        className="absolute inset-0 pointer-events-auto"
+        style={{
+          opacity: ready ? 1 : 0,
+          transition: 'opacity 0.8s ease-out',
+        }}
       >
       <Canvas
-        camera={{ position: [0, 0, 6], fov: 35 }}
+        camera={{ position: [0, 0, 5.5], fov: 40 }}
         frameloop={isVisible ? 'always' : 'never'}
+        resize={{ scroll: false, debounce: { scroll: 500, resize: 500 } }}
         gl={{
           antialias: true,
           alpha: true,
@@ -388,7 +400,6 @@ export const HolographicScene = ({ className = '' }: { className?: string }) => 
         dpr={[1, 1.5]}
         style={{
           background: 'transparent',
-          overflow: 'visible',
           width: '100%',
           height: '100%',
         }}
