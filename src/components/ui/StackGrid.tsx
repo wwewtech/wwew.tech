@@ -156,13 +156,13 @@ export const StackGrid = () => {
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500">
                 {card.icon}
               </div>
-              <div className="transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[5deg]">
+              <div>
                 {card.icon}
               </div>
             </div>
 
             {/* Content */}
-            <h3 className="text-xl font-medium text-foreground mb-2 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1">
+            <h3 className="text-xl font-medium text-foreground mb-2 opacity-90 group-hover:opacity-100 transition-all duration-300">
               {card.title}
             </h3>
             

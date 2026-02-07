@@ -4,14 +4,14 @@ import React, { useRef, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useLanguage } from '@/context/AppContext';
 
-// Lazy load InteractiveBlob для улучшения TBT
-const InteractiveBlob = dynamic(
-  () => import('@/components/ui/InteractiveBlob').then(mod => mod.InteractiveBlob),
+// Lazy load HolographicScene для улучшения TBT
+const HolographicScene = dynamic(
+  () => import('@/components/ui/HolographicScene').then(mod => mod.HolographicScene),
   { 
     ssr: false,
     loading: () => (
       <div className="aspect-square max-w-md mx-auto flex items-center justify-center">
-        <div className="w-48 h-48 rounded-full border border-(--border) opacity-20" />
+        <div className="w-32 h-32 rounded-full border border-(--border) opacity-20 animate-pulse" />
       </div>
     )
   }
@@ -61,9 +61,9 @@ export const Philosophy = () => {
             transform: isInView ? 'translateX(0)' : 'translateX(-30px)',
             transition: 'opacity 0.7s ease, transform 0.7s ease',
           }}
-          className="relative order-2 lg:order-1"
+          className="relative order-2 lg:order-1 overflow-visible"
         >
-          <InteractiveBlob />
+          <HolographicScene />
         </div>
 
         {/* Right: Text Content */}
