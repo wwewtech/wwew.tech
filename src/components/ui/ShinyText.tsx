@@ -5,10 +5,21 @@ import React, { useState, useEffect } from 'react';
 interface ShinyTextProps {
   text: string;
   className?: string;
-  /** Длительность одного прохода блика в секундах */
+  /** Duration of one shine sweep in seconds */
   speed?: number;
 }
 
+/**
+ * ShinyText component - renders text with animated shine effect.
+ * 
+ * CRITICAL FOR LCP FIX:
+ * - During SSR and before hydration: Text is shown with HIGH CONTRAST solid color (--foreground)
+ * - This ensures Lighthouse detects the H1 as the LCP element immediately
+ * - After hydration: The shiny gradient effect is applied
+ * 
+ * The key insight: `color: transparent` with `background-clip: text` may not be
+ * recognized as "contentful" by Lighthouse. We need VISIBLE text first.
+ */
 export const ShinyText: React.FC<ShinyTextProps> = ({
   text,
   className = '',
@@ -17,18 +28,18 @@ export const ShinyText: React.FC<ShinyTextProps> = ({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    // Small delay to ensure LCP is measured before applying effect
+    const timer = requestAnimationFrame(() => {
+      setMounted(true);
+    });
+    return () => cancelAnimationFrame(timer);
   }, []);
 
   return (
     <span
-      className={`${mounted ? 'shiny-text' : ''} ${className}`}
+      className={`${mounted ? 'shiny-text' : 'shiny-text-fallback'} ${className}`}
       style={{ 
         '--shiny-speed': `${speed}s`,
-        // Fallback color prevents LCP issues by ensuring text is visible initially
-        // Use inline-block to match .shiny-text behavior to prevent layout shifts
-        display: 'inline-block',
-        color: mounted ? undefined : 'var(--shiny-base-color)'
       } as React.CSSProperties}
     >
       {text}

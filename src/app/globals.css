@@ -166,6 +166,20 @@ a *::selection {
   background-size: 1px 100%, 100% 1px;
 }
 
+/* 
+ * ShinyText Fallback for SSR/LCP - HIGH CONTRAST visible text
+ * This class is applied during SSR and before hydration to ensure
+ * Lighthouse can detect the text as the LCP element.
+ * 
+ * CRITICAL: Using solid foreground color, NOT transparent!
+ */
+.shiny-text-fallback {
+  display: inline-block;
+  color: var(--foreground);
+  /* Smooth transition to shiny effect after hydration */
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
 /* Shiny Text Effect — GPU-accelerated shimmer on text */
 .shiny-text {
   display: inline-block;
@@ -184,6 +198,8 @@ a *::selection {
   background-clip: text;
   animation: shiny-sweep var(--shiny-speed, 2s) linear infinite;
   will-change: background-position;
+  /* Smooth appearance from fallback state */
+  animation-delay: 0.1s;
 }
 
 @keyframes shiny-sweep {
