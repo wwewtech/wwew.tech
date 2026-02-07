@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface ShinyTextProps {
   text: string;
@@ -14,10 +14,22 @@ export const ShinyText: React.FC<ShinyTextProps> = ({
   className = '',
   speed = 5,
 }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <span
-      className={`shiny-text ${className}`}
-      style={{ '--shiny-speed': `${speed}s` } as React.CSSProperties}
+      className={`${mounted ? 'shiny-text' : ''} ${className}`}
+      style={{ 
+        '--shiny-speed': `${speed}s`,
+        // Fallback color prevents LCP issues by ensuring text is visible initially
+        // Use inline-block to match .shiny-text behavior to prevent layout shifts
+        display: 'inline-block',
+        color: mounted ? undefined : 'var(--shiny-base-color)'
+      } as React.CSSProperties}
     >
       {text}
     </span>

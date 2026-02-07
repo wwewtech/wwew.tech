@@ -9,7 +9,7 @@ export const Hero = () => {
   const { t } = useLanguage();
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 pt-16 overflow-hidden bg-lines">
+    <section className="relative min-h-screen flex flex-col items-center justify-start text-center px-4 pt-16 md:pt-24 overflow-hidden bg-lines">
 
       {/* Decorative curved lines */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-50 dark:opacity-100" preserveAspectRatio="none">
@@ -35,7 +35,7 @@ export const Hero = () => {
 
       <div className="relative z-10 max-w-5xl mx-auto">
         {/* Pill Badge - CSS animation */}
-        <div className="pill-badge mb-10 cursor-default animate-hero-fade-in [animation-delay:0ms]">
+        <div className="pill-badge mb-5 cursor-default animate-hero-fade-in [animation-delay:0ms]">
           <span className="relative flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
@@ -57,7 +57,7 @@ export const Hero = () => {
         </h1>
 
         {/* Subtitle - CSS animation */}
-        <p className="text-(--muted) text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-12 animate-hero-fade-in [animation-delay:200ms]">
+        <p className="text-(--muted) text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-6 animate-hero-fade-in [animation-delay:200ms]">
           {t('hero.subtitle')}
         </p>
 
