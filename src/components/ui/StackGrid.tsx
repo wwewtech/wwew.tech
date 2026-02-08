@@ -6,7 +6,7 @@ const stackCards = [
   {
     title: 'Frontend',
     desc: 'Pixel-perfect interfaces with smooth animations',
-    tech: ['React', 'Next.js', 'TypeScript', 'Tailwind'],
+    tech: ['React', 'Next.js', 'Tailwind'],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -18,7 +18,7 @@ const stackCards = [
   {
     title: 'Backend',
     desc: 'Scalable APIs and robust server architecture',
-    tech: ['Python', 'FastAPI', 'Node.js'],
+    tech: ['Python', 'Node.js', '.NET'],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M5 12h14" />
@@ -33,7 +33,7 @@ const stackCards = [
   {
     title: 'Automation',
     desc: 'Data pipelines and intelligent automation',
-    tech: ['Python', 'Selenium', 'Pandas', 'n8n'],
+    tech: ['Selenium', 'Pandas', 'n8n'],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M12 2v4" />
@@ -85,7 +85,7 @@ const stackCards = [
   {
     title: 'Security',
     desc: 'Military-grade encryption',
-    tech: ['OAuth', 'JWT', 'SSL'],
+    tech: ['OAuth', 'JWT', 'SSL', 'Burp'],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -93,12 +93,20 @@ const stackCards = [
     ),
   },
   {
-    title: 'Performance',
-    desc: 'Lightning-fast optimization',
-    tech: ['Caching', 'CDN', 'SSR', 'Burp'],
+    title: 'ML',
+    desc: 'Model training, OpenCV, and intelligent solutions',
+    tech: ['PyTorch', 'OpenCV', 'TensorFlow'],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        <circle cx="12" cy="5" r="2" />
+        <circle cx="6" cy="12" r="2" />
+        <circle cx="18" cy="12" r="2" />
+        <circle cx="12" cy="19" r="2" />
+        <path d="M12 7v10" />
+        <path d="M10.5 6.5l-3 4" />
+        <path d="M13.5 6.5l3 4" />
+        <path d="M7.5 13.5l3 4" />
+        <path d="M16.5 13.5l-3 4" />
       </svg>
     ),
   },
@@ -149,7 +157,7 @@ export const StackGrid = () => {
               transition: `opacity 0.5s ease ${idx * 0.05}s, transform 0.5s ease ${idx * 0.05}s`,
             }}
             onMouseMove={handleMouseMove}
-            className="group feature-card border-l border-(--border-subtle) first:border-l-0 md:nth-2:border-l md:nth-5:border-l-0 lg:nth-5:border-l"
+            className="group feature-card flex flex-col h-full border-l border-(--border-subtle) first:border-l-0 md:nth-2:border-l md:nth-5:border-l-0 lg:nth-5:border-l"
           >
             {/* Icon with pulse effect */}
             <div className="text-(--muted) group-hover:text-foreground transition-all duration-500 mb-6 relative">
@@ -166,18 +174,18 @@ export const StackGrid = () => {
               {card.title}
             </h3>
             
-            <p className="text-(--muted) text-sm leading-relaxed mb-5 group-hover:text-foreground transition-colors duration-500">
+            <p className="text-(--muted) text-sm leading-relaxed mb-5 min-h-[3rem] group-hover:text-foreground transition-colors duration-500">
               {card.desc}
             </p>
 
             {/* Tech Tags - без анимации для производительности */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mt-auto">
               {card.tech.map((tech, techIdx) => (
                 <span
                   key={techIdx}
                   className="text-xs text-(--muted-foreground) group-hover:text-(--muted) transition-colors"
                 >
-                  {tech}{techIdx < card.tech.length - 1 && ' ·'}
+                  {tech}
                 </span>
               ))}
             </div>
