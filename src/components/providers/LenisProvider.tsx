@@ -19,29 +19,44 @@ export const LenisProvider = ({ children }: LenisProviderProps) => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Force check on mount
     setIsMobile(isMobileDevice());
+
+    const handleResize = () => {
+      setIsMobile(isMobileDevice());
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
-    // На мобильных устройствах используем нативный скролл
-    if (isMobile) return;
+    // На мобильных устройствах используем нативный скролл и полностью отключаем Lenis
+    if (isMobile) {
+      document.documentElement.classList.remove('lenis', 'lenis-smooth');
+      return;
+    }
+
+    let lenis: Lenis | null = null;
+    let rafId: number;
 
     // Defer Lenis initialization to not block main thread during FCP/LCP
     const initTimeout = setTimeout(() => {
-      const lenis = new Lenis({
+      // Double check mobile state before creating instance
+      if (isMobileDevice()) return;
+
+      lenis = new Lenis({
         duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        // Не перехватываем touch события
+        // Полностью отключаем обработку тач-событий в Lenis
         touchMultiplier: 0,
         infinite: false,
-        // Отключаем на touch устройствах
         syncTouch: false,
         syncTouchLerp: 0,
       });
 
-      let rafId: number;
       function raf(time: number) {
-        lenis.raf(time);
+        lenis?.raf(time);
         rafId = requestAnimationFrame(raf);
       }
 
@@ -56,7 +71,7 @@ export const LenisProvider = ({ children }: LenisProviderProps) => {
           if (href && href.length > 1) {
             e.preventDefault();
             const element = document.querySelector(href);
-            if (element) {
+            if (element && lenis) {
               lenis.scrollTo(element as HTMLElement);
             }
           }
@@ -69,19 +84,25 @@ export const LenisProvider = ({ children }: LenisProviderProps) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).__lenisCleanup = () => {
         cancelAnimationFrame(rafId);
-        lenis.destroy();
+        lenis?.destroy();
         document.removeEventListener('click', handleAnchorClick);
       };
-    }, 100); // Small delay to let critical rendering finish
+    }, 100); 
 
     return () => {
       clearTimeout(initTimeout);
+      if (rafId) cancelAnimationFrame(rafId);
+      if (lenis) {
+        lenis.destroy();
+        lenis = null;
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cleanup = (window as any).__lenisCleanup as (() => void) | undefined;
       if (cleanup) {
         cleanup();
         delete (window as any).__lenisCleanup;
       }
+      document.documentElement.classList.remove('lenis', 'lenis-smooth');
     };
   }, [isMobile]);
 

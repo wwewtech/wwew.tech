@@ -82,10 +82,10 @@ body {
   opacity: 0.5;
 }
 
-/* Smooth scroll */
-html {
+/* Smooth scroll - DISABLED globally to prevent conflict with Lenis */
+/* html {
   scroll-behavior: smooth;
-}
+} */
 
 /* Selection */
 ::selection {
@@ -384,10 +384,10 @@ a *::selection {
 }
 
 /* Content-visibility for below-fold sections — skip rendering until visible */
-.cv-auto {
+/* .cv-auto {
   content-visibility: auto;
   contain-intrinsic-size: auto 600px;
-}
+} */
 
 /* Simple fadeIn animation */
 @keyframes fadeIn {

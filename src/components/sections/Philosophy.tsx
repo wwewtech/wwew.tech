@@ -42,7 +42,7 @@ export const Philosophy = () => {
   }, []);
 
   return (
-    <section ref={ref} className="relative">
+    <section ref={ref} className="relative overflow-hidden">
       {/* Decorative lines */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-30" preserveAspectRatio="none">
         <path
