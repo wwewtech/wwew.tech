@@ -74,7 +74,7 @@ const stackCards = [
   {
     title: 'DevOps',
     desc: 'CI/CD and cloud infrastructure',
-    tech: ['Docker', 'Linux', 'AWS', 'Vercel'],
+    tech: ['Docker', 'Linux', 'SSH', 'Vercel'],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M2 20a2 2 0 002 2h16a2 2 0 002-2V8l-7-7H4a2 2 0 00-2 2v17z" />
@@ -95,7 +95,7 @@ const stackCards = [
   {
     title: 'Performance',
     desc: 'Lightning-fast optimization',
-    tech: ['Caching', 'CDN', 'SSR'],
+    tech: ['Caching', 'CDN', 'SSR', 'Burp'],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />

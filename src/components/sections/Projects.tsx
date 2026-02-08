@@ -148,22 +148,6 @@ export const Projects = () => {
         ))}
       </div>
 
-      {/* View All */}
-      <div
-        style={{
-          opacity: isInView ? 1 : 0,
-          transition: 'opacity 0.5s ease 0.5s',
-        }}
-        className="mt-12 text-center"
-      >
-        <a
-          href="#"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-(--border) text-(--muted) hover:text-foreground hover:border-(--foreground)/30 transition-all"
-        >
-          View all projects
-          <ArrowUpRight className="w-4 h-4" />
-        </a>
-      </div>
     </section>
   );
 };

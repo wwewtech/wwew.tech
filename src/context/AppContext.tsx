@@ -33,15 +33,15 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Philosophy
     'philosophy.badge': 'Философия',
-    'philosophy.title1': 'Цифровая',
-    'philosophy.title2': 'Эстетика',
+    'philosophy.title1': 'Цифровой',
+    'philosophy.title2': 'Стиль',
     'philosophy.text1': 'Разработка — это процесс поиска баланса между функциональностью и формой. Хороший продукт должен быть незаметным, интуитивным и надежным,',
     'philosophy.highlight1': 'решая задачи без лишнего шума.',
     'philosophy.text2': 'Современные приложения строятся на фундаменте',
     'philosophy.backend': 'стабильной логики',
     'philosophy.text3': 'и',
     'philosophy.frontend': 'визуальной гармонии.',
-    'philosophy.text4': 'Цифровые пространства должны служить людям, а технологии — расширять возможности, не усложняя взаимодействия.',
+    'philosophy.text4': 'Любые цифровые решения должны служить людям, а технологии — расширять возможности, не усложняя взаимодействия.',
     'philosophy.stat1': 'Проектов',
     'philosophy.stat2': 'Года',
     'philosophy.stat3': 'Идей',
