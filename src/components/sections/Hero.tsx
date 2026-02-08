@@ -12,7 +12,7 @@ export const Hero = () => {
     <section className="relative min-h-screen flex flex-col items-center justify-start text-center px-4 pt-16 md:pt-24 overflow-hidden bg-lines">
 
       {/* Decorative curved lines */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-50 dark:opacity-100" preserveAspectRatio="none">
+      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-50 dark:opacity-100" viewBox="0 0 2000 1000" preserveAspectRatio="xMidYMid slice">
         <path
           d="M0 400 Q 400 200, 800 400 T 1600 400"
           stroke="var(--border)"
@@ -44,7 +44,7 @@ export const Hero = () => {
         </div>
 
         {/* Main Title - NO animation for proper LCP detection */}
-        <h1 className="text-6xl md:text-8xl lg:text-9xl font-medium tracking-tight mb-8 leading-[1.05]">
+        <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-medium tracking-tight mb-8 leading-[1.05]">
           <span className="block pb-1">
             <ShinyText text={t('hero.title1')} />
           </span>

@@ -18,7 +18,7 @@ const stackCards = [
   {
     title: 'Backend',
     desc: 'Scalable APIs and robust server architecture',
-    tech: ['Python', 'FastAPI', 'Node.js', 'Django'],
+    tech: ['Python', 'FastAPI', 'Node.js'],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M5 12h14" />
@@ -33,7 +33,7 @@ const stackCards = [
   {
     title: 'Automation',
     desc: 'Data pipelines and intelligent automation',
-    tech: ['Python', 'Selenium', 'Pandas'],
+    tech: ['Python', 'Selenium', 'Pandas', 'n8n'],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M12 2v4" />
