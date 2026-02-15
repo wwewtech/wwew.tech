@@ -154,10 +154,17 @@ const fragmentShader = /* glsl */ `
     // Built-in bloom simulation: brighten highlights
     float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
     float bloomMask = smoothstep(0.55, 1.2, luma);
-    color += color * bloomMask * 0.3;
+    float bloomStrength = mix(0.2, 0.3, uIsDark);
+    color += color * bloomMask * bloomStrength;
+
+    // Light-theme compensation: keep form readable on bright backgrounds
+    float lightTheme = 1.0 - uIsDark;
+    vec3 lightTone = vec3(0.09, 0.12, 0.2);
+    color = mix(color, color * 0.84 + lightTone * 0.22, lightTheme * 0.32);
+    color += lightTone * fresnel * lightTheme * 0.18;
 
     // Alpha: opaque center, slightly glow at edges
-    float alpha = 0.95;
+    float alpha = mix(0.9, 0.95, uIsDark);
 
     gl_FragColor = vec4(color, alpha);
   }
@@ -181,14 +188,26 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
   const uniforms = useMemo(
     () => ({
       uTime:      { value: 0 },
-      uIsDark:    { value: isDark ? 1.0 : 0.0 },
-      uBaseColor: { value: new THREE.Color(isDark ? '#1a1a2e' : '#c5c8d8') },
-      uDeepColor: { value: new THREE.Color(isDark ? '#08081a' : '#9a9db0') },
+      uIsDark:    { value: 1.0 },
+      uBaseColor: { value: new THREE.Color('#1a1a2e') },
+      uDeepColor: { value: new THREE.Color('#08081a') },
       uAccent:    { value: new THREE.Color('#B5FF6D') },
-      uSpecColor: { value: new THREE.Color(isDark ? '#7788ee' : '#5566cc') },
+      uSpecColor: { value: new THREE.Color('#7788ee') },
     }),
-    [isDark],
+    [],
   );
+
+  useEffect(() => {
+    uniforms.uIsDark.value = isDark ? 1.0 : 0.0;
+    uniforms.uBaseColor.value.set(isDark ? '#1a1a2e' : '#eff3ff');
+    uniforms.uDeepColor.value.set(isDark ? '#08081a' : '#8b99cc');
+    uniforms.uAccent.value.set(isDark ? '#B5FF6D' : '#3db0ff');
+    uniforms.uSpecColor.value.set(isDark ? '#7788ee' : '#4f69e0');
+
+    if (matRef.current) {
+      matRef.current.needsUpdate = true;
+    }
+  }, [isDark, uniforms]);
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
@@ -227,6 +246,7 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
         <mesh>
           <torusKnotGeometry args={[1, 0.38, 200, 40, 2, 3]} />
           <shaderMaterial
+            key={isDark ? 'knot-dark' : 'knot-light'}
             ref={matRef}
             uniforms={uniforms}
             vertexShader={vertexShader}
@@ -242,7 +262,7 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
           <torusKnotGeometry args={[1, 0.4, 80, 24, 2, 3]} />
           <shaderMaterial
             uniforms={{
-              uColor: { value: new THREE.Color(isDark ? '#4455cc' : '#6677dd') },
+              uColor: { value: new THREE.Color(isDark ? '#4455cc' : '#7f98ff') },
             }}
             vertexShader={`
               varying vec3 vNormal;
@@ -273,9 +293,9 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[2.0, 0.005, 8, 64]} />
           <meshBasicMaterial
-            color="#B5FF6D"
+            color={isDark ? '#B5FF6D' : '#6ec5ff'}
             transparent
-            opacity={isDark ? 0.1 : 0.06}
+            opacity={isDark ? 0.1 : 0.08}
           />
         </mesh>
         <mesh rotation={[1.2, 0.5, 0]}>
@@ -283,7 +303,7 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
           <meshBasicMaterial
             color={isDark ? '#7788ee' : '#5566cc'}
             transparent
-            opacity={0.06}
+            opacity={isDark ? 0.06 : 0.08}
           />
         </mesh>
       </Float>
@@ -368,9 +388,19 @@ export const HolographicScene = ({ className = '' }: { className?: string }) => 
           inset: '-15%',
           background: isDark
             ? 'radial-gradient(ellipse at 50% 50%, rgba(80,100,220,0.06) 0%, transparent 60%)'
-            : 'radial-gradient(ellipse at 50% 50%, rgba(80,90,180,0.04) 0%, transparent 60%)',
+            : 'radial-gradient(ellipse at 50% 50%, rgba(95,120,230,0.14) 0%, rgba(120,145,245,0.08) 36%, transparent 68%)',
         }}
       />
+
+      {!isDark && (
+        <div
+          className="absolute inset-[20%] rounded-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 72%)',
+            opacity: 0.9,
+          }}
+        />
+      )}
 
       {/* Loading */}
       {!ready && (
@@ -410,7 +440,7 @@ export const HolographicScene = ({ className = '' }: { className?: string }) => 
           <ambientLight intensity={isDark ? 0.25 : 0.4} />
           <directionalLight
             position={[5, 4, 5]}
-            intensity={isDark ? 1.5 : 1.1}
+            intensity={isDark ? 1.5 : 1.25}
             color={isDark ? '#aabbff' : '#8899cc'}
           />
           <directionalLight

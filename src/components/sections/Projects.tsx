@@ -65,9 +65,6 @@ export const Projects = () => {
         }}
         className="text-center mb-16"
       >
-        <div className="pill-badge mx-auto mb-8">
-          <span>{t('projects.badge')}</span>
-        </div>
         <h2 className="text-5xl md:text-7xl font-medium tracking-tight mb-6 leading-[1.05]">
           <span className="text-gradient block pb-1">{t('projects.title')}</span>
         </h2>

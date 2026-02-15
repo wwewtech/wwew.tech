@@ -75,9 +75,6 @@ export const ContactHub = () => {
             transition: 'opacity 0.6s ease, transform 0.6s ease',
           }}
         >
-          <div className="pill-badge mx-auto mb-8">
-            <span>{t('contact.badge')}</span>
-          </div>
           <h2 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-6 leading-[1.05]">
             <span className="text-gradient block pb-1">{t('contact.title1')}</span>
             <span className="text-(--muted) block pb-1">{t('contact.title2')}</span>

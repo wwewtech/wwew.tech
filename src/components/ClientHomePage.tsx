@@ -72,9 +72,6 @@ export function ClientHomePage({ defaultTranslations }: ClientHomePageProps) {
         {/* Секция 3: Стек технологий (Bento Grid) — lazy loaded */}
         <section id="stack" className="px-6 max-w-7xl mx-auto w-full cv-auto">
           <div className="mb-12">
-            <span className="text-sm font-medium tracking-wider uppercase mb-4 block text-(--muted)">
-              {t('stack.badge') || defaultTranslations.stackBadge}
-            </span>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-foreground">
               {t('stack.title') || defaultTranslations.stackTitle}
             </h2>

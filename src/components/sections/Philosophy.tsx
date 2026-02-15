@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useLanguage } from '@/context/AppContext';
+import { useLanguage, useTheme } from '@/context/AppContext';
 
 // Lazy load HolographicScene для улучшения TBT
 const HolographicScene = dynamic(
@@ -21,6 +21,7 @@ export const Philosophy = () => {
   const ref = useRef<HTMLElement>(null);
   const [isInView, setIsInView] = useState(false);
   const { t } = useLanguage();
+  const { theme } = useTheme();
 
   // IntersectionObserver вместо framer-motion
   useEffect(() => {
@@ -62,7 +63,7 @@ export const Philosophy = () => {
           }}
           className="relative order-2 lg:order-1"
         >
-          <HolographicScene />
+          <HolographicScene key={theme} />
         </div>
 
         {/* Right: Text Content */}
@@ -74,10 +75,6 @@ export const Philosophy = () => {
           }}
           className="order-1 lg:order-2"
         >
-          <div className="pill-badge mb-8">
-            <span>{t('philosophy.badge')}</span>
-          </div>
-          
           <h2 className="text-5xl md:text-6xl lg:text-7xl font-medium tracking-tight mb-8 leading-[1.05]">
             <span className="text-gradient block pb-1">{t('philosophy.title1')}</span>
             <span className="text-(--muted) block pb-1">{t('philosophy.title2')}</span>

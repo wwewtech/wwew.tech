@@ -91,6 +91,34 @@ html, body {
   max-width: 100%;
 }
 
+#native-scroll-root {
+  min-height: 100%;
+}
+
+html.ios-native-scroll,
+body.ios-native-scroll {
+  height: 100%;
+  overflow: hidden;
+}
+
+html.ios-native-scroll #native-scroll-root {
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  html,
+  body {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto;
+  }
+}
+
 /* Selection */
 ::selection {
   background: rgba(0, 0, 0, 0.1);

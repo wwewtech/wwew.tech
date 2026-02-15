@@ -1,110 +1,86 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect } from 'react';
 import Lenis from 'lenis';
 
 interface LenisProviderProps {
   children: ReactNode;
 }
 
-// Определение мобильного устройства
-const isMobileDevice = () => {
+const shouldUseNativeScroll = () => {
   if (typeof window === 'undefined') return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
-    || window.matchMedia('(max-width: 768px)').matches
-    || 'ontouchstart' in window;
+
+  const userAgent = navigator.userAgent || navigator.vendor;
+  const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+  const hasCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  const noHover = window.matchMedia('(hover: none)').matches;
+  const smallViewport = window.matchMedia('(max-width: 1024px)').matches;
+
+  return isIOS || (hasCoarsePointer && (noHover || smallViewport));
+};
+
+const isIOSDevice = () => {
+  if (typeof window === 'undefined') return false;
+  const userAgent = navigator.userAgent || navigator.vendor;
+  return /iPhone|iPad|iPod/i.test(userAgent);
 };
 
 export const LenisProvider = ({ children }: LenisProviderProps) => {
-  const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
-    // Force check on mount
-    setIsMobile(isMobileDevice());
+    const nativeScroll = shouldUseNativeScroll();
+    const ios = isIOSDevice();
 
-    const handleResize = () => {
-      setIsMobile(isMobileDevice());
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
-    // На мобильных устройствах используем нативный скролл и полностью отключаем Lenis
-    if (isMobile) {
+    if (nativeScroll) {
       document.documentElement.classList.remove('lenis', 'lenis-smooth');
-      return;
+
+      if (ios) {
+        document.documentElement.classList.add('ios-native-scroll');
+        document.body.classList.add('ios-native-scroll');
+      }
+
+      return () => {
+        document.documentElement.classList.remove('ios-native-scroll');
+        document.body.classList.remove('ios-native-scroll');
+      };
     }
 
-    let lenis: Lenis | null = null;
-    let rafId: number;
+    document.documentElement.classList.remove('ios-native-scroll');
+    document.body.classList.remove('ios-native-scroll');
 
-    // Defer Lenis initialization to not block main thread during FCP/LCP
-    const initTimeout = setTimeout(() => {
-      // Double check mobile state before creating instance
-      if (isMobileDevice()) return;
+    const lenis = new Lenis({
+      duration: 1.05,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      infinite: false,
+      autoRaf: true,
+      smoothWheel: true,
+      syncTouch: false,
+      touchMultiplier: 1,
+      wheelMultiplier: 0.9,
+    });
 
-      lenis = new Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        // Полностью отключаем обработку тач-событий в Lenis
-        touchMultiplier: 0,
-        infinite: false,
-        syncTouch: false,
-        syncTouchLerp: 0,
-      });
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest('a[href^="#"]');
+      if (!anchor) return;
 
-      function raf(time: number) {
-        lenis?.raf(time);
-        rafId = requestAnimationFrame(raf);
-      }
+      const href = anchor.getAttribute('href');
+      if (!href || href.length <= 1) return;
 
-      rafId = requestAnimationFrame(raf);
+      const element = document.querySelector(href);
+      if (!element) return;
 
-      // Handle anchor links for smooth scroll
-      const handleAnchorClick = (e: MouseEvent) => {
-        const target = e.target as HTMLElement;
-        const anchor = target.closest('a[href^="#"]');
-        if (anchor) {
-          const href = anchor.getAttribute('href');
-          if (href && href.length > 1) {
-            e.preventDefault();
-            const element = document.querySelector(href);
-            if (element && lenis) {
-              lenis.scrollTo(element as HTMLElement);
-            }
-          }
-        }
-      };
+      e.preventDefault();
+      lenis.scrollTo(element as HTMLElement, { duration: 0.9 });
+    };
 
-      document.addEventListener('click', handleAnchorClick);
-
-      // Store cleanup reference
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).__lenisCleanup = () => {
-        cancelAnimationFrame(rafId);
-        lenis?.destroy();
-        document.removeEventListener('click', handleAnchorClick);
-      };
-    }, 100); 
+    document.addEventListener('click', handleAnchorClick);
 
     return () => {
-      clearTimeout(initTimeout);
-      if (rafId) cancelAnimationFrame(rafId);
-      if (lenis) {
-        lenis.destroy();
-        lenis = null;
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cleanup = (window as any).__lenisCleanup as (() => void) | undefined;
-      if (cleanup) {
-        cleanup();
-        delete (window as any).__lenisCleanup;
-      }
+      document.removeEventListener('click', handleAnchorClick);
+      lenis.destroy();
       document.documentElement.classList.remove('lenis', 'lenis-smooth');
     };
-  }, [isMobile]);
+  }, []);
 
-  return <>{children}</>;
+  return <div id="native-scroll-root">{children}</div>;
 };
