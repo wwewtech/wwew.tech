@@ -33,7 +33,7 @@ const stackCards = [
   {
     title: 'Automation',
     desc: 'Data pipelines and intelligent automation',
-    tech: ['Selenium', 'Pandas', 'n8n'],
+    tech: ['Selenium', 'OpenPyXL', 'n8n'],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M12 2v4" />
@@ -85,7 +85,7 @@ const stackCards = [
   {
     title: 'Security',
     desc: 'Military-grade encryption',
-    tech: ['OAuth', 'JWT', 'SSL', 'Burp'],
+    tech: ['Postman', 'Burp', 'SSL', ],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
