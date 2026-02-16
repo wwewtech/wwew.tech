@@ -7,7 +7,6 @@ import { useLanguage, useTheme, useFluidCursor } from '@/context/AppContext';
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { isFluidCursorEnabled, toggleFluidCursor } = useFluidCursor();
@@ -20,9 +19,6 @@ export const Navbar = () => {
   ];
 
   useEffect(() => {
-    // Анимация появления
-    setIsVisible(true);
-    
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -35,14 +31,7 @@ export const Navbar = () => {
   return (
     <>
       {/* Navbar - Premium minimal */}
-      <div
-        style={{
-          transform: isVisible ? 'translateY(0)' : 'translateY(-100px)',
-          opacity: isVisible ? 1 : 0,
-          transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-        }}
-        className="fixed top-0 left-0 right-0 z-50"
-      >
+      <div className="fixed top-0 left-0 right-0 z-50">
         <nav
           className={`transition-all duration-300 border-b ${
             isScrolled

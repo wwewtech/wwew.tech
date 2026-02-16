@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import Lenis from 'lenis';
 
 interface LenisProviderProps {
   children: ReactNode;
@@ -27,58 +26,77 @@ const isIOSDevice = () => {
 
 export const LenisProvider = ({ children }: LenisProviderProps) => {
   useEffect(() => {
-    const nativeScroll = shouldUseNativeScroll();
-    const ios = isIOSDevice();
+    let lenisInstance: { destroy: () => void; scrollTo: (target: HTMLElement, options?: { duration?: number }) => void } | null = null;
+    let isDisposed = false;
 
-    if (nativeScroll) {
-      document.documentElement.classList.remove('lenis', 'lenis-smooth');
+    const initLenis = async () => {
+      const nativeScroll = shouldUseNativeScroll();
+      const ios = isIOSDevice();
 
-      if (ios) {
-        document.documentElement.classList.add('ios-native-scroll');
-        document.body.classList.add('ios-native-scroll');
+      if (nativeScroll) {
+        document.documentElement.classList.remove('lenis', 'lenis-smooth');
+
+        if (ios) {
+          document.documentElement.classList.add('ios-native-scroll');
+          document.body.classList.add('ios-native-scroll');
+        }
+
+        return () => {
+          document.documentElement.classList.remove('ios-native-scroll');
+          document.body.classList.remove('ios-native-scroll');
+        };
       }
 
-      return () => {
-        document.documentElement.classList.remove('ios-native-scroll');
-        document.body.classList.remove('ios-native-scroll');
+      document.documentElement.classList.remove('ios-native-scroll');
+      document.body.classList.remove('ios-native-scroll');
+
+      const { default: Lenis } = await import('lenis');
+      if (isDisposed) return;
+
+      lenisInstance = new Lenis({
+        duration: 1.05,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        infinite: false,
+        autoRaf: true,
+        smoothWheel: true,
+        syncTouch: false,
+        touchMultiplier: 1,
+        wheelMultiplier: 0.9,
+      });
+
+      const handleAnchorClick = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        const anchor = target.closest('a[href^="#"]');
+        if (!anchor) return;
+
+        const href = anchor.getAttribute('href');
+        if (!href || href.length <= 1) return;
+
+        const element = document.querySelector(href);
+        if (!element) return;
+
+        e.preventDefault();
+        lenisInstance?.scrollTo(element as HTMLElement, { duration: 0.9 });
       };
-    }
 
-    document.documentElement.classList.remove('ios-native-scroll');
-    document.body.classList.remove('ios-native-scroll');
+      document.addEventListener('click', handleAnchorClick);
 
-    const lenis = new Lenis({
-      duration: 1.05,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      infinite: false,
-      autoRaf: true,
-      smoothWheel: true,
-      syncTouch: false,
-      touchMultiplier: 1,
-      wheelMultiplier: 0.9,
-    });
-
-    const handleAnchorClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const anchor = target.closest('a[href^="#"]');
-      if (!anchor) return;
-
-      const href = anchor.getAttribute('href');
-      if (!href || href.length <= 1) return;
-
-      const element = document.querySelector(href);
-      if (!element) return;
-
-      e.preventDefault();
-      lenis.scrollTo(element as HTMLElement, { duration: 0.9 });
+      return () => {
+        document.removeEventListener('click', handleAnchorClick);
+        lenisInstance?.destroy();
+        document.documentElement.classList.remove('lenis', 'lenis-smooth');
+      };
     };
 
-    document.addEventListener('click', handleAnchorClick);
+    let cleanup: (() => void) | undefined;
+
+    initLenis().then((result) => {
+      cleanup = result;
+    });
 
     return () => {
-      document.removeEventListener('click', handleAnchorClick);
-      lenis.destroy();
-      document.documentElement.classList.remove('lenis', 'lenis-smooth');
+      isDisposed = true;
+      cleanup?.();
     };
   }, []);
 

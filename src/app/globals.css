@@ -34,7 +34,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 html.lenis, html.lenis body {
@@ -416,10 +416,16 @@ a *::selection {
 }
 
 /* Content-visibility for below-fold sections — skip rendering until visible */
-/* .cv-auto {
+.cv-auto {
   content-visibility: auto;
   contain-intrinsic-size: auto 600px;
-} */
+}
+
+@media (max-width: 768px) {
+  .cv-auto {
+    contain-intrinsic-size: auto 480px;
+  }
+}
 
 /* Simple fadeIn animation */
 @keyframes fadeIn {

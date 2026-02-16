@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   // Включить сжатие для production
   compress: true,
   
-  // Генерировать source maps для production (в отдельных файлах, не увеличивает bundle)
-  productionBrowserSourceMaps: true,
+  // Source maps отключены в production для уменьшения размера артефактов
+  productionBrowserSourceMaps: false,
   
   // Экспериментальные оптимизации
   experimental: {

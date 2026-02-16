@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
 import { LenisProvider } from "@/components/providers/LenisProvider";
@@ -7,14 +7,6 @@ import { FluidCursorWrapper } from "@/components/providers/FluidCursorWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-  preload: true,
-  adjustFontFallback: true,
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
   preload: true,
@@ -141,7 +133,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} antialiased`}
       >
         <AppProvider>
           {/* FluidCursor загружается отложенно для лучшей производительности */}
