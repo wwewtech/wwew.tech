@@ -39,7 +39,7 @@ export const Navbar = () => {
           }`}
         >
           {/* Центрированный контейнер */}
-          <div className="max-w-7xl mx-auto h-16 flex items-center justify-between px-6">
+          <div className="max-w-7xl mx-auto h-16 grid grid-cols-[1fr_auto_1fr] items-center px-6">
             {/* Logo */}
             <a href="#" className="flex items-center gap-2.5 group">
               <svg className="w-6 h-6 text-foreground" viewBox="0 0 24 24" fill="currentColor">
@@ -64,7 +64,7 @@ export const Navbar = () => {
             </div>
 
             {/* Right Side: Theme, Language, CTA */}
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2 justify-self-end">
               {/* Fluid Cursor Toggle */}
               <button
                 onClick={toggleFluidCursor}
@@ -117,7 +117,7 @@ export const Navbar = () => {
             </div>
 
             {/* Mobile: Theme, Language & Menu Toggle */}
-            <div className="md:hidden flex items-center gap-1">
+            <div className="md:hidden flex items-center gap-1 justify-self-end col-start-3">
               {/* Fluid Cursor Toggle Mobile */}
               <button
                 onClick={toggleFluidCursor}

@@ -71,7 +71,7 @@ export const Hero = () => {
           </a>
 
           <a
-            href="#projects"
+            href="#stack"
             className="flex items-center gap-2 px-8 py-4 rounded-full bg-black text-white border border-(--border) hover:border-(--foreground)/30 hover:opacity-90 transition-all"
           >
             {t('hero.cta2')}
