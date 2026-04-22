@@ -29,7 +29,7 @@ const translations: Record<Language, Record<string, string>> = {
     'hero.title3': 'Продуктов',
     'hero.subtitle': 'Full-stack разработка от идеи до продакшена. Создаю быстрые, масштабируемые решения с современной архитектурой.',
     'hero.cta1': 'Начать проект',
-    'hero.cta2': 'Смотреть работы',
+    'hero.cta2': 'Смотреть стек',
     
     // Philosophy
     'philosophy.badge': 'Философия',
@@ -81,7 +81,7 @@ const translations: Record<Language, Record<string, string>> = {
     'hero.title3': 'Products',
     'hero.subtitle': 'Full-stack development from concept to production. Building fast, scalable applications with modern architecture.',
     'hero.cta1': 'Start a Project',
-    'hero.cta2': 'View Work',
+    'hero.cta2': 'View Stack',
     
     // Philosophy
     'philosophy.badge': 'Philosophy',
