@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useCallback, useEffect, useState } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 
 const stackCards = [
   {

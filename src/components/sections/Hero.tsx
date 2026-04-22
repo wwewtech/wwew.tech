@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/context/AppContext';
 import { ShinyText } from '@/components/ui/ShinyText';

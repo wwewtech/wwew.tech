@@ -1,11 +1,4 @@
-'use client';
-
-import React from 'react';
-import { useLanguage } from '@/context/AppContext';
-
 export const Footer = () => {
-  const { language } = useLanguage();
-
   return (
     <footer className="border-t border-(--border)/50 mt-32">
       <div className="max-w-7xl mx-auto px-6 py-8">

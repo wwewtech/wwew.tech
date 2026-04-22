@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Send, Mail, Github, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/context/AppContext';
 

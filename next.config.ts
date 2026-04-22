@@ -70,10 +70,6 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Редиректы (если понадобятся)
-  async redirects() {
-    return [];
-  },
 };
 
 export default nextConfig;
