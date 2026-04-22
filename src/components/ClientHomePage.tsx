@@ -19,13 +19,6 @@ const Philosophy = dynamic(
   }
 );
 
-const Projects = dynamic(
-  () => import('@/components/sections/Projects').then(m => ({ default: m.Projects })),
-  {
-    loading: () => <div className="min-h-100" />,
-  }
-);
-
 const ContactHub = dynamic(
   () => import('@/components/sections/ContactHub').then(m => ({ default: m.ContactHub })),
   {
@@ -82,12 +75,7 @@ export function ClientHomePage({ defaultTranslations }: ClientHomePageProps) {
           <StackGrid />
         </section>
 
-        {/* Секция 4: Проекты — lazy loaded */}
-        <section id="projects" className="px-6 max-w-7xl mx-auto w-full cv-auto">
-          <Projects />
-        </section>
-
-        {/* Секция 5: Контакты — lazy loaded */}
+        {/* Секция 4: Контакты — lazy loaded */}
         <section id="contact" className="px-6 max-w-7xl mx-auto w-full cv-auto">
           <ContactHub />
         </section>

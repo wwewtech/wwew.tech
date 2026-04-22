@@ -51,13 +51,6 @@ const translations: Record<Language, Record<string, string>> = {
     'stack.title': 'Мой стек',
     'stack.subtitle': 'Инструменты, которые я использую для создания масштабируемых продуктов.',
     
-    // Projects
-    'projects.badge': 'Портфолио',
-    'projects.title': 'Избранные работы',
-    'projects.subtitle': 'Проекты, которые демонстрируют мой подход к разработке.',
-    'projects.viewProject': 'Открыть',
-    'projects.viewCode': 'Код',
-    
     // Contact
     'contact.badge': 'Контакты',
     'contact.title1': 'Давайте',
@@ -109,13 +102,6 @@ const translations: Record<Language, Record<string, string>> = {
     'stack.badge': 'Technologies',
     'stack.title': 'My stack',
     'stack.subtitle': 'Tools I use to build scalable products.',
-    
-    // Projects
-    'projects.badge': 'Portfolio',
-    'projects.title': 'Selected Works',
-    'projects.subtitle': 'Projects that showcase my approach to development.',
-    'projects.viewProject': 'View',
-    'projects.viewCode': 'Code',
     
     // Contact
     'contact.badge': 'Contact',
