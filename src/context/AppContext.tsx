@@ -16,7 +16,6 @@ const translations: Record<Language, Record<string, string>> = {
     // Navbar
     'nav.about': 'Обо мне',
     'nav.stack': 'Стек',
-    'nav.work': 'Работы',
     'nav.contact': 'Контакты',
     'nav.contactBtn': 'Связаться',
     'nav.cursorOn': 'Эффект вкл',
@@ -68,7 +67,6 @@ const translations: Record<Language, Record<string, string>> = {
     // Navbar
     'nav.about': 'About',
     'nav.stack': 'Stack',
-    'nav.work': 'Works',
     'nav.contact': 'Contact',
     'nav.contactBtn': 'Contact',
     'nav.cursorOn': 'Effect on',
