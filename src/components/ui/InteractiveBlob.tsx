@@ -44,8 +44,8 @@ export const InteractiveBlob = () => {
   const animationIdRef = useRef<number>(0);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration-safe client detection
     setIsMobile(isMobileDevice());
-    // Задержка для улучшения TBT
     const timer = setTimeout(() => setIsReady(true), 500);
     return () => clearTimeout(timer);
   }, []);
@@ -92,7 +92,7 @@ export const InteractiveBlob = () => {
 
   // Rotate
   const rotatePoint = useCallback((point: Point3D, rx: number, ry: number): Point3D => {
-    let x = point.x * Math.cos(ry) - point.z * Math.sin(ry);
+    const x = point.x * Math.cos(ry) - point.z * Math.sin(ry);
     let z = point.x * Math.sin(ry) + point.z * Math.cos(ry);
     const y = point.y * Math.cos(rx) - z * Math.sin(rx);
     z = point.y * Math.sin(rx) + z * Math.cos(rx);
@@ -237,7 +237,7 @@ export const InteractiveBlob = () => {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animationIdRef.current);
     };
-  }, [isDragging, isHovered, morphPoint, rotatePoint, project, theme, isReady]);
+  }, [isDragging, isHovered, morphPoint, rotatePoint, project, theme, isReady, isMobile]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     setIsDragging(true);

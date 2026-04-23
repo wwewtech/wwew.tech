@@ -2,29 +2,28 @@
 
 import dynamic from 'next/dynamic';
 import { useFluidCursor } from '@/context/AppContext';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 // Ленивая загрузка тяжёлого WebGL компонента - ТОЛЬКО когда включён
 const FluidCursor = dynamic(
   () => import('@/components/ui/FluidCursor').then(mod => mod.FluidCursor),
-  { 
+  {
     ssr: false,
     loading: () => null
   }
 );
 
+// Latch derived state: once the user enables the cursor, keep the component
+// mounted so its WebGL context isn't recreated on subsequent toggles.
+// See https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
 export const FluidCursorWrapper = () => {
   const { isFluidCursorEnabled } = useFluidCursor();
   const [hasEverBeenEnabled, setHasEverBeenEnabled] = useState(false);
 
-  // Загружаем компонент только когда пользователь впервые включит эффект
-  useEffect(() => {
-    if (isFluidCursorEnabled && !hasEverBeenEnabled) {
-      setHasEverBeenEnabled(true);
-    }
-  }, [isFluidCursorEnabled, hasEverBeenEnabled]);
+  if (isFluidCursorEnabled && !hasEverBeenEnabled) {
+    setHasEverBeenEnabled(true);
+  }
 
-  // Не загружаем компонент вообще пока эффект не был включён хотя бы раз
   if (!hasEverBeenEnabled) {
     return null;
   }

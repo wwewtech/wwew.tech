@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useMemo, Suspense, useCallback, useEffect, useState } from 'react';
-import { Canvas, useFrame, useThree, invalidate } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
 import * as THREE from 'three';
 import { useTheme } from '@/context/AppContext';
@@ -24,7 +24,7 @@ const useVisibility = (containerRef: React.RefObject<HTMLDivElement | null>) => 
     if (!el) return () => document.removeEventListener('visibilitychange', onVisChange);
 
     const io = new IntersectionObserver(
-      ([e]) => setVisible(prev => !document.hidden && e.isIntersecting),
+      ([e]) => setVisible(!document.hidden && e.isIntersecting),
       { threshold: 0.05 },
     );
     io.observe(el);
@@ -188,26 +188,14 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
   const uniforms = useMemo(
     () => ({
       uTime:      { value: 0 },
-      uIsDark:    { value: 1.0 },
-      uBaseColor: { value: new THREE.Color('#1a1a2e') },
-      uDeepColor: { value: new THREE.Color('#08081a') },
-      uAccent:    { value: new THREE.Color('#B5FF6D') },
-      uSpecColor: { value: new THREE.Color('#7788ee') },
+      uIsDark:    { value: isDark ? 1.0 : 0.0 },
+      uBaseColor: { value: new THREE.Color(isDark ? '#1a1a2e' : '#eff3ff') },
+      uDeepColor: { value: new THREE.Color(isDark ? '#08081a' : '#8b99cc') },
+      uAccent:    { value: new THREE.Color(isDark ? '#B5FF6D' : '#3db0ff') },
+      uSpecColor: { value: new THREE.Color(isDark ? '#7788ee' : '#4f69e0') },
     }),
-    [],
+    [isDark],
   );
-
-  useEffect(() => {
-    uniforms.uIsDark.value = isDark ? 1.0 : 0.0;
-    uniforms.uBaseColor.value.set(isDark ? '#1a1a2e' : '#eff3ff');
-    uniforms.uDeepColor.value.set(isDark ? '#08081a' : '#8b99cc');
-    uniforms.uAccent.value.set(isDark ? '#B5FF6D' : '#3db0ff');
-    uniforms.uSpecColor.value.set(isDark ? '#7788ee' : '#4f69e0');
-
-    if (matRef.current) {
-      matRef.current.needsUpdate = true;
-    }
-  }, [isDark, uniforms]);
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
@@ -315,20 +303,25 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
    Dust particles — мелкие, ненавязчивые
    ══════════════════════════════════════════════════ */
 
+const DUST_COUNT = 30;
+
+const makeDustPositions = (count: number): Float32Array => {
+  const a = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    a[i * 3]     = (Math.random() - 0.5) * 6;
+    a[i * 3 + 1] = (Math.random() - 0.5) * 6;
+    a[i * 3 + 2] = (Math.random() - 0.5) * 3;
+  }
+  return a;
+};
+
+const DUST_POSITIONS = makeDustPositions(DUST_COUNT);
+
 const Dust = ({ isDark }: { isDark: boolean }) => {
   const ref = useRef<THREE.Points>(null);
-  const count = 30;
+  const count = DUST_COUNT;
   const accTime = useRef(0);
-
-  const positions = useMemo(() => {
-    const a = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      a[i * 3]     = (Math.random() - 0.5) * 6;
-      a[i * 3 + 1] = (Math.random() - 0.5) * 6;
-      a[i * 3 + 2] = (Math.random() - 0.5) * 3;
-    }
-    return a;
-  }, []);
+  const positions = DUST_POSITIONS;
 
   useFrame((_, delta) => {
     if (!ref.current) return;
