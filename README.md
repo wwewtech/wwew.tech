@@ -275,6 +275,6 @@ Released under the **MIT License**.
 
 <div align="center">
 
-<sub>Designed & built by <a href="https://wwew.tech"><b>wwew</b></a> — contact via <a href="https://t.me/wwew_tech">Telegram</a></sub>
+<sub>Designed & built by <a href="https://wwew.tech"><b>wwew</b></a> — contact via <a href="https://t.me/wwewtech">Telegram</a></sub>
 
 </div>
