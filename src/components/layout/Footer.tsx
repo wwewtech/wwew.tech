@@ -28,12 +28,12 @@ export const Footer = () => {
               get.tech
             </a>
             <a 
-              href="https://t.me/wwew_tech" 
+              href="https://github.com/wwewtech/wwew.tech" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-xs hover:text-foreground transition-colors"
             >
-              contact
+              ★ star on github
             </a>
           </div>
 
