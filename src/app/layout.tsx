@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "wwew.tech | Full-Stack Developer",
     description: "Full-stack разработка от идеи до продакшена. Создаю быстрые, масштабируемые веб-приложения.",
-    creator: "@wwew_tech",
+    creator: "@wwewtech",
   },
   verification: {
     // Добавь свои верификационные коды после регистрации в этих сервисах
@@ -119,7 +119,7 @@ export default function RootLayout({
     description: "Full-stack разработка от идеи до продакшена. Создаю быстрые, масштабируемые веб-приложения.",
     knowsAbout: ["React", "Next.js", "TypeScript", "Python", "Web Development", "Full-Stack Development"],
     sameAs: [
-      "https://t.me/wwew_tech",
+      "https://t.me/wwewtech",
       "https://github.com/wwew-tech",
     ],
   };

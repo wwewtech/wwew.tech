@@ -106,7 +106,7 @@ export const Navbar = () => {
 
               {/* CTA Button */}
               <a
-                href="https://t.me/wwew_tech"
+                href="https://t.me/wwewtech"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-5 py-2 ml-2 rounded-full bg-foreground text-background text-sm font-medium hover:opacity-90 transition-all duration-200 select-none"
@@ -187,7 +187,7 @@ export const Navbar = () => {
             ))}
             <div className="mt-6">
               <a
-                href="https://t.me/wwew_tech"
+                href="https://t.me/wwewtech"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 py-4 rounded-full bg-foreground text-background text-sm font-medium"

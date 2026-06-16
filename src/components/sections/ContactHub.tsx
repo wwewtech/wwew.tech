@@ -7,8 +7,8 @@ import { useLanguage } from '@/context/AppContext';
 const contacts = [
   { 
     name: 'Telegram', 
-    value: '@wwew_tech',
-    href: 'https://t.me/wwew_tech', 
+    value: '@wwewtech',
+    href: 'https://t.me/wwewtech', 
     icon: Send,
   },
   { 
@@ -115,7 +115,7 @@ export const ContactHub = () => {
           }}
         >
           <a
-            href="https://t.me/wwew_tech"
+            href="https://t.me/wwewtech"
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-foreground text-background font-medium text-lg hover:opacity-90 transition-all select-none"
