@@ -158,10 +158,11 @@ const checkReducedMotion = () => {
 // ========== PROVIDER ==========
 interface AppProviderProps {
   children: ReactNode;
+  initialLanguage?: Language;
 }
 
-export const AppProvider = ({ children }: AppProviderProps) => {
-  const [language, setLanguage] = useState<Language>('ru');
+export const AppProvider = ({ children, initialLanguage = 'ru' }: AppProviderProps) => {
+  const [language, setLanguage] = useState<Language>(initialLanguage);
   const [theme, setTheme] = useState<Theme>('dark');
   const [isFluidCursorEnabled, setFluidCursorEnabled] = useState(false); // Выключен по умолчанию
   const [mounted, setMounted] = useState(false);
@@ -182,10 +183,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     /* eslint-enable react-hooks/set-state-in-effect */
     
     // Load from localStorage
-    const savedLang = localStorage.getItem('language') as Language;
     const savedTheme = localStorage.getItem('theme') as Theme;
     const savedCursor = localStorage.getItem('fluidCursor');
-    if (savedLang) setLanguage(savedLang);
     if (savedTheme) setTheme(savedTheme);
     
     // На мобильных и при reduced motion всегда отключён
@@ -208,11 +207,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem('language', language);
-    }
-  }, [language, mounted]);
+  // Language is now handled by URL/Router
 
   useEffect(() => {
     if (mounted) {

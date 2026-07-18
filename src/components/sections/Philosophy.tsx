@@ -92,7 +92,7 @@ export const Philosophy = () => {
           </div>
 
           {/* Stats */}
-          <div className="mt-12 pt-8 border-t border-(--border) flex gap-16">
+          <div className="mt-12 pt-8 border-t border-(--border) flex flex-wrap gap-8 sm:gap-16">
             {[
               { value: '50+', label: t('philosophy.stat1') },
               { value: '3+', label: t('philosophy.stat2') },

@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X, ArrowUpRight, Sun, Moon, Languages, Droplet, DropletOff } from 'lucide-react';
 import { useLanguage, useTheme, useFluidCursor } from '@/context/AppContext';
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { language, setLanguage, t } = useLanguage();
+  const pathname = usePathname();
+  const router = useRouter();
+  const { language, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { isFluidCursorEnabled, toggleFluidCursor } = useFluidCursor();
 
@@ -24,7 +27,14 @@ export const Navbar = () => {
   }, []);
 
   const handleLanguageToggle = () => {
-    setLanguage(language === 'ru' ? 'en' : 'ru');
+    const newLang = language === 'ru' ? 'en' : 'ru';
+    let newPathname = pathname;
+    if (pathname.startsWith(`/${language}`)) {
+      newPathname = pathname.replace(`/${language}`, `/${newLang}`);
+    } else {
+      newPathname = `/${newLang}${pathname}`;
+    }
+    router.push(newPathname);
   };
 
   return (
@@ -39,7 +49,7 @@ export const Navbar = () => {
           }`}
         >
           {/* Центрированный контейнер */}
-          <div className="max-w-7xl mx-auto h-16 grid grid-cols-[1fr_auto_1fr] items-center px-6">
+          <div className="max-w-7xl mx-auto h-16 flex md:grid md:grid-cols-[1fr_auto_1fr] items-center justify-between px-4 md:px-6">
             {/* Logo */}
             <a href="#" className="flex items-center gap-2.5 group">
               <svg className="w-6 h-6 text-foreground transition-transform duration-200 group-hover:scale-105" viewBox="0 0 24 24" fill="currentColor">
@@ -117,38 +127,34 @@ export const Navbar = () => {
             </div>
 
             {/* Mobile: Theme, Language & Menu Toggle */}
-            <div className="md:hidden flex items-center gap-1 justify-self-end col-start-3">
-              {/* Fluid Cursor Toggle Mobile */}
+            <div className="md:hidden flex items-center gap-0.5 justify-self-end">
               <button
                 onClick={toggleFluidCursor}
-                className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
+                className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
                 aria-label="Toggle fluid cursor"
               >
                 {isFluidCursorEnabled ? <Droplet className="w-5 h-5" /> : <DropletOff className="w-5 h-5" />}
               </button>
 
-              {/* Language Toggle Mobile */}
               <button
                 onClick={handleLanguageToggle}
-                className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
+                className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
                 aria-label="Toggle language"
               >
                 <span className="text-xs font-medium uppercase">{language}</span>
               </button>
 
-              {/* Theme Toggle Mobile */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
+                className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
                 aria-label="Toggle theme"
               >
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
 
-              {/* Menu Toggle */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-full hover:bg-(--border-subtle) transition-colors"
+                className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full hover:bg-(--border-subtle) transition-colors"
                 aria-label={isMobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
               >
                 {isMobileMenuOpen ? (

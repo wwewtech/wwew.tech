@@ -275,18 +275,20 @@ a *::selection {
   pointer-events: none;
 }
 
-.feature-card:hover::after {
-  opacity: 1;
-}
+@media (hover: hover) {
+  .feature-card:hover::after {
+    opacity: 1;
+  }
 
-.feature-card:hover {
-  background: var(--border-subtle);
-}
+  .feature-card:hover {
+    background: var(--border-subtle);
+  }
 
-.feature-card:hover::before {
-  left: 1rem;
-  right: 1rem;
-  background: linear-gradient(90deg, transparent, var(--muted), transparent);
+  .feature-card:hover::before {
+    left: 1rem;
+    right: 1rem;
+    background: linear-gradient(90deg, transparent, var(--muted), transparent);
+  }
 }
 
 /* Text gradient - premium */
@@ -323,8 +325,10 @@ a *::selection {
   transition: transform 0.3s ease, opacity 0.2s ease;
 }
 
-.theme-toggle:hover {
-  transform: rotate(15deg);
+@media (hover: hover) {
+  .theme-toggle:hover {
+    transform: rotate(15deg);
+  }
 }
 
 /* Language switcher */

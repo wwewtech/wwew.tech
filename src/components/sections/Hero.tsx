@@ -8,7 +8,7 @@ export const Hero = () => {
   const { t } = useLanguage();
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-start text-center px-4 pt-16 md:pt-24 overflow-hidden bg-lines">
+    <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 pt-16 overflow-hidden bg-lines">
 
       {/* Decorative curved lines */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-50 dark:opacity-100" viewBox="0 0 2000 1000" preserveAspectRatio="xMidYMid slice">

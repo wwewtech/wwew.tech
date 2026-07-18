@@ -99,6 +99,7 @@ export const ContactHub = () => {
               href={contact.href}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label={`Contact via ${contact.name}`}
               className="group flex items-center gap-3 px-5 py-3 rounded-full border border-(--border) hover:border-(--foreground)/20 bg-(--border-subtle) hover:bg-(--border) transition-all"
             >
               <contact.icon className="w-5 h-5 text-(--muted) group-hover:text-foreground transition-colors" />
