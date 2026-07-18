@@ -7,7 +7,7 @@ import { FluidCursorWrapper } from "@/components/providers/FluidCursorWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic"],
   display: "swap",
   preload: true,
   adjustFontFallback: true,
@@ -59,16 +59,12 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: siteUrl,
-    languages: {
-      "ru-RU": siteUrl,
-      "en-US": siteUrl,
-    },
+    canonical: "/",
   },
   openGraph: {
     type: "website",
     locale: "ru_RU",
-    alternateLocale: "en_US",
+    alternateLocales: ["en_US"],
     url: siteUrl,
     siteName: "wwew.tech",
     title: "wwew.tech | Full-Stack Developer",
@@ -76,6 +72,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@wwewtech",
     title: "wwew.tech | Full-Stack Developer",
     description: "Full-stack разработка от идеи до продакшена. Создаю быстрые, масштабируемые веб-приложения.",
     creator: "@wwewtech",
@@ -120,7 +117,7 @@ export default function RootLayout({
     knowsAbout: ["React", "Next.js", "TypeScript", "Python", "Web Development", "Full-Stack Development"],
     sameAs: [
       "https://t.me/wwewtech",
-      "https://github.com/wwew-tech",
+      "https://github.com/wwewtech",
     ],
   };
 

@@ -5,7 +5,7 @@ export const runtime = 'edge';
 export const alt = 'wwew.tech | Full-Stack Developer';
 export const size = {
   width: 1200,
-  height: 600,
+  height: 630,
 };
 export const contentType = 'image/png';
 
