@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { Menu, X, ArrowUpRight, Sun, Moon, Languages, Droplet, DropletOff } from 'lucide-react';
 import { useLanguage, useTheme, useFluidCursor } from '@/context/AppContext';
 
@@ -9,7 +10,6 @@ export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
   const { language, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { isFluidCursorEnabled, toggleFluidCursor } = useFluidCursor();
@@ -26,16 +26,13 @@ export const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleLanguageToggle = () => {
-    const newLang = language === 'ru' ? 'en' : 'ru';
-    let newPathname = pathname;
-    if (pathname.startsWith(`/${language}`)) {
-      newPathname = pathname.replace(`/${language}`, `/${newLang}`);
-    } else {
-      newPathname = `/${newLang}${pathname}`;
-    }
-    router.push(newPathname);
-  };
+  const newLang = language === 'ru' ? 'en' : 'ru';
+  let targetLangUrl = pathname;
+  if (pathname.startsWith(`/${language}`)) {
+    targetLangUrl = pathname.replace(`/${language}`, `/${newLang}`);
+  } else {
+    targetLangUrl = `/${newLang}${pathname}`;
+  }
 
   return (
     <>
@@ -90,8 +87,8 @@ export const Navbar = () => {
               </button>
 
               {/* Language Toggle */}
-              <button
-                onClick={handleLanguageToggle}
+              <Link
+                href={targetLangUrl}
                 className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200"
                 aria-label="Toggle language"
               >
@@ -99,7 +96,7 @@ export const Navbar = () => {
                 <span className="uppercase font-medium">
                   {language}
                 </span>
-              </button>
+              </Link>
 
               {/* Theme Toggle */}
               <button
@@ -136,13 +133,13 @@ export const Navbar = () => {
                 {isFluidCursorEnabled ? <Droplet className="w-5 h-5" /> : <DropletOff className="w-5 h-5" />}
               </button>
 
-              <button
-                onClick={handleLanguageToggle}
+              <Link
+                href={targetLangUrl}
                 className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
                 aria-label="Toggle language"
               >
                 <span className="text-xs font-medium uppercase">{language}</span>
-              </button>
+              </Link>
 
               <button
                 onClick={toggleTheme}
