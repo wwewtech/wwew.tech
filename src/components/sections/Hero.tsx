@@ -33,15 +33,6 @@ export const Hero = () => {
       </svg>
 
       <div className="relative z-10 max-w-5xl mx-auto">
-        {/* Pill Badge - CSS animation */}
-        <div className="pill-badge mb-5 cursor-default animate-hero-fade-in [animation-delay:0ms]">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
-          </span>
-          <span>{t('hero.available')}</span>
-        </div>
-
         {/* Main Title - NO animation for proper LCP detection */}
         <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-medium tracking-tight mb-8 leading-[1.05]">
           <span className="block pb-1">
