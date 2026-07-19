@@ -68,7 +68,7 @@ export async function generateMetadata({
     openGraph: {
       type: "website",
       locale: isEn ? "en_US" : "ru_RU",
-      alternateLocales: isEn ? ["ru_RU"] : ["en_US"],
+      alternateLocale: isEn ? ["ru_RU"] : ["en_US"],
       url: siteUrl,
       siteName: "wwew.tech",
       title: "wwew.tech | Full-Stack Developer",
