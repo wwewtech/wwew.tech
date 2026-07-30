@@ -55,9 +55,13 @@ const translations: Record<Language, Record<string, string>> = {
     'contact.title1': 'Давайте',
     'contact.title2': 'Работать',
     'contact.subtitle': 'Готов обсудить ваш проект. Свяжитесь любым удобным способом.',
+    'contact.subtitleTeam': 'Команда OpenSpace — комплексная веб-разработка, AI-решения и масштабируемые проекты под ключ.',
+    'contact.tabPersonal': 'Со мной',
+    'contact.tabTeam': 'С командой',
     'contact.telegram': 'Написать в Telegram',
     'contact.email': 'Отправить Email',
     'contact.response': 'Обычно отвечаю в течение 24 часов',
+    'contact.teamWebsite': 'Перейти на openspacedev.ru',
     
     // Footer
     'footer.description': 'Создаю цифровые продукты, которые работают быстро и масштабируются эффективно.',
@@ -106,9 +110,13 @@ const translations: Record<Language, Record<string, string>> = {
     'contact.title1': "Let's",
     'contact.title2': 'Work',
     'contact.subtitle': 'Ready to discuss your project. Reach out any way you prefer.',
+    'contact.subtitleTeam': 'OpenSpace team — full-cycle web development, AI solutions, and scalable projects.',
+    'contact.tabPersonal': 'With Me',
+    'contact.tabTeam': 'With Team',
     'contact.telegram': 'Message on Telegram',
     'contact.email': 'Send Email',
     'contact.response': 'Usually respond within 24 hours',
+    'contact.teamWebsite': 'Visit openspacedev.ru',
     
     // Footer
     'footer.description': 'Building digital products that work fast and scale efficiently.',
