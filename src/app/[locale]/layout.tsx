@@ -59,10 +59,11 @@ export async function generateMetadata({
       },
     },
     alternates: {
-      canonical: "/",
+      canonical: `${siteUrl}/${locale}`,
       languages: {
-        "ru": "/ru",
-        "en": "/en",
+        "ru": `${siteUrl}/ru`,
+        "en": `${siteUrl}/en`,
+        "x-default": `${siteUrl}/en`,
       },
     },
     openGraph: {

@@ -90,12 +90,21 @@ export const LenisProvider = ({ children }: LenisProviderProps) => {
 
     let cleanup: (() => void) | undefined;
 
-    initLenis().then((result) => {
-      cleanup = result;
-    });
+    const timerId = setTimeout(() => {
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(() => {
+          if (!isDisposed) {
+            initLenis().then((result) => { cleanup = result; });
+          }
+        });
+      } else {
+        initLenis().then((result) => { cleanup = result; });
+      }
+    }, 1500);
 
     return () => {
       isDisposed = true;
+      clearTimeout(timerId);
       cleanup?.();
     };
   }, []);

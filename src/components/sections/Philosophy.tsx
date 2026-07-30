@@ -1,29 +1,16 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
+import { useRef, useEffect, useState, ComponentType } from 'react';
 import { useLanguage, useTheme } from '@/context/AppContext';
-
-// Lazy load HolographicScene для улучшения TBT
-const HolographicScene = dynamic(
-  () => import('@/components/ui/HolographicScene').then(mod => mod.HolographicScene),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="aspect-square max-w-lg mx-auto flex items-center justify-center">
-        <div className="w-32 h-32 rounded-full border border-(--border) opacity-20 animate-pulse" />
-      </div>
-    )
-  }
-);
 
 export const Philosophy = () => {
   const ref = useRef<HTMLElement>(null);
   const [isInView, setIsInView] = useState(false);
+  const [SceneComponent, setSceneComponent] = useState<ComponentType<{ key?: string; className?: string }> | null>(null);
   const { t } = useLanguage();
   const { theme } = useTheme();
 
-  // IntersectionObserver вместо framer-motion
+  // IntersectionObserver
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -32,7 +19,7 @@ export const Philosophy = () => {
           observer.disconnect();
         }
       },
-      { threshold: 0.1, rootMargin: '-100px' }
+      { threshold: 0.05, rootMargin: '100px' }
     );
 
     if (ref.current) {
@@ -41,6 +28,15 @@ export const Philosophy = () => {
 
     return () => observer.disconnect();
   }, []);
+
+  // Dynamically load heavy 3D scene ONLY after section is in view
+  useEffect(() => {
+    if (isInView && !SceneComponent) {
+      import('@/components/ui/HolographicScene').then((mod) => {
+        setSceneComponent(() => mod.HolographicScene);
+      });
+    }
+  }, [isInView, SceneComponent]);
 
   return (
     <section ref={ref} className="relative overflow-hidden">
@@ -63,7 +59,13 @@ export const Philosophy = () => {
           }}
           className="relative order-2 lg:order-1"
         >
-          <HolographicScene key={theme} />
+          {SceneComponent ? (
+            <SceneComponent key={theme} />
+          ) : (
+            <div className="aspect-square max-w-lg mx-auto flex items-center justify-center">
+              <div className="w-32 h-32 rounded-full border border-(--border) opacity-20" />
+            </div>
+          )}
         </div>
 
         {/* Right: Text Content */}

@@ -1,6 +1,4 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+import React from 'react';
 
 interface ShinyTextProps {
   text: string;
@@ -25,19 +23,9 @@ export const ShinyText: React.FC<ShinyTextProps> = ({
   className = '',
   speed = 5,
 }) => {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    // Small delay to ensure LCP is measured before applying effect
-    const timer = requestAnimationFrame(() => {
-      setMounted(true);
-    });
-    return () => cancelAnimationFrame(timer);
-  }, []);
-
   return (
     <span
-      className={`${mounted ? 'shiny-text' : 'shiny-text-fallback'} ${className}`}
+      className={`shiny-text ${className}`}
       style={{ 
         '--shiny-speed': `${speed}s`,
       } as React.CSSProperties}

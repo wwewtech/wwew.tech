@@ -218,11 +218,10 @@ a *::selection {
   initial-value: 100%;
 }
 
-/* Shiny Text Effect — composited shimmer via typed custom property */
 .shiny-text {
   display: inline-block;
   position: relative;
-  color: transparent;
+  color: var(--foreground);
   background: linear-gradient(
     120deg,
     var(--shiny-base-color) 0%,
@@ -235,8 +234,8 @@ a *::selection {
   background-position: var(--shiny-pos) 50%;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: shiny-sweep var(--shiny-speed, 2s) linear infinite;
-  animation-delay: 0.1s;
+  -webkit-text-fill-color: transparent;
+  animation: shiny-sweep var(--shiny-speed, 3s) linear infinite;
   will-change: background-position;
 }
 
