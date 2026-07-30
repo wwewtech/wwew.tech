@@ -96,7 +96,7 @@ export const Philosophy = () => {
           {/* Stats */}
           <div className="mt-12 pt-8 border-t border-(--border) flex flex-wrap gap-8 sm:gap-16">
             {[
-              { value: '50+', label: t('philosophy.stat1') },
+              { value: '70+', label: t('philosophy.stat1') },
               { value: '3+', label: t('philosophy.stat2') },
               { value: '∞', label: t('philosophy.stat3') },
             ].map((stat, idx) => (
