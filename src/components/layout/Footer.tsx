@@ -5,7 +5,7 @@ export const Footer = () => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-(--muted)">
           
           <div className="flex items-center gap-4">
-            <span className="font-mono">© {new Date().getFullYear()} wwew.tech</span>
+            <span className="font-mono">© 2023-{new Date().getFullYear()} wwew</span>
             <span className="hidden md:block">—</span>
             <span className="text-xs">built with care</span>
           </div>
