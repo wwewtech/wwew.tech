@@ -215,7 +215,10 @@ export const AppProvider = ({ children, initialLanguage = 'ru' }: AppProviderPro
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Language is now handled by URL/Router
+  // Keep language state in sync with initialLanguage prop from route params
+  useEffect(() => {
+    setLanguage(initialLanguage);
+  }, [initialLanguage]);
 
   useEffect(() => {
     if (mounted) {

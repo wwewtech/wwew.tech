@@ -26,12 +26,13 @@ export const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const newLang = language === 'ru' ? 'en' : 'ru';
+  const currentLangInUrl = pathname.startsWith('/en') ? 'en' : pathname.startsWith('/ru') ? 'ru' : language;
+  const targetLang = currentLangInUrl === 'ru' ? 'en' : 'ru';
   let targetLangUrl = pathname;
-  if (pathname.startsWith(`/${language}`)) {
-    targetLangUrl = pathname.replace(`/${language}`, `/${newLang}`);
+  if (pathname.startsWith(`/${currentLangInUrl}`)) {
+    targetLangUrl = pathname.replace(`/${currentLangInUrl}`, `/${targetLang}`);
   } else {
-    targetLangUrl = `/${newLang}${pathname}`;
+    targetLangUrl = `/${targetLang}${pathname === '/' ? '' : pathname}`;
   }
 
   return (
@@ -89,6 +90,7 @@ export const Navbar = () => {
               {/* Language Toggle */}
               <Link
                 href={targetLangUrl}
+                scroll={false}
                 className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200"
                 aria-label="Toggle language"
               >
@@ -135,6 +137,7 @@ export const Navbar = () => {
 
               <Link
                 href={targetLangUrl}
+                scroll={false}
                 className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
                 aria-label="Toggle language"
               >
