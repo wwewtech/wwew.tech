@@ -21,9 +21,21 @@ export const Navbar = () => {
   ];
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      const nativeRoot = document.getElementById('native-scroll-root');
+      const scrollY = nativeRoot ? Math.max(window.scrollY, nativeRoot.scrollTop) : window.scrollY;
+      setIsScrolled(scrollY > 20);
+    };
+
+    handleScroll();
+
+    document.addEventListener('scroll', handleScroll, { capture: true, passive: true });
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    return () => {
+      document.removeEventListener('scroll', handleScroll, { capture: true });
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   const currentLangInUrl = pathname.startsWith('/en') ? 'en' : pathname.startsWith('/ru') ? 'ru' : language;
@@ -41,8 +53,8 @@ export const Navbar = () => {
       <div className="fixed top-0 left-0 right-0 z-50">
         <nav
           className={`transition-all duration-300 border-b ${
-            isScrolled
-              ? 'bg-(--background)/90 backdrop-blur-xl border-(--border)'
+            isScrolled || isMobileMenuOpen
+              ? 'bg-background/90 backdrop-blur-xl border-(--border)'
               : 'bg-transparent border-transparent'
           }`}
         >
@@ -126,41 +138,40 @@ export const Navbar = () => {
             </div>
 
             {/* Mobile: Theme, Language & Menu Toggle */}
-            <div className="md:hidden flex items-center gap-0.5 justify-self-end">
-              <button
-                onClick={toggleFluidCursor}
-                className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
-                aria-label="Toggle fluid cursor"
-              >
-                {isFluidCursorEnabled ? <Droplet className="w-5 h-5" /> : <DropletOff className="w-5 h-5" />}
-              </button>
-
+            <div className="md:hidden flex items-center gap-1 justify-self-end">
               <Link
                 href={targetLangUrl}
                 scroll={false}
-                className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
+                className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200"
                 aria-label="Toggle language"
               >
-                <span className="text-xs font-medium uppercase">{language}</span>
+                <Languages className="w-4 h-4" />
+                <span className="uppercase font-medium">
+                  {language}
+                </span>
               </Link>
 
               <button
                 onClick={toggleTheme}
-                className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
+                className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200 theme-toggle"
                 aria-label="Toggle theme"
               >
-                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                {theme === 'dark' ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
               </button>
 
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full hover:bg-(--border-subtle) transition-colors"
+                className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
                 aria-label={isMobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
               >
                 {isMobileMenuOpen ? (
-                  <X className="w-5 h-5 text-(--muted)" />
+                  <X className="w-5 h-5" />
                 ) : (
-                  <Menu className="w-5 h-5 text-(--muted)" />
+                  <Menu className="w-5 h-5" />
                 )}
               </button>
             </div>
@@ -172,11 +183,11 @@ export const Navbar = () => {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div
-            className="absolute inset-0 bg-(--background)/98"
+            className="absolute inset-0 bg-background/80 backdrop-blur-md"
             onClick={() => setIsMobileMenuOpen(false)}
           />
           <div
-            className="absolute top-16 left-0 right-0 p-6 border-b border-(--border)"
+            className="absolute top-16 left-0 right-0 p-6 bg-background/95 backdrop-blur-xl border-b border-(--border) shadow-2xl"
             style={{
               animation: 'fadeIn 0.2s ease',
             }}
