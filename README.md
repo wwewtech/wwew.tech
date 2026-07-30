@@ -159,13 +159,15 @@ src/
 │   ├── layout/               Navbar · Footer
 │   ├── providers/            LenisProvider · FluidCursorWrapper
 │   ├── sections/             Hero · Philosophy · ContactHub
-│   └── ui/                   HolographicScene · FluidCursor · ShinyText · StackGrid · InteractiveBlob
+│   └── ui/                   HolographicScene · FluidCursor · ShinyText · StackGrid
 │
 ├── context/
 │   └── AppContext.tsx        Language context · RU/EN translation dictionary
 │
-└── lib/
-    └── utils.ts              cn() and shared helpers
+├── lib/
+│   └── utils.ts              cn() and shared helpers
+│
+└── proxy.ts                  Locale routing & i18n redirect handler
 ```
 
 ---
