@@ -83,12 +83,14 @@ const stackCards = [
     ),
   },
   {
-    title: 'Security',
-    desc: 'Military-grade encryption',
-    tech: ['Postman', 'Burp', 'SSL', ],
+    title: 'AI',
+    desc: 'LLM integration, AI agents, and smart solutions',
+    tech: ['OpenAI', 'LangChain', 'Claude'],
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+        <rect x="9" y="9" width="6" height="6" rx="1" />
+        <path d="M9 1v3m6-3v3M9 20v3m6-3v3M20 9h3m-3 6h3M1 9h3m-3 6h3" />
       </svg>
     ),
   },
