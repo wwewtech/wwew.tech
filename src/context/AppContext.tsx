@@ -180,7 +180,6 @@ export const AppProvider = ({ children, initialLanguage = 'ru' }: AppProviderPro
   useEffect(() => {
     // Hydration-safe client-only initialization: these setState calls run once
     // on mount to read window-only values that can't be computed during SSR.
-    /* eslint-disable react-hooks/set-state-in-effect */
     setMounted(true);
 
     // Определяем мобильное устройство и reduced motion
@@ -188,7 +187,6 @@ export const AppProvider = ({ children, initialLanguage = 'ru' }: AppProviderPro
     const reducedMotion = checkReducedMotion();
     setIsMobile(mobile);
     setPrefersReducedMotion(reducedMotion);
-    /* eslint-enable react-hooks/set-state-in-effect */
     
     // Load from localStorage
     const savedTheme = localStorage.getItem('theme') as Theme;

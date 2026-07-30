@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Send, Mail, Github, Globe, ExternalLink, Briefcase, User, Users, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/context/AppContext';
 
@@ -57,6 +57,11 @@ export const ContactHub = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragProgress, setDragProgress] = useState<number | null>(null); // 0 = personal, 1 = team
 
+  const [indicatorStyle, setIndicatorStyle] = useState<{ left: string; width: string }>({
+    left: '6px',
+    width: '48%',
+  });
+
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -77,32 +82,42 @@ export const ContactHub = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Compute slider indicator position & width dynamically based on active tab & drag progress
-  const getIndicatorStyle = useCallback(() => {
-    const pBtn = personalBtnRef.current;
-    const tBtn = teamBtnRef.current;
+  // Compute slider indicator position & width dynamically in an effect (ref access outside render)
+  useEffect(() => {
+    const updateIndicatorStyle = () => {
+      const pBtn = personalBtnRef.current;
+      const tBtn = teamBtnRef.current;
 
-    if (!pBtn || !tBtn) {
-      return { left: activeTab === 'personal' ? '6px' : '50%', width: '48%' };
-    }
+      if (!pBtn || !tBtn) {
+        setIndicatorStyle({
+          left: activeTab === 'personal' ? '6px' : '50%',
+          width: '48%',
+        });
+        return;
+      }
 
-    const pLeft = pBtn.offsetLeft;
-    const pWidth = pBtn.offsetWidth;
-    const tLeft = tBtn.offsetLeft;
-    const tWidth = tBtn.offsetWidth;
+      const pLeft = pBtn.offsetLeft;
+      const pWidth = pBtn.offsetWidth;
+      const tLeft = tBtn.offsetLeft;
+      const tWidth = tBtn.offsetWidth;
 
-    const progress = dragProgress !== null 
-      ? dragProgress 
-      : (activeTab === 'personal' ? 0 : 1);
+      const progress = dragProgress !== null 
+        ? dragProgress 
+        : (activeTab === 'personal' ? 0 : 1);
 
-    const currentLeft = pLeft + (tLeft - pLeft) * progress;
-    const currentWidth = pWidth + (tWidth - pWidth) * progress;
+      const currentLeft = pLeft + (tLeft - pLeft) * progress;
+      const currentWidth = pWidth + (tWidth - pWidth) * progress;
 
-    return {
-      left: `${currentLeft}px`,
-      width: `${currentWidth}px`,
+      setIndicatorStyle({
+        left: `${currentLeft}px`,
+        width: `${currentWidth}px`,
+      });
     };
-  }, [activeTab, dragProgress]);
+
+    updateIndicatorStyle();
+    window.addEventListener('resize', updateIndicatorStyle);
+    return () => window.removeEventListener('resize', updateIndicatorStyle);
+  }, [activeTab, dragProgress, t]);
 
   // Pointer drag & click handler
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -146,7 +161,6 @@ export const ContactHub = () => {
   };
 
   const contactsToDisplay = activeTab === 'personal' ? personalContacts : teamContacts;
-  const indicatorStyle = getIndicatorStyle();
 
   return (
     <section ref={ref} className="relative">
