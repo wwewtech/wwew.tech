@@ -61,7 +61,7 @@ export const Navbar = () => {
           {/* Центрированный контейнер */}
           <div className="max-w-7xl mx-auto h-16 flex md:grid md:grid-cols-[1fr_auto_1fr] items-center justify-between px-4 md:px-6">
             {/* Logo */}
-            <a href="#" className="flex items-center gap-2.5 group">
+            <a href="#home" className="flex items-center gap-2.5 group">
               <svg className="w-6 h-6 text-foreground transition-transform duration-200 group-hover:scale-105" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)" />
               </svg>

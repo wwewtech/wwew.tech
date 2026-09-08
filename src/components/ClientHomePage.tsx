@@ -12,7 +12,7 @@ const Philosophy = dynamic(
   () => import('@/components/sections/Philosophy').then(m => ({ default: m.Philosophy })),
   {
     loading: () => (
-      <div className="min-h-150 flex items-center justify-center">
+      <div className="min-h-[600px] flex items-center justify-center">
         <div className="w-32 h-32 rounded-full border border-(--border) opacity-10 animate-pulse" />
       </div>
     ),
@@ -22,14 +22,14 @@ const Philosophy = dynamic(
 const ContactHub = dynamic(
   () => import('@/components/sections/ContactHub').then(m => ({ default: m.ContactHub })),
   {
-    loading: () => <div className="min-h-100" />,
+    loading: () => <div className="min-h-[400px]" />,
   }
 );
 
 const StackGrid = dynamic(
   () => import('@/components/ui/StackGrid').then(m => ({ default: m.StackGrid })),
   {
-    loading: () => <div className="min-h-75" />,
+    loading: () => <div className="min-h-[300px]" />,
   }
 );
 

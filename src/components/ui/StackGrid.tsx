@@ -159,7 +159,7 @@ export const StackGrid = () => {
               transition: `opacity 0.5s ease ${idx * 0.05}s, transform 0.5s ease ${idx * 0.05}s`,
             }}
             onMouseMove={handleMouseMove}
-            className="group feature-card flex flex-col h-full border-l border-(--border-subtle) first:border-l-0 md:nth-2:border-l md:nth-5:border-l-0 lg:nth-5:border-l"
+            className="group feature-card stack-grid-card flex flex-col h-full"
           >
             {/* Icon with pulse effect */}
             <div className="text-(--muted) group-hover:text-foreground transition-all duration-500 mb-6 relative">

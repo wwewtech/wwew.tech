@@ -11,7 +11,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL-000000?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org)
-[![Framer Motion](https://img.shields.io/badge/Framer_Motion-12-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion)
+[![GLSL](https://img.shields.io/badge/GLSL-Shaders-5586A4?style=for-the-badge&logo=opengl&logoColor=white)](https://threejs.org)
 
 <br />
 
@@ -68,10 +68,10 @@ Live at **[wwew.tech](https://wwew.tech)**.
 ### Experience
 
 - **Bilingual** — Russian & English, toggled from the navbar, synchronized with SSR
-- **3D scene** — Holographic WebGL background with postprocessing effects
+- **3D scene** — Holographic WebGL Torus Knot with custom iridescent GLSL shaders
 - **Fluid cursor** — Custom canvas-based liquid cursor, gracefully disabled on touch
 - **Smooth scroll** — GPU-accelerated inertia via [Lenis](https://github.com/darkroomengineering/lenis)
-- **Motion** — Framer Motion spring physics plus CSS-only hero animations for LCP stability
+- **Motion** — Hand-crafted CSS keyframes & Houdini `@property` for zero-overhead, LCP-stable animations
 
 </td>
 <td width="50%" valign="top">
@@ -81,9 +81,9 @@ Live at **[wwew.tech](https://wwew.tech)**.
 - **App Router** — React Server Components, streaming, typed metadata
 - **SSR skeleton** — Hero text rendered on the server for instant LCP
 - **Lazy loading** — Below-the-fold sections code-split and deferred
-- **Tree shaking** — `optimizePackageImports` for framer-motion, three, drei, lucide
+- **Tree shaking** — `optimizePackageImports` for three, drei, lucide, lenis
 - **Hardened headers** — DNS prefetch, X-Content-Type-Options, aggressive asset caching
-- **SEO** — Open Graph + Twitter cards, JSON-LD Person schema, sitemap, robots, manifest
+- **SEO & AI** — Open Graph + Twitter cards, JSON-LD Person schema, sitemap, robots, manifest, llms.txt
 
 </td>
 </tr>
@@ -98,8 +98,8 @@ Live at **[wwew.tech](https://wwew.tech)**.
 | Framework      | **Next.js 16** (App Router, RSC, streaming)                              |
 | Language       | **TypeScript 5** (strict)                                                |
 | Styling        | **Tailwind CSS v4** with CSS-variable design tokens                      |
-| Animation      | **Framer Motion 12** + hand-written CSS keyframes                        |
-| 3D / WebGL     | **Three.js** · `@react-three/fiber` · `@react-three/drei` · `postprocessing` |
+| Animation      | **Hand-crafted CSS animations** + Houdini `@property` keyframes          |
+| 3D / WebGL     | **Three.js** · `@react-three/fiber` · `@react-three/drei` · Custom GLSL   |
 | Scroll         | **Lenis 1.3** (inertia, RAF-synchronized)                                |
 | Icons          | **Lucide React**                                                         |
 | Fonts          | **Geist Sans** (`next/font`, preloaded, fallback-adjusted)               |
@@ -113,6 +113,11 @@ Live at **[wwew.tech](https://wwew.tech)**.
 ```
          ┌──────────────────────────────────────────────────┐
          │                  app/layout.tsx                  │
+         │             Base metadata & root shell           │
+         └──────────────────────────────────────────────────┘
+                                 │
+         ┌──────────────────────────────────────────────────┐
+         │              app/[locale]/layout.tsx             │
          │  Metadata · JSON-LD · Viewport · Global fonts    │
          └──────────────────────────────────────────────────┘
                                  │
@@ -122,19 +127,19 @@ Live at **[wwew.tech](https://wwew.tech)**.
         (i18n state)      (inertia scroll)   (deferred canvas)
                                  │
                                  ▼
-                       ┌──────────────────┐
-                       │   app/page.tsx   │  ←  SSR hero skeleton
-                       └──────────────────┘
+                     ┌──────────────────────┐
+                     │ app/[locale]/page.tsx│  ←  SSR hero skeleton & LCP tokens
+                     └──────────────────────┘
                                  │
                                  ▼
                      ClientHomePage (hydrates)
                                  │
          ┌───────────────┬───────┴────────┬───────────────┐
          ▼               ▼                ▼               ▼
-        Hero        Philosophy        Projects       ContactHub
-                        +                 +
-                   HolographicScene   StackGrid
-                     (Three.js)       (lazy)
+        Hero        Philosophy        StackGrid       ContactHub
+                        +             (Bento grid)    (Personal & Team)
+                   HolographicScene
+                  (Three.js + GLSL)
 ```
 
 **Rendering strategy.** The hero is server-rendered as a skeleton for an instant LCP, then `ClientHomePage` hydrates on top of it. `FluidCursorWrapper` mounts a canvas deferred behind `requestIdleCallback`, and heavy below-the-fold components (`HolographicScene`, `StackGrid`) are dynamically imported.
@@ -146,8 +151,10 @@ Live at **[wwew.tech](https://wwew.tech)**.
 ```
 src/
 ├── app/
-│   ├── layout.tsx            Root layout · metadata · JSON-LD
-│   ├── page.tsx              SSR entry · hero skeleton
+│   ├── layout.tsx            Root metadata layout
+│   ├── [locale]/
+│   │   ├── layout.tsx        Locale root layout · metadata · JSON-LD · providers
+│   │   └── page.tsx          SSR entry · hero skeleton
 │   ├── opengraph-image.tsx   Dynamic OG image
 │   ├── twitter-image.tsx     Dynamic Twitter card
 │   ├── sitemap.ts            Sitemap generation
@@ -222,10 +229,10 @@ No environment variables are required. Optionally set `NEXT_PUBLIC_SITE_URL` to 
 The site is engineered for sub-second interaction on mid-range mobile hardware.
 
 - **LCP-first hero** — plain-text H1 rendered server-side, zero animation on the critical path
-- **Code splitting** — `HolographicScene`, `FluidCursor`, and the projects grid are dynamic imports
+- **Code splitting** — `HolographicScene`, `FluidCursor`, and `StackGrid` are dynamic imports
 - **Font strategy** — `next/font` with `display: swap`, `adjustFontFallback`, and preload
 - **Image pipeline** — AVIF → WebP fallback, custom `deviceSizes`, immutable 1-year cache on hashed assets
-- **Bundle size** — `optimizePackageImports` applied to `framer-motion`, `three`, `@react-three/*`, `lucide-react`, `lenis`
+- **Bundle size** — `optimizePackageImports` applied to `three`, `@react-three/*`, `lucide-react`, `lenis`
 - **Source maps** — disabled in production to shrink artifacts
 - **Caching headers** — `public, max-age=31536000, immutable` for static assets and `/_next/static/*`
 

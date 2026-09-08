@@ -290,6 +290,22 @@ a *::selection {
   }
 }
 
+/* Bento grid column dividers for StackGrid */
+@media (min-width: 768px) {
+  .stack-grid-card:nth-child(2n) {
+    border-left: 1px solid var(--border-subtle);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stack-grid-card:nth-child(2n) {
+    border-left: none;
+  }
+  .stack-grid-card:not(:nth-child(4n+1)) {
+    border-left: 1px solid var(--border-subtle);
+  }
+}
+
 /* Text gradient - premium */
 .text-gradient {
   background-image: linear-gradient(180deg, #0d0d0d 0%, #404040 100%);
