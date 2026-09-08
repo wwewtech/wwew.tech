@@ -17,17 +17,17 @@ const CONFIG = {
   // ─────────────────────────────────────────────────────────────────────────────
   // ПОВЕДЕНИЕ ЖИДКОСТИ
   // ─────────────────────────────────────────────────────────────────────────────
-  DENSITY_DISSIPATION: 5,       // Умеренное затухание
-  VELOCITY_DISSIPATION: 6,      // Умеренное затухание скорости
+  DENSITY_DISSIPATION: 5.6,     // Плавное естественное затухание
+  VELOCITY_DISSIPATION: 6.5,    // Плавное гашение скорости
   PRESSURE: 0.04,               // Давление жидкости (0.01-0.5)
   PRESSURE_ITERATIONS: 10,      // Итерации давления
-  CURL: 1.5,                    // Лёгкие завихрения
+  CURL: 1.4,                    // Красивые органичные завихрения
   
   // ─────────────────────────────────────────────────────────────────────────────
   // ВНЕШНИЙ ВИД КУРСОРА
   // ─────────────────────────────────────────────────────────────────────────────
-  SPLAT_RADIUS: 0.12,           // Аккуратный размер "кляксы"
-  SPLAT_FORCE: 3500,            // Умеренная сила разбрызгивания
+  SPLAT_RADIUS: 0.075,          // Тонко настроенный размер пятна
+  SPLAT_FORCE: 2600,            // Мягкая контролируемая сила движения
   
   // ─────────────────────────────────────────────────────────────────────────────
   // ВИЗУАЛЬНЫЕ ЭФФЕКТЫ
@@ -45,7 +45,7 @@ const CONFIG = {
     '#ff6db5',                  // Розовый
     '#ffb56d',                  // Оранжевый
   ],
-  COLOR_INTENSITY_DARK: 0.10,   // Умеренная интенсивность цвета для тёмной темы
+  COLOR_INTENSITY_DARK: 0.10,   // Насыщенность цвета для тёмной темы
   
   // ─────────────────────────────────────────────────────────────────────────────
   // ПАЛИТРА ЦВЕТОВ ДЛЯ СВЕТЛОЙ ТЕМЫ (HEX формат)
@@ -57,7 +57,7 @@ const CONFIG = {
     '#f9a8d4',                  // Нежно-розовый
     '#fcd34d',                  // Мягкий золотистый
   ],
-  COLOR_INTENSITY_LIGHT: 0.1,  // Умеренная интенсивность для мягкого эффекта
+  COLOR_INTENSITY_LIGHT: 0.10,  // Насыщенность для светлой темы
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -109,6 +109,16 @@ export const FluidCursor: React.FC = () => {
     
     return () => clearTimeout(timer);
   }, [isMobile]);
+
+  // Сбрасываем позицию указателя при переключении эффекта, чтобы избежать скачков и вспышек
+  useEffect(() => {
+    if (pointersRef.current[0]) {
+      pointersRef.current[0].id = -1;
+      pointersRef.current[0].moved = false;
+      pointersRef.current[0].deltaX = 0;
+      pointersRef.current[0].deltaY = 0;
+    }
+  }, [isFluidCursorEnabled]);
   
   // Выбираем цвета и интенсивность в зависимости от темы
   const colors = theme === 'light' ? CONFIG.COLORS_LIGHT : CONFIG.COLORS_DARK;
@@ -801,10 +811,27 @@ export const FluidCursor: React.FC = () => {
     };
 
     const updatePointerMoveData = (pointer: Pointer, posX: number, posY: number) => {
+      const newX = posX / canvas.width;
+      const newY = 1.0 - posY / canvas.height;
+
+      // При первом движении или после включения — центрируем без огромного выброса
+      if (pointer.id === -1) {
+        pointer.id = 0;
+        pointer.prevTexcoordX = newX;
+        pointer.prevTexcoordY = newY;
+        pointer.texcoordX = newX;
+        pointer.texcoordY = newY;
+        pointer.deltaX = 0;
+        pointer.deltaY = 0;
+        pointer.moved = false;
+        return;
+      }
+
       pointer.prevTexcoordX = pointer.texcoordX;
       pointer.prevTexcoordY = pointer.texcoordY;
-      pointer.texcoordX = posX / canvas.width;
-      pointer.texcoordY = 1.0 - posY / canvas.height;
+      pointer.texcoordX = newX;
+      pointer.texcoordY = newY;
+
       pointer.deltaX = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX);
       pointer.deltaY = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY);
       pointer.moved = Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0;
