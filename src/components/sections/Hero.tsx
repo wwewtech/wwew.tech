@@ -3,34 +3,15 @@
 import { ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/context/AppContext';
 import { ShinyText } from '@/components/ui/ShinyText';
+import { HeroBackground } from '@/components/sections/HeroBackground';
 
 export const Hero = () => {
   const { t } = useLanguage();
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 pt-16 overflow-hidden bg-lines">
-
-      {/* Decorative curved lines */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-50 dark:opacity-100" viewBox="0 0 2000 1000" preserveAspectRatio="xMidYMid slice">
-        <path
-          d="M0 400 Q 400 200, 800 400 T 1600 400"
-          stroke="var(--border)"
-          fill="none"
-          strokeWidth="1"
-        />
-        <path
-          d="M0 500 Q 500 300, 1000 500 T 2000 500"
-          stroke="var(--border-subtle)"
-          fill="none"
-          strokeWidth="1"
-        />
-        <path
-          d="M0 600 Q 300 450, 700 600 T 1400 600"
-          stroke="var(--border)"
-          fill="none"
-          strokeWidth="1"
-        />
-      </svg>
+    <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 pt-16 pb-16 overflow-hidden">
+      {/* Permanent Prism Background (#13) */}
+      <HeroBackground />
 
       <div className="relative z-10 max-w-5xl mx-auto">
         {/* Main Title - NO animation for proper LCP detection */}

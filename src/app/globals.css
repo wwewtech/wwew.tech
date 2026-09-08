@@ -67,21 +67,6 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Decorative curved lines background */
-.bg-lines {
-  position: relative;
-}
-
-.bg-lines::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 300 Q 400 100, 800 300 T 1600 300' stroke='rgba(255,255,255,0.03)' fill='none' stroke-width='1'/%3E%3Cpath d='M0 500 Q 400 300, 800 500 T 1600 500' stroke='rgba(255,255,255,0.02)' fill='none' stroke-width='1'/%3E%3Cpath d='M0 700 Q 400 500, 800 700 T 1600 700' stroke='rgba(255,255,255,0.03)' fill='none' stroke-width='1'/%3E%3C/svg%3E");
-  background-size: cover;
-  pointer-events: none;
-  opacity: 0.5;
-}
-
 /* Smooth scroll - DISABLED globally to prevent conflict with Lenis */
 /* html {
   scroll-behavior: smooth;
