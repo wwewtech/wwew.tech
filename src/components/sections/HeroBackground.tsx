@@ -2,7 +2,7 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { useTheme } from '@/context/AppContext';
+import { useTheme, useFluidCursor } from '@/context/AppContext';
 
 const Prism = dynamic(() => import('@/components/reactbits/Prism'), {
   ssr: false,
@@ -10,6 +10,7 @@ const Prism = dynamic(() => import('@/components/reactbits/Prism'), {
 
 export const HeroBackground: React.FC = () => {
   const { theme } = useTheme();
+  const { prefersReducedMotion } = useFluidCursor();
   const isDark = theme === 'dark';
 
   return (
@@ -33,7 +34,8 @@ export const HeroBackground: React.FC = () => {
           noise={0.3}
           transparent={true}
           scale={3.2}
-          timeScale={0.3}
+          timeScale={prefersReducedMotion ? 0 : 0.3}
+          suspendWhenOffscreen={true}
           lightMode={!isDark}
         />
       </div>

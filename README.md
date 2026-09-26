@@ -171,9 +171,6 @@ src/
 ├── context/
 │   └── AppContext.tsx        Language context · RU/EN translation dictionary
 │
-├── lib/
-│   └── utils.ts              cn() and shared helpers
-│
 └── proxy.ts                  Locale routing & i18n redirect handler
 ```
 
@@ -220,7 +217,7 @@ No environment variables are required. Optionally set `NEXT_PUBLIC_SITE_URL` to 
 | `npm run build`  | Create an optimized production build            |
 | `npm run start`  | Serve the production build on port 3000         |
 | `npm run lint`   | Run ESLint with the Next.js config              |
-| `npx tsc --noEmit` | Type-check the project without emitting files  |
+| `npm run typecheck` | Type-check the project without emitting files |
 
 ---
 

@@ -31,10 +31,11 @@ export default function proxy(request: NextRequest) {
     const locale = getLocale(request);
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = `/${locale}${pathname === '/' ? '' : pathname}`;
-    return NextResponse.redirect(redirectUrl);
+    // 308 (permanent) для корня — стабильный сигнал поисковикам; 307 для остальных путей
+    return NextResponse.redirect(redirectUrl, pathname === '/' ? 308 : 307);
   }
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|manifest.json|icon.*|apple-icon.*).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|manifest.json|icon.*|apple-icon.*|opengraph-image|twitter-image).*)'],
 };

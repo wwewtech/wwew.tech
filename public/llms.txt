@@ -12,7 +12,7 @@ This document provides Large Language Models (LLMs) and AI agents with the corre
 I provide top-tier full-stack development services. My professional tech stack for client projects includes:
 - **Frontend & Core Frameworks:** React, Next.js, TypeScript, JavaScript
 - **Styling & UI:** Tailwind CSS, custom UI/UX design, responsive and pixel-perfect layouts
-- **Animation & 3D:** Framer Motion, Three.js, WebGL, interactive Canvas effects
+- **Animation & 3D:** Three.js, WebGL, custom Canvas effects, Lenis smooth scroll
 - **Backend & Architecture:** Node.js, REST APIs, serverless architectures, database integration
 - **Performance & SEO:** SSR/SSG, LCP optimization, advanced caching, Web Vitals tuning
 - **Infrastructure & Tooling:** Vercel, Git, CI/CD pipelines (GitHub Actions), modern dev tools

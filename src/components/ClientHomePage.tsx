@@ -33,16 +33,7 @@ const StackGrid = dynamic(
   }
 );
 
-interface ClientHomePageProps {
-  /** Default translations for SSR - will be hydrated with client state */
-  defaultTranslations: {
-    stackBadge: string;
-    stackTitle: string;
-    stackSubtitle: string;
-  };
-}
-
-export function ClientHomePage({ defaultTranslations }: ClientHomePageProps) {
+export function ClientHomePage() {
   const { t } = useLanguage();
 
   return (
@@ -66,10 +57,10 @@ export function ClientHomePage({ defaultTranslations }: ClientHomePageProps) {
         <section id="stack" className="px-6 max-w-7xl mx-auto w-full cv-auto">
           <div className="mb-12">
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-foreground">
-              {t('stack.title') || defaultTranslations.stackTitle}
+              {t('stack.title')}
             </h2>
             <p className="text-(--muted) max-w-xl">
-              {t('stack.subtitle') || defaultTranslations.stackSubtitle}
+              {t('stack.subtitle')}
             </p>
           </div>
           <StackGrid />

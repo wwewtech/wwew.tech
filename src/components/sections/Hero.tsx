@@ -27,8 +27,8 @@ export const Hero = () => {
           </span>
         </h1>
 
-        {/* Subtitle - CSS animation */}
-        <p className="text-(--muted) text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-6 animate-hero-fade-in [animation-delay:200ms]">
+        {/* Subtitle - CSS animation without opacity-hiding (LCP-safe) */}
+        <p className="text-(--muted) text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-6 animate-hero-rise [animation-delay:200ms]">
           {t('hero.subtitle')}
         </p>
 

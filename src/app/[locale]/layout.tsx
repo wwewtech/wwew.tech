@@ -15,6 +15,14 @@ const geistSans = Geist({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://wwew.tech";
 
+// Полностью статический контент — пререндерим обе локали (SSG вместо SSR)
+export function generateStaticParams() {
+  return [{ locale: 'ru' }, { locale: 'en' }];
+}
+
+// Неизвестные локали отдают 404 вместо рендера произвольного сегмента
+export const dynamicParams = false;
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -63,14 +71,22 @@ export async function generateMetadata({
       languages: {
         "ru": `${siteUrl}/ru`,
         "en": `${siteUrl}/en`,
-        "x-default": `${siteUrl}/en`,
+        "x-default": `${siteUrl}/ru`,
       },
     },
     openGraph: {
       type: "website",
       locale: isEn ? "en_US" : "ru_RU",
       alternateLocale: isEn ? ["ru_RU"] : ["en_US"],
-      url: siteUrl,
+      url: `${siteUrl}/${locale}`,
+      images: [
+        {
+          url: `${siteUrl}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: isEn ? "wwew.tech | Full-Stack Developer" : "wwew.tech | Full-Stack разработка",
+        },
+      ],
       siteName: "wwew.tech",
       title: "wwew.tech | Full-Stack Developer",
       description: isEn 
@@ -80,6 +96,7 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       site: "@wwewtech",
+      images: [`${siteUrl}/twitter-image`],
       title: "wwew.tech | Full-Stack Developer",
       description: isEn 
         ? "Full-stack development from concept to production. Building fast, scalable web applications."
@@ -174,6 +191,13 @@ export default async function RootLayout({
   return (
     <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
+        {/* Theme bootstrap: применяем сохранённую тему до гидратации, чтобы не было вспышки */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark'){document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}}catch(e){}})();",
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

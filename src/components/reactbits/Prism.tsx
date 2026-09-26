@@ -393,10 +393,11 @@ const Prism = ({
       }
     };
 
+    let inView = true;
     if (suspendWhenOffscreen) {
       const io = new IntersectionObserver(entries => {
-        const vis = entries.some(e => e.isIntersecting);
-        if (vis) startRAF();
+        inView = entries.some(e => e.isIntersecting);
+        if (inView) startRAF();
         else stopRAF();
       });
       io.observe(container);
@@ -406,9 +407,17 @@ const Prism = ({
       startRAF();
     }
 
+    // Пауза при скрытии вкладки — не жжём GPU/CPU в фоне
+    const onVisibilityChange = () => {
+      if (document.hidden) stopRAF();
+      else if (inView) startRAF();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
     return () => {
       stopRAF();
       ro.disconnect();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       if (animationType === 'hover') {
         if (onPointerMove) window.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('mouseleave', onLeave);

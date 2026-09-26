@@ -22,7 +22,6 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.cursorOff': 'Эффект выкл',
     
     // Hero
-    'hero.available': 'Открыт для проектов',
     'hero.title1': 'Разработка',
     'hero.title2': 'Цифровых',
     'hero.title3': 'Продуктов',
@@ -31,7 +30,6 @@ const translations: Record<Language, Record<string, string>> = {
     'hero.cta2': 'Смотреть стек',
     
     // Philosophy
-    'philosophy.badge': 'Философия',
     'philosophy.title1': 'Цифровой',
     'philosophy.title2': 'Стиль',
     'philosophy.text1': 'Разработка — это процесс поиска баланса между функциональностью и формой. Хороший продукт должен быть незаметным, интуитивным и надежным,',
@@ -46,12 +44,10 @@ const translations: Record<Language, Record<string, string>> = {
     'philosophy.stat3': 'Идей',
     
     // Stack
-    'stack.badge': 'Технологии',
     'stack.title': 'Мой стек',
     'stack.subtitle': 'Инструменты, которые я использую для создания масштабируемых продуктов.',
     
     // Contact
-    'contact.badge': 'Контакты',
     'contact.title1': 'Давайте',
     'contact.title2': 'Работать',
     'contact.subtitle': 'Готов обсудить ваш проект. Свяжитесь любым удобным способом.',
@@ -59,13 +55,9 @@ const translations: Record<Language, Record<string, string>> = {
     'contact.tabPersonal': 'Со мной',
     'contact.tabTeam': 'С командой',
     'contact.telegram': 'Написать в Telegram',
-    'contact.email': 'Отправить Email',
-    'contact.response': 'Обычно отвечаю в течение 24 часов',
     'contact.teamWebsite': 'Перейти на openspacedev.ru',
     
     // Footer
-    'footer.description': 'Создаю цифровые продукты, которые работают быстро и масштабируются эффективно.',
-    'footer.built': 'Сделано с точностью',
   },
   en: {
     // Navbar
@@ -77,7 +69,6 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.cursorOff': 'Effect off',
     
     // Hero
-    'hero.available': 'Available for Projects',
     'hero.title1': 'Build',
     'hero.title2': 'Digital',
     'hero.title3': 'Products',
@@ -86,7 +77,6 @@ const translations: Record<Language, Record<string, string>> = {
     'hero.cta2': 'View Stack',
     
     // Philosophy
-    'philosophy.badge': 'Philosophy',
     'philosophy.title1': 'Digital',
     'philosophy.title2': 'Aesthetics',
     'philosophy.text1': 'Development is the process of finding balance between function and form. A great product should be invisible, intuitive, and reliable,',
@@ -101,12 +91,10 @@ const translations: Record<Language, Record<string, string>> = {
     'philosophy.stat3': 'Ideas',
     
     // Stack
-    'stack.badge': 'Technologies',
     'stack.title': 'My stack',
     'stack.subtitle': 'Tools I use to build scalable products.',
     
     // Contact
-    'contact.badge': 'Contact',
     'contact.title1': "Let's",
     'contact.title2': 'Work',
     'contact.subtitle': 'Ready to discuss your project. Reach out any way you prefer.',
@@ -114,13 +102,9 @@ const translations: Record<Language, Record<string, string>> = {
     'contact.tabPersonal': 'With Me',
     'contact.tabTeam': 'With Team',
     'contact.telegram': 'Message on Telegram',
-    'contact.email': 'Send Email',
-    'contact.response': 'Usually respond within 24 hours',
     'contact.teamWebsite': 'Visit openspacedev.ru',
     
     // Footer
-    'footer.description': 'Building digital products that work fast and scale efficiently.',
-    'footer.built': 'Built with precision',
   },
 };
 
