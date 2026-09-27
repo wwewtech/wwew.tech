@@ -78,7 +78,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
 
 ### Engineering
 
-- **App Router** — React Server Components, streaming, typed metadata
+- **App Router** — React Server Components, typed metadata
 - **SSR skeleton** — Hero text rendered on the server for instant LCP
 - **Lazy loading** — Below-the-fold sections code-split and deferred
 - **Tree shaking** — `optimizePackageImports` for three, drei, lucide, lenis
@@ -95,7 +95,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
 
 | Layer          | Technology                                                               |
 | :------------- | :----------------------------------------------------------------------- |
-| Framework      | **Next.js 16** (App Router, RSC, streaming)                              |
+| Framework      | **Next.js 16** (App Router, RSC)                                           |
 | Language       | **TypeScript 5** (strict)                                                |
 | Styling        | **Tailwind CSS v4** with CSS-variable design tokens                      |
 | Animation      | **Hand-crafted CSS animations** + Houdini `@property` keyframes          |
@@ -104,7 +104,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
 | Icons          | **Lucide React**                                                         |
 | Fonts          | **Geist Sans** (`next/font`, preloaded, fallback-adjusted)               |
 | CI             | **GitHub Actions** (lint · typecheck · build)                            |
-| Hosting        | **Vercel** (edge runtime, automatic AVIF/WebP)                           |
+| Hosting        | **Vercel** (static export + CDN, automatic AVIF/WebP)                    |
 
 ---
 
@@ -180,7 +180,7 @@ src/
 
 ### Prerequisites
 
-- **Node.js** ≥ 18
+- **Node.js** ≥ 20
 - **npm**, **yarn**, or **pnpm**
 
 ### Install
@@ -268,7 +268,7 @@ Issues and pull requests are welcome. Please:
 
 1. Open an issue first for non-trivial changes — templates are in [.github/ISSUE_TEMPLATE](.github/ISSUE_TEMPLATE)
 2. Keep commits focused and write meaningful messages
-3. Make sure `npm run lint` and `npx tsc --noEmit` both pass
+3. Make sure `npm run lint` and `npm run typecheck` both pass
 4. Follow the existing style — no comment noise, no speculative abstractions
 
 ---
