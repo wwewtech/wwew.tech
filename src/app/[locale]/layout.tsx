@@ -4,6 +4,7 @@ import "../globals.css";
 import { AppProvider } from "@/context/AppContext";
 import { LenisProvider } from "@/components/providers/LenisProvider";
 import { FluidCursorWrapper } from "@/components/providers/FluidCursorWrapper";
+import YandexMetrika from "@/components/YandexMetrika";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -206,6 +207,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} antialiased`}
       >
+        <YandexMetrika />
         <AppProvider initialLanguage={locale as 'ru' | 'en'}>
           {/* FluidCursor загружается отложенно для лучшей производительности */}
           <FluidCursorWrapper />
