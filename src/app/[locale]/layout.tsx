@@ -6,6 +6,7 @@ import { LenisProvider } from "@/components/providers/LenisProvider";
 import { FluidCursorWrapper } from "@/components/providers/FluidCursorWrapper";
 import YandexMetrika from "@/components/YandexMetrika";
 import { YM_SNIPPET } from "@/lib/metrika";
+import { metaCopy } from "@/i18n/content";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,12 +47,12 @@ export async function generateMetadata({
   return {
     metadataBase: new URL(siteUrl),
     title: {
-      default: "wwew.tech | Full-Stack Developer",
+      default: metaCopy.title,
       template: "%s | wwew.tech",
     },
-    description: isEn 
-      ? "Full-stack development from concept to production. Building fast, scalable web applications with modern architecture. React, Next.js, Python, TypeScript."
-      : "Full-stack разработка от идеи до продакшена. Создаю быстрые, масштабируемые веб-приложения с современной архитектурой. React, Next.js, Python, TypeScript.",
+    description: isEn
+      ? metaCopy.description.long.en
+      : metaCopy.description.long.ru,
     keywords: [
       "full-stack developer", "web development", "React developer", "Next.js developer",
       "Python developer", "TypeScript", "фронтенд разработчик", "веб-разработка",
@@ -90,19 +91,19 @@ export async function generateMetadata({
         },
       ],
       siteName: "wwew.tech",
-      title: "wwew.tech | Full-Stack Developer",
-      description: isEn 
-        ? "Full-stack development from concept to production. Building fast, scalable web applications with modern architecture."
-        : "Full-stack разработка от идеи до продакшена. Создаю быстрые, масштабируемые веб-приложения с современной архитектурой.",
+      title: metaCopy.title,
+      description: isEn
+        ? metaCopy.description.short.en
+        : metaCopy.description.short.ru,
     },
     twitter: {
       card: "summary_large_image",
       site: "@wwewtech",
       images: [`${siteUrl}/twitter-image`],
-      title: "wwew.tech | Full-Stack Developer",
-      description: isEn 
-        ? "Full-stack development from concept to production. Building fast, scalable web applications."
-        : "Full-stack разработка от идеи до продакшена. Создаю быстрые, масштабируемые веб-приложения.",
+      title: metaCopy.title,
+      description: isEn
+        ? metaCopy.description.shorter.en
+        : metaCopy.description.shorter.ru,
       creator: "@wwewtech",
     },
     category: "technology",
@@ -142,9 +143,9 @@ export default async function RootLayout({
         name: "wwew.tech",
         url: process.env.NEXT_PUBLIC_SITE_URL || "https://wwew.tech",
         jobTitle: "Full-Stack Developer",
-        description: locale === 'en' 
-          ? "Full-stack development from concept to production. Building fast, scalable web applications."
-          : "Full-stack разработка от идеи до продакшена. Создаю быстрые, масштабируемые веб-приложения.",
+        description: locale === 'en'
+          ? metaCopy.jsonLd.personDescription.en
+          : metaCopy.jsonLd.personDescription.ru,
         knowsAbout: ["React", "Next.js", "TypeScript", "Python", "Web Development", "Full-Stack Development", "Frontend", "Backend"],
         sameAs: [
           "https://t.me/wwewtech",
@@ -156,9 +157,9 @@ export default async function RootLayout({
         "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://wwew.tech"}/#website`,
         url: process.env.NEXT_PUBLIC_SITE_URL || "https://wwew.tech",
         name: "wwew.tech | Full-Stack Developer",
-        description: locale === 'en' 
-          ? "Full-stack development from concept to production. Building fast, scalable web applications."
-          : "Full-stack разработка от идеи до продакшена. Создаю быстрые, масштабируемые веб-приложения.",
+        description: locale === 'en'
+          ? metaCopy.jsonLd.personDescription.en
+          : metaCopy.jsonLd.personDescription.ru,
         publisher: {
           "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://wwew.tech"}/#person`
         },
@@ -177,14 +178,14 @@ export default async function RootLayout({
           addressCountry: locale === 'en' ? "WorldWide" : "WorldWide"
         },
         description: locale === 'en' 
-          ? "Professional full-stack web development services, specialized in React, Next.js, and Python."
-          : "Профессиональные услуги full-stack веб-разработки, специализация на React, Next.js и Python.",
+          ? metaCopy.jsonLd.serviceDescription.en
+          : metaCopy.jsonLd.serviceDescription.ru,
         offers: {
           "@type": "Offer",
-          name: locale === 'en' ? "Web Development" : "Веб-разработка",
+          name: locale === 'en' ? metaCopy.jsonLd.offerName.en : metaCopy.jsonLd.offerName.ru,
           description: locale === 'en' 
-            ? "Custom web application development from scratch."
-            : "Разработка кастомных веб-приложений с нуля."
+            ? metaCopy.jsonLd.offerDescription.en
+            : metaCopy.jsonLd.offerDescription.ru,
         }
       }
     ]

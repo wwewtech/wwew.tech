@@ -53,7 +53,7 @@
 
 **wwew.tech** is a full-stack developer's personal landing page — a single-page experience designed around three principles: *speed*, *restraint*, and *craft*. The site is built on the Next.js App Router with React Server Components, a Lenis-driven smooth-scroll pipeline, a Three.js holographic scene, and a bilingual (RU / EN) copy system that stays hydration-safe.
 
-> Not a template. Every section — from the shiny-text hero to the fluid cursor — is written in-house.
+> Every section is built in-house — the 3D holographic scene, the shiny-text hero, the fluid cursor engine (a React/Tailwind adaptation of the open-source [WebGL-Fluid-Simulation](https://github.com/PavelDoGreat/WebGL-Fluid-Simulation) by Pavel Dobryakov, MIT), the bento stack grid and the drag switcher.
 
 Live at **[wwew.tech](https://wwew.tech)**.
 
@@ -79,7 +79,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
 ### Engineering
 
 - **App Router** — React Server Components, typed metadata
-- **SSR skeleton** — Hero text rendered on the server for instant LCP
+- **SSG hero** — complete hero text prerendered at build time for instant LCP
 - **Lazy loading** — Below-the-fold sections code-split and deferred
 - **Tree shaking** — `optimizePackageImports` for three, drei, lucide, lenis
 - **Hardened headers** — DNS prefetch, X-Content-Type-Options, aggressive asset caching
@@ -104,7 +104,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
 | Icons          | **Lucide React**                                                         |
 | Fonts          | **Geist Sans** (`next/font`, preloaded, fallback-adjusted)               |
 | CI             | **GitHub Actions** (lint · typecheck · build)                            |
-| Hosting        | **Vercel** (static export + CDN, automatic AVIF/WebP)                    |
+| Hosting        | **Vercel** (Node.js runtime + CDN, automatic AVIF/WebP)                    |
 
 ---
 
@@ -128,7 +128,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
                                  │
                                  ▼
                      ┌──────────────────────┐
-                     │ app/[locale]/page.tsx│  ←  SSR hero skeleton & LCP tokens
+                     │ app/[locale]/page.tsx│  ←  SSG hero markup & LCP tokens
                      └──────────────────────┘
                                  │
                                  ▼
@@ -142,7 +142,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
                   (Three.js + GLSL)
 ```
 
-**Rendering strategy.** The hero is server-rendered as a skeleton for an instant LCP, then `ClientHomePage` hydrates on top of it. `FluidCursorWrapper` mounts a canvas deferred behind `requestIdleCallback`, and heavy below-the-fold components (`HolographicScene`, `StackGrid`) are dynamically imported.
+**Rendering strategy.** Both locales are prerendered as static HTML at build time (SSG via `generateStaticParams`), so the hero ships as complete server-rendered markup for an instant LCP — no skeleton swap, the H1 text is present in the first HTML response. `ClientHomePage` hydrates on top of it. `FluidCursorWrapper` mounts a canvas only after the user enables the effect, and heavy below-the-fold components (`HolographicScene`, `StackGrid`) are dynamically imported.
 
 ---
 
@@ -154,7 +154,7 @@ src/
 │   ├── layout.tsx            Root metadata layout
 │   ├── [locale]/
 │   │   ├── layout.tsx        Locale root layout · metadata · JSON-LD · providers
-│   │   └── page.tsx          SSR entry · hero skeleton
+│   │   └── page.tsx          SSG entry · hero markup
 │   ├── opengraph-image.tsx   Dynamic OG image
 │   ├── twitter-image.tsx     Dynamic Twitter card
 │   ├── sitemap.ts            Sitemap generation
@@ -240,10 +240,10 @@ The site is engineered for sub-second interaction on mid-range mobile hardware.
 Language state is managed by a lightweight context in [src/context/AppContext.tsx](src/context/AppContext.tsx):
 
 - Translation dictionaries for **Russian** and **English** live inline — no network round-trip
-- The default language is rendered in SSR so the first paint is never empty
-- The toggle persists to `localStorage` and updates `<html lang>` on the client
+- The active locale is rendered in SSR so the first paint is never empty
+- The language toggle swaps the locale route; theme and fluid-cursor preferences persist to `localStorage`
 
-Adding a locale is a matter of extending the `translations` record and the `Language` union.
+Adding a locale is a matter of extending the `translations` record in [src/i18n/translations.ts](src/i18n/translations.ts) and the `Language` union.
 
 ---
 
