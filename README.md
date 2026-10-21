@@ -84,6 +84,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
 - **Tree shaking** — `optimizePackageImports` for three, drei, lucide, lenis
 - **Hardened headers** — DNS prefetch, X-Content-Type-Options, aggressive asset caching
 - **SEO & AI** — Open Graph + Twitter cards, JSON-LD Person schema, sitemap, robots, manifest, llms.txt
+- **Branded 404** — a themed, translated not-found page instead of the framework default
 
 </td>
 </tr>
@@ -152,9 +153,11 @@ Live at **[wwew.tech](https://wwew.tech)**.
 src/
 ├── app/
 │   ├── layout.tsx            Root metadata layout
+│   ├── global-not-found.tsx  Branded 404 for unmatched URLs · own document shell
 │   ├── [locale]/
 │   │   ├── layout.tsx        Locale root layout · metadata · JSON-LD · providers
-│   │   └── page.tsx          SSG entry · hero markup
+│   │   ├── page.tsx          SSG entry · hero markup
+│   │   └── not-found.tsx     Branded 404 inside the locale layout
 │   ├── opengraph-image.tsx   Dynamic OG image
 │   ├── twitter-image.tsx     Dynamic Twitter card
 │   ├── sitemap.ts            Sitemap generation
@@ -165,11 +168,25 @@ src/
 │   ├── ClientHomePage.tsx    Client shell that composes sections
 │   ├── layout/               Navbar · Footer
 │   ├── providers/            LenisProvider · FluidCursorWrapper
-│   ├── sections/             Hero · Philosophy · ContactHub
+│   ├── sections/             Hero · Philosophy · ContactHub · NotFoundView
 │   └── ui/                   HolographicScene · FluidCursor · ShinyText · StackGrid
 │
 ├── context/
-│   └── AppContext.tsx        Language context · RU/EN translation dictionary
+│   └── AppContext.tsx        Language / theme / fluid-cursor contexts
+│
+├── i18n/
+│   ├── content.ts            Bilingual marketing copy for metadata & JSON-LD
+│   ├── locales.ts            Locale negotiation · Accept-Language parsing
+│   └── translations.ts       RU/EN UI dictionary
+│
+├── lib/
+│   ├── device.ts             Device & reduced-motion detection
+│   ├── fluidGL.ts            WebGL helpers · FBO/program disposal
+│   ├── fluidShaders.ts       GLSL sources for the fluid simulation
+│   ├── fluidSim.ts           Fluid simulation step / render / splat
+│   └── metrika.ts            Yandex Metrika id & init snippet
+│
+├── __tests__/                Unit tests (Node's built-in runner)
 │
 └── proxy.ts                  Locale routing & i18n redirect handler
 ```
@@ -218,6 +235,20 @@ No environment variables are required. Optionally set `NEXT_PUBLIC_SITE_URL` to 
 | `npm run start`  | Serve the production build on port 3000         |
 | `npm run lint`   | Run ESLint with the Next.js config              |
 | `npm run typecheck` | Type-check the project without emitting files |
+| `npm test`       | Run the unit tests (Node's built-in runner)     |
+
+### Tests
+
+Unit tests use the Node.js built-in test runner — no test framework dependency.
+Node strips TypeScript types natively (enabled by default since v22.18.0), so
+`npm test` runs `.ts` files directly.
+
+```bash
+npm test
+```
+
+Covered: locale negotiation (`Accept-Language` parsing, cookie override) and
+the translation dictionaries.
 
 ---
 
@@ -228,7 +259,7 @@ The site is engineered for sub-second interaction on mid-range mobile hardware.
 - **LCP-first hero** — plain-text H1 rendered server-side, zero animation on the critical path
 - **Code splitting** — `HolographicScene`, `FluidCursor`, and `StackGrid` are dynamic imports
 - **Font strategy** — `next/font` with `display: swap`, `adjustFontFallback`, and preload
-- **Image pipeline** — AVIF → WebP fallback, custom `deviceSizes`, immutable 1-year cache on hashed assets
+- **GPU hygiene** — the fluid cursor releases its textures, programs and context on teardown, and a theme switch updates uniforms instead of recreating the WebGL context
 - **Bundle size** — `optimizePackageImports` applied to `three`, `@react-three/*`, `lucide-react`, `lenis`
 - **Source maps** — disabled in production to shrink artifacts
 - **Caching headers** — `public, max-age=31536000, immutable` for static assets and `/_next/static/*`
@@ -239,11 +270,27 @@ The site is engineered for sub-second interaction on mid-range mobile hardware.
 
 Language state is managed by a lightweight context in [src/context/AppContext.tsx](src/context/AppContext.tsx):
 
-- Translation dictionaries for **Russian** and **English** live inline — no network round-trip
+- Translation dictionaries for **Russian** and **English** live in [src/i18n/translations.ts](src/i18n/translations.ts) — no network round-trip
 - The active locale is rendered in SSR so the first paint is never empty
 - The language toggle swaps the locale route; theme and fluid-cursor preferences persist to `localStorage`
 
 Adding a locale is a matter of extending the `translations` record in [src/i18n/translations.ts](src/i18n/translations.ts) and the `Language` union.
+
+### Locale negotiation
+
+Requests to a URL without a locale are resolved by the proxy in
+[src/proxy.ts](src/proxy.ts), using the logic in
+[src/i18n/locales.ts](src/i18n/locales.ts):
+
+1. The `locale` cookie — an explicit choice made by the visitor, remembered for
+   a year. A visit to `/en` sets it, so the bare root keeps leading to the
+   language the visitor picked.
+2. The `Accept-Language` header — parsed properly, with `q`-weights honoured
+   and only the primary language subtag compared.
+3. `ru` as the fallback.
+
+The redirect uses `307`, because the target now depends on the visitor and is
+therefore not a permanent mapping.
 
 ---
 

@@ -171,3 +171,55 @@ export const createDoubleFBO = (
     },
   };
 };
+
+/**
+ * Releases the GPU memory held by a framebuffer and its texture.
+ */
+export const disposeFBO = (gl: GL, fbo: FBO | null | undefined) => {
+  if (!fbo) return;
+  gl.deleteFramebuffer(fbo.fbo);
+  gl.deleteTexture(fbo.texture);
+};
+
+/**
+ * Releases both framebuffers of a double buffer.
+ */
+export const disposeDoubleFBO = (gl: GL, double: DoubleFBO | null | undefined) => {
+  if (!double) return;
+  disposeFBO(gl, double.read);
+  disposeFBO(gl, double.write);
+};
+
+/**
+ * Releases a compiled shader program together with the shaders attached to it.
+ *
+ * The shaders are detached and deleted first: deleting the program alone does
+ * not free the shader objects, so the driver keeps them alive until the
+ * context is lost.
+ */
+export const disposeProgram = (
+  gl: GL,
+  program: WebGLProgram | null | undefined,
+  shaders: (WebGLShader | null | undefined)[]
+) => {
+  if (!program) return;
+  for (const shader of shaders) {
+    if (!shader) continue;
+    gl.detachShader(program, shader);
+    gl.deleteShader(shader);
+  }
+  gl.deleteProgram(program);
+};
+
+/**
+ * Releases the WebGL context itself.
+ *
+ * `loseContext()` tells the driver that the context can be dropped, which
+ * frees the textures, buffers and programs that were still attached to it.
+ * Without this, a context that is only "abandoned" keeps its resources until
+ * the browser decides to reclaim them.
+ */
+export const loseContext = (gl: GL) => {
+  const ext = gl.getExtension('WEBGL_lose_context');
+  ext?.loseContext();
+};

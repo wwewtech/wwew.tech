@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "src/components/reactbits/**",
+    // Verification tooling, not part of the shipped application.
+    "scripts/**",
   ]),
 ]);
 

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\""
   },
   "browserslist": [
     "last 2 Chrome versions",
@@ -39,6 +40,6 @@
     "typescript": "^5"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.9.0"
   }
 }

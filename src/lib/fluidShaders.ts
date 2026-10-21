@@ -30,6 +30,7 @@ export const displayShaderSource = `
   varying vec2 vB;
   uniform sampler2D uTexture;
   uniform vec2 texelSize;
+  uniform float uLightTheme;
   void main () {
     vec3 c = texture2D(uTexture, vUv).rgb;
     #ifdef SHADING
@@ -45,10 +46,10 @@ export const displayShaderSource = `
       c *= diffuse;
     #endif
     float a = max(c.r, max(c.g, c.b));
-    #ifdef LIGHT_THEME
-      a = min(a * 1.8, 0.7);
-      c = min(c * 1.3, vec3(1.0));
-    #endif
+    // The light theme is a uniform, not a #define, so switching the theme
+    // does not require recompiling the shader.
+    a = mix(a, min(a * 1.8, 0.7), uLightTheme);
+    c = mix(c, min(c * 1.3, vec3(1.0)), uLightTheme);
     gl_FragColor = vec4(c, a);
   }
 `;

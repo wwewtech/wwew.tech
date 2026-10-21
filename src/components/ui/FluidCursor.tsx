@@ -22,6 +22,10 @@ import {
   getSupportedFormat,
   createFBO,
   createDoubleFBO,
+  disposeFBO,
+  disposeDoubleFBO,
+  disposeProgram,
+  loseContext,
 } from '@/lib/fluidGL';
 import { createFluidSim, getResolution } from '@/lib/fluidSim';
 
@@ -159,6 +163,13 @@ export const FluidCursor: React.FC = () => {
     return { r: c.r * colorIntensity, g: c.g * colorIntensity, b: c.b * colorIntensity };
   }, [hexToRgb, colors, colorIntensity]);
 
+  // Тема хранится в ref, а не в замыкании эффекта: переключение темы не
+  // должно пересоздавать WebGL-контекст, только обновлять uniform и палитру.
+  const themeRef = useRef(theme);
+  const generateColorRef = useRef(generateColor);
+  themeRef.current = theme;
+  generateColorRef.current = generateColor;
+
   useEffect(() => {
     const canvas = canvasRef.current;
     // Полностью отключаем на мобильных, пока не готов или ПОКА ЭФФЕКТ ВЫКЛЮЧЕН —
@@ -275,9 +286,10 @@ export const FluidCursor: React.FC = () => {
     const gradientSubtractProgram = createProgram(gl, vs, gradientSubtractShaderC);
 
     // Display program with shading
+    // Тема не влияет на набор ключевых слов: LIGHT_THEME заменён на uniform,
+    // поэтому переключение темы не требует перекомпиляции шейдера.
     const displayKeywords: string[] = [];
     if (CONFIG.SHADING) displayKeywords.push('SHADING');
-    if (theme === 'light') displayKeywords.push('LIGHT_THEME');
     const displayFragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, displayShaderSource, displayKeywords.length > 0 ? displayKeywords : undefined);
     const displayProgram = displayFragmentShader ? createProgram(gl, vs, displayFragmentShader) : null;
 
@@ -345,6 +357,11 @@ export const FluidCursor: React.FC = () => {
       supportLinearFiltering,
       shading: CONFIG.SHADING,
     });
+
+    // Начальное значение uniform'а темы. Дальше он обновляется из
+    // themeRef, поэтому переключение темы не пересоздаёт контекст.
+    gl.useProgram(displayProgram);
+    gl.uniform1f(displayUniforms.uLightTheme, themeRef.current === 'light' ? 1 : 0);
 
     // Scale by pixel ratio
     const scaleByPixelRatio = (input: number) => {
@@ -426,6 +443,12 @@ export const FluidCursor: React.FC = () => {
       });
 
       sim.step(dt);
+
+      // Тема читается из ref и передаётся uniform'ом на каждом кадре —
+      // переключение темы не требует пересборки WebGL-контекста.
+      gl.useProgram(displayProgram);
+      gl.uniform1f(displayUniforms.uLightTheme, themeRef.current === 'light' ? 1 : 0);
+
       sim.render();
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -437,7 +460,7 @@ export const FluidCursor: React.FC = () => {
       const posX = scaleByPixelRatio(e.clientX);
       const posY = scaleByPixelRatio(e.clientY);
       updatePointerMoveData(pointer, posX, posY);
-      pointer.color = generateColor();
+      pointer.color = generateColorRef.current();
     };
 
     // Touch handlers - БЕЗ preventDefault чтобы не блокировать скролл!
@@ -450,7 +473,7 @@ export const FluidCursor: React.FC = () => {
       const posX = scaleByPixelRatio(touches[0].clientX);
       const posY = scaleByPixelRatio(touches[0].clientY);
       updatePointerMoveData(pointer, posX, posY);
-      pointer.color = generateColor();
+      pointer.color = generateColorRef.current();
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -468,8 +491,36 @@ export const FluidCursor: React.FC = () => {
       }
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
+
+      // Освобождаем GPU-ресурсы. Без этого текстуры, программы и шейдеры
+      // остаются в памяти GPU до тех пор, пока браузер сам не решит их
+      // переработать — при каждом пересоздании контекста это утечка.
+      disposeDoubleFBO(gl, dye);
+      disposeDoubleFBO(gl, velocity);
+      disposeDoubleFBO(gl, pressure);
+      disposeFBO(gl, divergence);
+      disposeFBO(gl, curl);
+
+      disposeProgram(gl, clearProgram, [vs, clearShaderC]);
+      disposeProgram(gl, splatProgram, [vs, splatShaderC]);
+      disposeProgram(gl, advectionProgram, [vs, advectionShaderC]);
+      disposeProgram(gl, divergenceProgram, [vs, divergenceShaderC]);
+      disposeProgram(gl, curlProgram, [vs, curlShaderC]);
+      disposeProgram(gl, vorticityProgram, [vs, vorticityShaderC]);
+      disposeProgram(gl, pressureProgram, [vs, pressureShaderC]);
+      disposeProgram(gl, gradientSubtractProgram, [vs, gradientSubtractShaderC]);
+      disposeProgram(gl, displayProgram, [vs, displayFragmentShader]);
+
+      gl.deleteBuffer(buffer);
+      gl.deleteBuffer(indexBuffer);
+
+      // Контекст отдаём драйверу целиком — иначе он остаётся живым.
+      loseContext(gl);
     };
-  }, [generateColor, theme, isMobile, isReady, isFluidCursorEnabled]);
+    // Тема и палитра намеренно не в зависимостях: они обновляются через
+    // themeRef/generateColorRef, поэтому переключение темы не пересоздаёт
+    // WebGL-контекст и не течёт GPU-память.
+  }, [isMobile, isReady, isFluidCursorEnabled]);
 
   // Не рендерим на мобильных устройствах вообще
   if (isMobile) {
@@ -484,7 +535,6 @@ export const FluidCursor: React.FC = () => {
   // Скрываем canvas если эффект выключен
   return (
     <canvas
-      key={`fluid-cursor-canvas-${theme}`}
       ref={canvasRef}
       className={`fixed inset-0 w-full h-full pointer-events-none z-0 transition-opacity duration-500 ${
         isFluidCursorEnabled ? 'opacity-100' : 'opacity-0 pointer-events-none'

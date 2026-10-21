@@ -47,6 +47,12 @@ export const ru = {
   'contact.tabTeam': 'С командой',
   'contact.telegram': 'Написать в Telegram',
   'contact.teamWebsite': 'Перейти на openspacedev.ru',
+
+  // 404
+  'notFound.title': 'Страница не найдена',
+  'notFound.text': 'Такой страницы нет. Возможно, ссылка устарела или в ней опечатка.',
+  'notFound.home': 'На главную',
+  'notFound.sections': 'К разделам',
 } as const;
 
 export type TranslationKey = keyof typeof ru;
@@ -99,5 +105,11 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'contact.tabTeam': 'With Team',
     'contact.telegram': 'Message on Telegram',
     'contact.teamWebsite': 'Visit openspacedev.ru',
+
+    // 404
+    'notFound.title': 'Page not found',
+    'notFound.text': 'This page does not exist. The link may be outdated or contain a typo.',
+    'notFound.home': 'Back to home',
+    'notFound.sections': 'Browse sections',
   },
 };

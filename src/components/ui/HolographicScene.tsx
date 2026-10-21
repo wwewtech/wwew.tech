@@ -197,6 +197,20 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
     [isDark],
   );
 
+  // Синхронизируем uniform'ы с материалом при смене темы.
+  // R3F не применяет новый объект uniforms к уже созданному ShaderMaterial,
+  // поэтому без этого эффект остался бы в палитре предыдущей темы.
+  useEffect(() => {
+    const material = matRef.current;
+    if (!material) return;
+    material.uniforms.uIsDark.value = isDark ? 1.0 : 0.0;
+    material.uniforms.uBaseColor.value.set(isDark ? '#1a1a2e' : '#eff3ff');
+    material.uniforms.uDeepColor.value.set(isDark ? '#08081a' : '#8b99cc');
+    material.uniforms.uAccent.value.set(isDark ? '#B5FF6D' : '#3db0ff');
+    material.uniforms.uSpecColor.value.set(isDark ? '#7788ee' : '#4f69e0');
+    material.needsUpdate = true;
+  }, [isDark]);
+
   useFrame((_, delta) => {
     if (!groupRef.current) return;
     // Clamp delta to avoid huge jumps after tab switch (max ~2 frames at 60fps)
@@ -315,13 +329,15 @@ const makeDustPositions = (count: number): Float32Array => {
   return a;
 };
 
-const DUST_POSITIONS = makeDustPositions(DUST_COUNT);
-
 const Dust = ({ isDark }: { isDark: boolean }) => {
   const ref = useRef<THREE.Points>(null);
   const count = DUST_COUNT;
   const accTime = useRef(0);
-  const positions = DUST_POSITIONS;
+
+  // Позиции создаются на каждый экземпляр компонента. Раньше массив был
+  // общим для всего модуля и мутировался в useFrame, из-за чего частицы
+  // накапливали смещение между инстансами и не сбрасывались при HMR.
+  const positions = useMemo(() => makeDustPositions(DUST_COUNT), []);
 
   useFrame((_, delta) => {
     if (!ref.current) return;
