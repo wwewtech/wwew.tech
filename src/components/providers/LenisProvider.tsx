@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 
 interface LenisProviderProps {
   children: ReactNode;

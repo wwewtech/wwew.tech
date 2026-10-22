@@ -92,8 +92,8 @@ export const resolveLocaleFromAcceptLanguage = (
  *   3. `defaultLocale`.
  */
 export const resolveLocale = (options: {
-  cookieValue?: string | null;
-  acceptLanguage?: string | null;
+  cookieValue?: string | null | undefined;
+  acceptLanguage?: string | null | undefined;
 }): Locale => {
   if (isSupportedLocale(options.cookieValue)) return options.cookieValue;
   return resolveLocaleFromAcceptLanguage(options.acceptLanguage);

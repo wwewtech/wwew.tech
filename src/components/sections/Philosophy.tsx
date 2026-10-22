@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState, ComponentType } from 'react';
+import { useRef, useEffect, useState, type ComponentType } from 'react';
 import { useLanguage } from '@/context/AppContext';
 
 export const Philosophy = () => {
