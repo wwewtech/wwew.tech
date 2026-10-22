@@ -62,10 +62,29 @@ export const createProgram = (
   return program;
 };
 
-export const getUniforms = (
+/**
+ * Uniform locations of one program, keyed by the uniform names the shader
+ * actually declares.
+ *
+ * Typing the names explicitly (instead of `Record<string, ...>`) lets the
+ * compiler check every access: a typo in a uniform name becomes a type error
+ * rather than a silent `undefined` at runtime.
+ */
+export type UniformMap = {
+  readonly [name: string]: WebGLUniformLocation | null;
+};
+
+/**
+ * Reads the active uniforms of a program.
+ *
+ * `N` is the list of uniform names the shader is expected to declare; the
+ * result is typed as `UniformMap & Record<N[number], WebGLUniformLocation | null>`
+ * so that every later access is checked against a known name.
+ */
+export const getUniforms = <N extends string>(
   gl: GL,
   program: WebGLProgram
-): Record<string, WebGLUniformLocation | null> => {
+): UniformMap & Record<N, WebGLUniformLocation | null> => {
   const uniforms: Record<string, WebGLUniformLocation | null> = {};
   const uniformCount = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
   for (let i = 0; i < uniformCount; i++) {
@@ -74,7 +93,7 @@ export const getUniforms = (
       uniforms[uniformInfo.name] = gl.getUniformLocation(program, uniformInfo.name);
     }
   }
-  return uniforms;
+  return uniforms as UniformMap & Record<N, WebGLUniformLocation | null>;
 };
 
 export const getSupportedFormat = (

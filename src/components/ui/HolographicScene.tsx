@@ -24,7 +24,7 @@ const useVisibility = (containerRef: React.RefObject<HTMLDivElement | null>) => 
     if (!el) return () => document.removeEventListener('visibilitychange', onVisChange);
 
     const io = new IntersectionObserver(
-      ([e]) => setVisible(!document.hidden && e.isIntersecting),
+      ([e]) => setVisible(!document.hidden && Boolean(e?.isIntersecting)),
       { threshold: 0.05 },
     );
     io.observe(el);
@@ -174,9 +174,29 @@ const fragmentShader = /* glsl */ `
    TorusKnot — главная фигура
    ══════════════════════════════════════════════════ */
 
+/**
+ * The uniform names the knot shader declares, with the value type of each.
+ *
+ * Typing them means the compiler checks every access: a renamed or misspelled
+ * uniform becomes a type error instead of a silent `undefined` at runtime.
+ */
+interface KnotUniforms {
+  uTime: THREE.IUniform<number>;
+  uIsDark: THREE.IUniform<number>;
+  uBaseColor: THREE.IUniform<THREE.Color>;
+  uDeepColor: THREE.IUniform<THREE.Color>;
+  uAccent: THREE.IUniform<THREE.Color>;
+  uSpecColor: THREE.IUniform<THREE.Color>;
+  // The index signature keeps the type assignable to three's
+  // `{ [uniform: string]: IUniform }` while the named entries stay checked.
+  [uniform: string]: THREE.IUniform;
+}
+
+type KnotMaterial = THREE.ShaderMaterial & { uniforms: KnotUniforms };
+
 const KnotShape = ({ isDark }: { isDark: boolean }) => {
   const groupRef = useRef<THREE.Group>(null);
-  const matRef = useRef<THREE.ShaderMaterial>(null);
+  const matRef = useRef<KnotMaterial>(null);
   const { pointer } = useThree();
   // Accumulated time — only ticks when frame actually renders (no jump after tab switch)
   const accTime = useRef(0);
@@ -185,7 +205,7 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
   const smoothTiltX = useRef(0);
   const smoothTiltY = useRef(0);
 
-  const uniforms = useMemo(
+  const uniforms = useMemo<KnotUniforms>(
     () => ({
       uTime:      { value: 0 },
       uIsDark:    { value: isDark ? 1.0 : 0.0 },
@@ -340,14 +360,20 @@ const Dust = ({ isDark }: { isDark: boolean }) => {
   const positions = useMemo(() => makeDustPositions(DUST_COUNT), []);
 
   useFrame((_, delta) => {
-    if (!ref.current) return;
+    const points = ref.current;
+    if (!points) return;
+    const position = points.geometry.attributes.position;
+    if (!position) return;
+
     const dt = Math.min(delta, 0.05);
     accTime.current += dt;
-    const p = ref.current.geometry.attributes.position.array as Float32Array;
+    const p = position.array as Float32Array;
     for (let i = 0; i < count; i++) {
-      p[i * 3 + 1] += Math.sin(accTime.current * 0.25 + i) * 0.0006;
+      const y = i * 3 + 1;
+      if (y >= p.length) break;
+      p[y] = (p[y] ?? 0) + Math.sin(accTime.current * 0.25 + i) * 0.0006;
     }
-    ref.current.geometry.attributes.position.needsUpdate = true;
+    position.needsUpdate = true;
   });
 
   return (

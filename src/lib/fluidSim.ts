@@ -2,7 +2,7 @@
 // Ported from WebGL-Fluid-Simulation (MIT). Geometry buffers are bound once
 // by the caller (same as the original) and never rebound.
 
-import type { GL, FBO, DoubleFBO } from './fluidGL';
+import type { GL, FBO, DoubleFBO, UniformMap } from './fluidGL';
 
 export interface FluidSimConfig {
   PRESSURE: number;
@@ -11,6 +11,60 @@ export interface FluidSimConfig {
   VELOCITY_DISSIPATION: number;
   DENSITY_DISSIPATION: number;
   SPLAT_RADIUS: number;
+}
+
+/**
+ * The uniform names each program declares, taken from the GLSL sources in
+ * fluidShaders.ts. Spelling them out makes a typo in a uniform name a
+ * compile error instead of a silent `undefined` at runtime.
+ */
+export interface FluidSimUniforms {
+  clear: UniformMap & { uTexture: WebGLUniformLocation | null; value: WebGLUniformLocation | null };
+  splat: UniformMap & {
+    uTarget: WebGLUniformLocation | null;
+    aspectRatio: WebGLUniformLocation | null;
+    color: WebGLUniformLocation | null;
+    point: WebGLUniformLocation | null;
+    radius: WebGLUniformLocation | null;
+  };
+  advection: UniformMap & {
+    texelSize: WebGLUniformLocation | null;
+    dyeTexelSize: WebGLUniformLocation | null;
+    uVelocity: WebGLUniformLocation | null;
+    uSource: WebGLUniformLocation | null;
+    dt: WebGLUniformLocation | null;
+    dissipation: WebGLUniformLocation | null;
+  };
+  divergence: UniformMap & {
+    texelSize: WebGLUniformLocation | null;
+    uVelocity: WebGLUniformLocation | null;
+  };
+  curl: UniformMap & {
+    texelSize: WebGLUniformLocation | null;
+    uVelocity: WebGLUniformLocation | null;
+  };
+  vorticity: UniformMap & {
+    texelSize: WebGLUniformLocation | null;
+    uVelocity: WebGLUniformLocation | null;
+    uCurl: WebGLUniformLocation | null;
+    curl: WebGLUniformLocation | null;
+    dt: WebGLUniformLocation | null;
+  };
+  pressure: UniformMap & {
+    texelSize: WebGLUniformLocation | null;
+    uPressure: WebGLUniformLocation | null;
+    uDivergence: WebGLUniformLocation | null;
+  };
+  gradientSubtract: UniformMap & {
+    texelSize: WebGLUniformLocation | null;
+    uPressure: WebGLUniformLocation | null;
+    uVelocity: WebGLUniformLocation | null;
+  };
+  display: UniformMap & {
+    texelSize: WebGLUniformLocation | null;
+    uTexture: WebGLUniformLocation | null;
+    uLightTheme: WebGLUniformLocation | null;
+  };
 }
 
 export interface FluidSimInput {
@@ -28,17 +82,7 @@ export interface FluidSimInput {
     gradientSubtract: WebGLProgram;
     display: WebGLProgram;
   };
-  uniforms: {
-    clear: Record<string, WebGLUniformLocation | null>;
-    splat: Record<string, WebGLUniformLocation | null>;
-    advection: Record<string, WebGLUniformLocation | null>;
-    divergence: Record<string, WebGLUniformLocation | null>;
-    curl: Record<string, WebGLUniformLocation | null>;
-    vorticity: Record<string, WebGLUniformLocation | null>;
-    pressure: Record<string, WebGLUniformLocation | null>;
-    gradientSubtract: Record<string, WebGLUniformLocation | null>;
-    display: Record<string, WebGLUniformLocation | null>;
-  };
+  uniforms: FluidSimUniforms;
   dye: DoubleFBO;
   velocity: DoubleFBO;
   divergenceFBO: FBO;

@@ -148,17 +148,17 @@ export const FluidCursor: React.FC = () => {
 
   const hexToRgb = useCallback((hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16) / 255,
-          g: parseInt(result[2], 16) / 255,
-          b: parseInt(result[3], 16) / 255,
-        }
-      : { r: 0, g: 0, b: 0 };
+    // The regex has three capture groups; the fallback covers a non-match.
+    const [, r = '0', g = '0', b = '0'] = result ?? [];
+    return {
+      r: parseInt(r, 16) / 255,
+      g: parseInt(g, 16) / 255,
+      b: parseInt(b, 16) / 255,
+    };
   }, []);
 
   const generateColor = useCallback(() => {
-    const c = hexToRgb(colors[colorIndexRef.current]);
+    const c = hexToRgb(colors[colorIndexRef.current % colors.length] ?? '#000000');
     colorIndexRef.current = (colorIndexRef.current + 1) % colors.length;
     return { r: c.r * colorIntensity, g: c.g * colorIntensity, b: c.b * colorIntensity };
   }, [hexToRgb, colors, colorIntensity]);
@@ -297,15 +297,17 @@ export const FluidCursor: React.FC = () => {
         !divergenceProgram || !curlProgram || !vorticityProgram ||
         !pressureProgram || !gradientSubtractProgram || !displayProgram) return;
 
-    const clearUniforms = getUniforms(gl, clearProgram);
-    const splatUniforms = getUniforms(gl, splatProgram);
-    const advectionUniforms = getUniforms(gl, advectionProgram);
-    const divergenceUniforms = getUniforms(gl, divergenceProgram);
-    const curlUniforms = getUniforms(gl, curlProgram);
-    const vorticityUniforms = getUniforms(gl, vorticityProgram);
-    const pressureUniforms = getUniforms(gl, pressureProgram);
-    const gradientSubtractUniforms = getUniforms(gl, gradientSubtractProgram);
-    const displayUniforms = getUniforms(gl, displayProgram);
+    // The uniform names below must match the GLSL sources in fluidShaders.ts;
+    // the generic parameter makes a typo a compile error.
+    const clearUniforms = getUniforms<'uTexture' | 'value'>(gl, clearProgram);
+    const splatUniforms = getUniforms<'uTarget' | 'aspectRatio' | 'color' | 'point' | 'radius'>(gl, splatProgram);
+    const advectionUniforms = getUniforms<'texelSize' | 'dyeTexelSize' | 'uVelocity' | 'uSource' | 'dt' | 'dissipation'>(gl, advectionProgram);
+    const divergenceUniforms = getUniforms<'texelSize' | 'uVelocity'>(gl, divergenceProgram);
+    const curlUniforms = getUniforms<'texelSize' | 'uVelocity'>(gl, curlProgram);
+    const vorticityUniforms = getUniforms<'texelSize' | 'uVelocity' | 'uCurl' | 'curl' | 'dt'>(gl, vorticityProgram);
+    const pressureUniforms = getUniforms<'texelSize' | 'uPressure' | 'uDivergence'>(gl, pressureProgram);
+    const gradientSubtractUniforms = getUniforms<'texelSize' | 'uPressure' | 'uVelocity'>(gl, gradientSubtractProgram);
+    const displayUniforms = getUniforms<'texelSize' | 'uTexture' | 'uLightTheme'>(gl, displayProgram);
 
     // Initialize framebuffers
     const filtering = supportLinearFiltering ? gl.LINEAR : gl.NEAREST;
@@ -466,12 +468,13 @@ export const FluidCursor: React.FC = () => {
     // Touch handlers - БЕЗ preventDefault чтобы не блокировать скролл!
     const handleTouchMove = (e: TouchEvent) => {
       const touches = e.targetTouches;
-      if (!touches.length) return;
+      const touch = touches[0];
+      if (!touch) return;
       // НЕ вызываем preventDefault() - это блокировало скролл!
       const pointer = pointersRef.current[0];
       if (!pointer) return;
-      const posX = scaleByPixelRatio(touches[0].clientX);
-      const posY = scaleByPixelRatio(touches[0].clientY);
+      const posX = scaleByPixelRatio(touch.clientX);
+      const posY = scaleByPixelRatio(touch.clientY);
       updatePointerMoveData(pointer, posX, posY);
       pointer.color = generateColorRef.current();
     };

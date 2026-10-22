@@ -36,14 +36,14 @@ export const parseAcceptLanguage = (header: string | null | undefined): string[]
   return header
     .split(',')
     .map((part) => {
-      const [tagPart, ...params] = part.trim().split(';');
+      const [tagPart = '', ...params] = part.trim().split(';');
       const tag = tagPart.trim().toLowerCase();
       if (!tag || tag === '*') return null;
 
       // Default quality per RFC 9110 is 1.0 when the q parameter is absent.
       let quality = 1;
       for (const param of params) {
-        const [key, value] = param.split('=').map((s) => s.trim().toLowerCase());
+        const [key = '', value = ''] = param.split('=').map((s) => s.trim().toLowerCase());
         if (key === 'q') {
           const parsed = Number.parseFloat(value);
           // Ignore malformed q values and keep the default of 1.
@@ -61,7 +61,7 @@ export const parseAcceptLanguage = (header: string | null | undefined): string[]
 /**
  * Resolves the primary subtag of a language tag (`en-US` -> `en`).
  */
-const primarySubtag = (tag: string): string => tag.split('-')[0];
+const primarySubtag = (tag: string): string => tag.split('-')[0] ?? tag;
 
 /**
  * Picks the best supported locale for an `Accept-Language` header.
