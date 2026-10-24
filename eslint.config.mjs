@@ -1,8 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
-import tseslint from "@typescript-eslint/eslint-plugin";
-import { createProjectService } from "@typescript-eslint/project-service";
+import tseslint from "typescript-eslint";
 
 // Type-aware linting. The rules that need type information (no-floating-
 // promises, no-misused-promises, no-unsafe-*, require-await, ...) catch
@@ -14,11 +13,12 @@ import { createProjectService } from "@typescript-eslint/project-service";
 // type-aware rules to plain .mjs/.cjs files that carry no type information
 // and crash the run.
 //
-// The project service is used instead of a manual `project` list so that
-// tsconfig.json stays the single source of truth.
-const typeChecked = tseslint.configs["flat/recommended-type-checked"].map(
-  (entry) => ({ ...entry, files: ["**/*.ts", "**/*.tsx"] })
-);
+// `projectService: true` makes tsconfig.json the single source of truth for
+// the file list; there is no manual `project` array to keep in sync.
+const typeChecked = tseslint.configs.recommendedTypeChecked.map((entry) => ({
+  ...entry,
+  files: ["**/*.ts", "**/*.tsx"],
+}));
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -28,7 +28,7 @@ const eslintConfig = defineConfig([
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       parserOptions: {
-        projectService: createProjectService(true),
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
