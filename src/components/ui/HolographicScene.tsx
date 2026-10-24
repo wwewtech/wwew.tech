@@ -3,7 +3,24 @@
 import React, { useRef, useMemo, Suspense, useCallback, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
-import * as THREE from 'three';
+// Named imports instead of `import * as THREE`: the namespace form pulls in
+// every export of three, and since three declares sideEffects only for
+// ./src/nodes/**, the bundler keeps modules like audio and loaders that this
+// scene never touches. Named imports keep the intent explicit even though
+// @react-three/fiber itself imports the namespace (see the commit message
+// for the measured effect - or lack of it).
+import {
+  AdditiveBlending,
+  BackSide,
+  Color,
+  DoubleSide,
+  Group,
+  NoToneMapping,
+  Points,
+  ShaderMaterial,
+  type IUniform,
+  type WebGLRenderer,
+} from 'three';
 import { useTheme } from '@/context/AppContext';
 
 /* ══════════════════════════════════════════════════
@@ -181,21 +198,21 @@ const fragmentShader = /* glsl */ `
  * uniform becomes a type error instead of a silent `undefined` at runtime.
  */
 interface KnotUniforms {
-  uTime: THREE.IUniform<number>;
-  uIsDark: THREE.IUniform<number>;
-  uBaseColor: THREE.IUniform<THREE.Color>;
-  uDeepColor: THREE.IUniform<THREE.Color>;
-  uAccent: THREE.IUniform<THREE.Color>;
-  uSpecColor: THREE.IUniform<THREE.Color>;
+  uTime: IUniform<number>;
+  uIsDark: IUniform<number>;
+  uBaseColor: IUniform<Color>;
+  uDeepColor: IUniform<Color>;
+  uAccent: IUniform<Color>;
+  uSpecColor: IUniform<Color>;
   // The index signature keeps the type assignable to three's
   // `{ [uniform: string]: IUniform }` while the named entries stay checked.
-  [uniform: string]: THREE.IUniform;
+  [uniform: string]: IUniform;
 }
 
-type KnotMaterial = THREE.ShaderMaterial & { uniforms: KnotUniforms };
+type KnotMaterial = ShaderMaterial & { uniforms: KnotUniforms };
 
 const KnotShape = ({ isDark }: { isDark: boolean }) => {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const matRef = useRef<KnotMaterial>(null);
   const { pointer } = useThree();
   // Accumulated time — only ticks when frame actually renders (no jump after tab switch)
@@ -209,10 +226,10 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
     () => ({
       uTime:      { value: 0 },
       uIsDark:    { value: isDark ? 1.0 : 0.0 },
-      uBaseColor: { value: new THREE.Color(isDark ? '#1a1a2e' : '#eff3ff') },
-      uDeepColor: { value: new THREE.Color(isDark ? '#08081a' : '#8b99cc') },
-      uAccent:    { value: new THREE.Color(isDark ? '#B5FF6D' : '#3db0ff') },
-      uSpecColor: { value: new THREE.Color(isDark ? '#7788ee' : '#4f69e0') },
+      uBaseColor: { value: new Color(isDark ? '#1a1a2e' : '#eff3ff') },
+      uDeepColor: { value: new Color(isDark ? '#08081a' : '#8b99cc') },
+      uAccent:    { value: new Color(isDark ? '#B5FF6D' : '#3db0ff') },
+      uSpecColor: { value: new Color(isDark ? '#7788ee' : '#4f69e0') },
     }),
     [isDark],
   );
@@ -274,7 +291,7 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
             vertexShader={vertexShader}
             fragmentShader={fragmentShader}
             transparent
-            side={THREE.DoubleSide}
+            side={DoubleSide}
             depthWrite
           />
         </mesh>
@@ -284,7 +301,7 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
           <torusKnotGeometry args={[1, 0.4, 80, 24, 2, 3]} />
           <shaderMaterial
             uniforms={{
-              uColor: { value: new THREE.Color(isDark ? '#4455cc' : '#7f98ff') },
+              uColor: { value: new Color(isDark ? '#4455cc' : '#7f98ff') },
             }}
             vertexShader={`
               varying vec3 vNormal;
@@ -306,7 +323,7 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
               }
             `}
             transparent
-            side={THREE.BackSide}
+            side={BackSide}
             depthWrite={false}
           />
         </mesh>
@@ -350,7 +367,7 @@ const makeDustPositions = (count: number): Float32Array => {
 };
 
 const Dust = ({ isDark }: { isDark: boolean }) => {
-  const ref = useRef<THREE.Points>(null);
+  const ref = useRef<Points>(null);
   const count = DUST_COUNT;
   const accTime = useRef(0);
 
@@ -387,7 +404,7 @@ const Dust = ({ isDark }: { isDark: boolean }) => {
         transparent
         opacity={0.2}
         sizeAttenuation
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
         depthWrite={false}
       />
     </points>
@@ -405,9 +422,9 @@ export const HolographicScene = ({ className = '' }: { className?: string }) => 
   const containerRef = useRef<HTMLDivElement>(null);
   const isVisible = useVisibility(containerRef);
 
-  const onCreated = useCallback(({ gl }: { gl: THREE.WebGLRenderer }) => {
+  const onCreated = useCallback(({ gl }: { gl: WebGLRenderer }) => {
     gl.setClearColor(0x000000, 0);
-    gl.toneMapping = THREE.NoToneMapping;
+    gl.toneMapping = NoToneMapping;
     setReady(true);
   }, []);
 
