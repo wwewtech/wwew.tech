@@ -213,9 +213,10 @@ export const FluidCursor: React.FC = () => {
     let supportLinearFiltering: boolean;
 
     if (isWebGL2) {
+      const gl2 = gl;
       gl.getExtension('EXT_color_buffer_float');
       supportLinearFiltering = !!gl.getExtension('OES_texture_float_linear');
-      halfFloatTexType = (gl as WebGL2RenderingContext).HALF_FLOAT;
+      halfFloatTexType = gl2.HALF_FLOAT;
     } else {
       const halfFloat = gl.getExtension('OES_texture_half_float');
       supportLinearFiltering = !!gl.getExtension('OES_texture_half_float_linear');
@@ -230,7 +231,8 @@ export const FluidCursor: React.FC = () => {
     let formatR: { internalFormat: number; format: number } | null;
 
     if (isWebGL2) {
-      const gl2 = gl as WebGL2RenderingContext;
+      // The instanceof check above narrowed `gl` to WebGL2.
+      const gl2 = gl;
       formatRGBA = getSupportedFormat(gl, gl2.RGBA16F, gl2.RGBA, halfFloatTexType) ||
                    getSupportedFormat(gl, gl2.RGBA, gl2.RGBA, gl.UNSIGNED_BYTE);
       formatRG = getSupportedFormat(gl, gl2.RG16F, gl2.RG, halfFloatTexType) ||

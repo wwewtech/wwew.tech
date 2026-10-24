@@ -94,11 +94,13 @@ export const LenisProvider = ({ children }: LenisProviderProps) => {
       if ('requestIdleCallback' in window) {
         window.requestIdleCallback(() => {
           if (!isDisposed) {
-            initLenis().then((result) => { cleanup = result; });
+            // The rejection handler keeps a failed dynamic import from
+            // becoming an unhandled rejection; cleanup simply never runs.
+            initLenis().then((result) => { cleanup = result; }).catch(() => {});
           }
         });
       } else {
-        initLenis().then((result) => { cleanup = result; });
+        initLenis().then((result) => { cleanup = result; }).catch(() => {});
       }
     }, 1500);
 

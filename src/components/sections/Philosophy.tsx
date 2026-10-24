@@ -31,9 +31,13 @@ export const Philosophy = () => {
   // Dynamically load heavy 3D scene ONLY after section is in view
   useEffect(() => {
     if (isInView && !SceneComponent) {
-      import('@/components/ui/HolographicScene').then((mod) => {
-        setSceneComponent(() => mod.HolographicScene);
-      });
+      import('@/components/ui/HolographicScene')
+        .then((mod) => {
+          setSceneComponent(() => mod.HolographicScene);
+        })
+        // A failed chunk load must not surface as an unhandled rejection;
+        // the section simply keeps its placeholder.
+        .catch(() => {});
     }
   }, [isInView, SceneComponent]);
 

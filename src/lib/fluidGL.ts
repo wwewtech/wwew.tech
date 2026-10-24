@@ -86,7 +86,12 @@ export const getUniforms = <N extends string>(
   program: WebGLProgram
 ): UniformMap & Record<N, WebGLUniformLocation | null> => {
   const uniforms: Record<string, WebGLUniformLocation | null> = {};
-  const uniformCount = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+  // getProgramParameter is typed to return `any`; the WebGL spec guarantees
+  // an integer count for ACTIVE_UNIFORMS, so the value is a number.
+  const uniformCount = gl.getProgramParameter(
+    program,
+    gl.ACTIVE_UNIFORMS
+  ) as number;
   for (let i = 0; i < uniformCount; i++) {
     const uniformInfo = gl.getActiveUniform(program, i);
     if (uniformInfo) {
