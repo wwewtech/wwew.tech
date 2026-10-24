@@ -5,7 +5,6 @@ import { AppProvider } from "@/context/AppContext";
 import { LenisProvider } from "@/components/providers/LenisProvider";
 import { FluidCursorWrapper } from "@/components/providers/FluidCursorWrapper";
 import YandexMetrika from "@/components/YandexMetrika";
-import { YM_SNIPPET } from "@/lib/metrika";
 import { metaCopy } from "@/i18n/content";
 
 const geistSans = Geist({
@@ -194,9 +193,6 @@ export default async function RootLayout({
   return (
     <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{ __html: YM_SNIPPET }}
-        />
         {/* Theme bootstrap: применяем сохранённую тему до гидратации, чтобы не было вспышки */}
         <script
           dangerouslySetInnerHTML={{
