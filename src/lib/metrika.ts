@@ -1,3 +1,16 @@
 export const YM_ID = 113599475;
 
-export const YM_SNIPPET = `(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=${YM_ID}', 'ym');ym(${YM_ID}, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});`;
+/**
+ * Loading strategy for the Yandex Metrika tag.
+ *
+ * The snippet used to be inlined in <head>, so the ~70 KB tag.js competed
+ * with the app's own chunks for the connection during first paint. It is
+ * client-side-only analytics, so it only needs to run eventually.
+ *
+ * The component loads it via next/script with the lazyOnload strategy,
+ * which waits for the window load event: the page becomes interactive
+ * first, and the tag is fetched strictly after. afterInteractive was
+ * measured to be worse - it injects the tag while React is still
+ * hydrating, which showed up as main-thread work on a throttled CPU.
+ */
+export const YM_SRC = `https://mc.yandex.ru/metrika/tag.js?id=${YM_ID}`;
