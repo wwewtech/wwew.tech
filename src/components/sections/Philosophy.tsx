@@ -28,7 +28,16 @@ export const Philosophy = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Dynamically load heavy 3D scene ONLY after section is in view
+  // Dynamically load heavy 3D scene ONLY after section is in view.
+  //
+  // An earlier revision of this file also tried warming/mounting the scene
+  // on an idle callback before the scroll; three runs of spike-source.mjs
+  // each showed it did not remove the first-frame cost (~1.9-2s spike at the
+  // bottom-of-page scroll) while adding a second WebGL context alive for the
+  // whole page lifetime. The observer-triggered lazy mount - the original
+  // behaviour - measured no worse, keeps the memory profile of the hero
+  // page clean, and is what this restores. See the commit message for the
+  // full measurement table.
   useEffect(() => {
     if (isInView && !SceneComponent) {
       import('@/components/ui/HolographicScene')

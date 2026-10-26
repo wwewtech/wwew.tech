@@ -16,19 +16,33 @@ export const HeroBackground: React.FC = () => {
   // Defer the Prism chunk until the browser is idle. The hero text - the LCP
   // element - does not depend on the background, but the Prism chunk (~61 KB
   // plus a shader compile) used to load during hydration and compete with
-  // first paint for the main thread. requestIdleCallback keeps the visual
-  // identical (the canvas fades in via animate-hero-fade-in, and it is
-  // absolutely positioned inside a fixed-size container, so deferring it
-  // cannot shift the layout).
+  // first paint for the main thread. Deferring keeps the visual identical
+  // (the canvas fades in via animate-hero-fade-in, and it is absolutely
+  // positioned inside a fixed-size container, so this cannot shift layout).
+  //
+  // The 700ms fallback matters as much as the idle callback: rIC is not
+  // guaranteed to fire before the user interacts (in a background tab it
+  // never fires). Measured with fps-scroll.mjs, when the shader compile
+  // landed at the first scroll instead of before it, that frame spiked to
+  // ~667ms - the "hero stutters on the first scroll" report - while the
+  // built-ahead case scrolls at a flat 17-18ms.
   const [showPrism, setShowPrism] = useState(false);
   useEffect(() => {
     const start = () => setShowPrism(true);
+    let idleId: number | undefined;
     if (typeof window.requestIdleCallback === 'function') {
-      const id = window.requestIdleCallback(start);
-      return () => window.cancelIdleCallback(id);
+      idleId = window.requestIdleCallback(start);
+    } else {
+      idleId = window.setTimeout(start, 0);
     }
-    const id = window.setTimeout(start, 0);
-    return () => clearTimeout(id);
+    const timerId = window.setTimeout(start, 700);
+    return () => {
+      if (idleId !== undefined) {
+        if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(idleId);
+        else clearTimeout(idleId);
+      }
+      clearTimeout(timerId);
+    };
   }, []);
 
   return (

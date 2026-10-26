@@ -12,6 +12,9 @@ import { join } from 'node:path';
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const PORT = 9237;
 const url = process.argv[2] ?? 'http://127.0.0.1:4010/ru';
+// Extra chrome flags after the URL (e.g. --enable-unsafe-swiftshader to model
+// a weak laptop GPU: SwiftShader renders WebGL on the CPU).
+const extra = process.argv.slice(3);
 
 const profile = mkdtempSync(join(tmpdir(), 'dsh-fps-'));
 const chrome = spawn(CHROME, [
@@ -20,6 +23,7 @@ const chrome = spawn(CHROME, [
   `--user-data-dir=${profile}`,
   '--window-size=1280,800',
   'about:blank',
+  ...extra,
   // Real GPU, no swiftshader: we want the same render path a user has.
 ], { stdio: 'ignore' });
 
@@ -94,6 +98,20 @@ await send(ws, 'Page.addScriptToEvaluateOnNewDocument', {
     })();
   `,
 }, sessionId);
+
+// Optional: emulate a hi-dpi laptop screen by overriding devicePixelRatio
+// (Prism reads it directly, so Emulation.setDeviceMetricsOverride is not
+// enough) and/or a weaker CPU — SCALE=2 CPU=4 style env vars.
+const scale = Number(process.env.SCALE ?? '1');
+const cpuRate = Number(process.env.CPU ?? '1');
+if (scale > 1 || cpuRate > 1) {
+  await send(ws, 'Page.addScriptToEvaluateOnNewDocument', {
+    source: scale > 1
+      ? `Object.defineProperty(window, 'devicePixelRatio', { get: () => ${scale} });`
+      : '',
+  }, sessionId);
+  await send(ws, 'Emulation.setCPUThrottlingRate', { rate: cpuRate }, sessionId);
+}
 
 await send(ws, 'Page.navigate', { url }, sessionId);
 await sleep(5000);

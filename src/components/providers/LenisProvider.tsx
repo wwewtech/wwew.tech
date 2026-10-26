@@ -89,30 +89,58 @@ export const LenisProvider = ({ children }: LenisProviderProps) => {
     };
 
     let cleanup: (() => void) | undefined;
+    let settled = false;
 
-    // Initialise as soon as the browser is idle, without the previous fixed
-    // 1500 ms delay: requestIdleCallback already yields to hydration, so the
-    // delay only postponed smooth scroll. The rejection handler keeps a
-    // failed dynamic import from becoming an unhandled rejection; cleanup
-    // simply never runs in that case.
-    const start = () => {
-      if (isDisposed) return;
+    // Initialise before the first scroll, not at it.
+    //
+    // Measured with fps-scroll.mjs (rAF recorder + real wheel events): when
+    // the chunk import + `new Lenis()` ran at the first wheel event, that
+    // frame spiked to 650-667ms while every burst after it stayed flat at
+    // 17-18ms. On a laptop that reads as "the site stutters when I start
+    // scrolling". requestIdleCallback alone was not enough to prevent that:
+    // there is no guarantee the idle slot fires before the user scrolls
+    // (in a background tab it does not fire at all), so the init could still
+    // land on the first gesture.
+    //
+    // Two-stage init closes both windows:
+    //   1. immediately after hydration, `import('lenis')` warms the module
+    //      (network/cache fetch off the critical path, nothing runs yet);
+    //   2. construction happens at the earlier of "browser idle" or a
+    //      700ms fallback timer - bounded, so it can no longer collide with
+    //      a fast first scroll the way an un-fired idle callback could.
+    // A second init call is a no-op via `settled`; the rejection handlers
+    // keep a failed import from surfacing as an unhandled rejection.
+    const buildOnce = () => {
+      if (settled || isDisposed) return;
+      settled = true;
+      if (timerId !== undefined) clearTimeout(timerId);
+      if (idleId !== undefined && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId);
+      }
       initLenis().then((result) => { cleanup = result; }).catch(() => {});
     };
 
-    let idleId: number;
+    // Stage 1: warm the chunk straight away.
+    void import('lenis').catch(() => {});
+
+    // Stage 2: construct at idle or at 700ms, whichever comes first.
+    let idleId: number | undefined;
     if (typeof window.requestIdleCallback === 'function') {
-      idleId = window.requestIdleCallback(start);
+      idleId = window.requestIdleCallback(buildOnce);
     } else {
-      idleId = window.setTimeout(start, 200);
+      idleId = window.setTimeout(buildOnce, 0);
     }
+    const timerId = window.setTimeout(buildOnce, 700);
 
     return () => {
       isDisposed = true;
-      if (typeof window.cancelIdleCallback === 'function') {
-        window.cancelIdleCallback(idleId);
-      } else {
-        clearTimeout(idleId);
+      if (timerId !== undefined) clearTimeout(timerId);
+      if (idleId !== undefined) {
+        if (typeof window.cancelIdleCallback === 'function') {
+          window.cancelIdleCallback(idleId);
+        } else {
+          clearTimeout(idleId);
+        }
       }
       cleanup?.();
     };

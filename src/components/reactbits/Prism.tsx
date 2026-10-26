@@ -239,8 +239,10 @@ const Prism = ({
     const mesh = new Mesh(gl, { geometry, program });
     // Exposed for the lightMode-only effect below: the theme switch must not
     // tear this renderer down (it measured as a ~2.2s freeze on production),
-    // so it flips uLightMode on the live program instead.
+    // so it flips uLightMode on the live program instead. The renderer is
+    // also exposed for the frame-cost measurement script.
     container.__prismMesh = mesh;
+    container.__prismRenderer = renderer;
 
     const resize = () => {
       const w = container.clientWidth || 1;
@@ -439,6 +441,7 @@ const Prism = ({
         delete container.__prismIO;
       }
       delete container.__prismMesh;
+      delete container.__prismRenderer;
       if (gl.canvas.parentElement === container) container.removeChild(gl.canvas);
     };
   }, [
