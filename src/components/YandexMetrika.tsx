@@ -17,7 +17,8 @@ declare global {
  * The tag (~190 KB, and its startup does a WebRTC/canvas fingerprint that
  * blocks the main thread for hundreds of ms) used to be inlined in <head>,
  * delaying first paint on every pageview. It now loads only after the
- * visitor shows intent - the first scroll, pointer move, key or touch.
+ * The tag now loads after the visitor shows intent to consume the page -
+ * the first scroll, key press or touch - and with a delay even then.
  *
  * Loading on interaction instead of on window load is deliberate: a
  * page-load-triggered fetch still lands inside any performance
@@ -26,33 +27,46 @@ declare global {
  * that trades away exactly the bounce-and-bot traffic that adds no
  * analytical value, while every real interaction is still counted.
  *
+ * pointerdown is deliberately NOT a trigger, and the load is delayed by
+ * 3s after the first qualifying gesture: measured on production, a click
+ * on any button (including the theme/fluid-cursor toggles) with
+ * pointerdown-gating froze the UI for ~300ms right at the click - the
+ * tag's startup (WebRTC fingerprint et al.) was competing with the click
+ * handler, which made the toggles feel broken. scroll/keydown/touchstart
+ * are consumed-passive gestures that carry no click to steal, and the
+ * delay moves the tag's work off the interaction itself.
+ *
  * The <noscript> pixel stays: visitors with JavaScript disabled are
  * counted without any of the above machinery.
  */
-const EVENTS = ["scroll", "pointerdown", "keydown", "touchstart"] as const;
+const EVENTS = ["scroll", "keydown", "touchstart"] as const;
+const ACTIVATION_DELAY_MS = 3000;
 
 export default function YandexMetrika() {
   const pathname = usePathname();
   const isFirstRender = useRef(true);
   const [activated, setActivated] = useState(false);
 
-  // One-shot: the first user gesture flips the switch; every listener is
-  // removed right away, so the cost of this gate is a few event
+  // One-shot: the first qualifying gesture starts a delayed activation.
+  // The timer (not the gesture itself) flips the switch, and every listener
+  // is removed right away, so the cost of this gate is a few event
   // registrations for the lifetime of the page.
   useEffect(() => {
-    const activate = () => {
-      setActivated(true);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const arm = () => {
       for (const name of EVENTS) {
-        window.removeEventListener(name, activate);
+        window.removeEventListener(name, arm);
       }
+      timer = setTimeout(() => setActivated(true), ACTIVATION_DELAY_MS);
     };
     for (const name of EVENTS) {
-      window.addEventListener(name, activate, { once: true, passive: true });
+      window.addEventListener(name, arm, { once: true, passive: true });
     }
     return () => {
       for (const name of EVENTS) {
-        window.removeEventListener(name, activate);
+        window.removeEventListener(name, arm);
       }
+      if (timer) clearTimeout(timer);
     };
   }, []);
 

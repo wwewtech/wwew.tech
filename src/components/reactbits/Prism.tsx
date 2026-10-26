@@ -46,7 +46,13 @@ const Prism = ({
     const HOVSTR = Math.max(0, hoverStrength || 1);
     const INERT = Math.max(0, Math.min(1, inertia || 0.12));
 
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    // DPR is capped at 1.5, not 2. This is a full-screen raymarch shader:
+    // at dpr 2 a 4K hero costs 4x the pixels of dpr 1, and on integrated
+    // GPUs that produced hero stutter (the frame drops this component was
+    // reworked for). 1.5 halves the pixel count versus 2 while staying
+    // sharp on standard displays; the CSS canvas is stretched, so the cost
+    // of the cap is mild softness on high-dpi screens only.
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
     const renderer = new Renderer({
       dpr,
       alpha: transparent,
@@ -231,6 +237,10 @@ const Prism = ({
       }
     });
     const mesh = new Mesh(gl, { geometry, program });
+    // Exposed for the lightMode-only effect below: the theme switch must not
+    // tear this renderer down (it measured as a ~2.2s freeze on production),
+    // so it flips uLightMode on the live program instead.
+    container.__prismMesh = mesh;
 
     const resize = () => {
       const w = container.clientWidth || 1;
@@ -428,6 +438,7 @@ const Prism = ({
         if (io) io.disconnect();
         delete container.__prismIO;
       }
+      delete container.__prismMesh;
       if (gl.canvas.parentElement === container) container.removeChild(gl.canvas);
     };
   }, [
@@ -446,9 +457,23 @@ const Prism = ({
     hoverStrength,
     inertia,
     bloom,
-    suspendWhenOffscreen,
-    lightMode
+    suspendWhenOffscreen
+    // lightMode is deliberately NOT a dependency here. It only feeds the
+    // uLightMode uniform, and putting it in the deps made every theme
+    // toggle tear the whole renderer down and rebuild it (new WebGL
+    // context + shader recompile) - measured as a ~2.2s main-thread
+    // freeze on production. The small effect below flips the uniform on
+    // the live program instead.
   ]);
+
+  // Theme switch without a rebuild: flip the existing uniform only.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const mesh = container.__prismMesh;
+    if (!mesh) return;
+    mesh.program.uniforms.uLightMode.value = lightMode ? 1.0 : 0.0;
+  }, [lightMode]);
 
   return <div className="prism-container" ref={containerRef} />;
 };
