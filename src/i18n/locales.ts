@@ -98,3 +98,28 @@ export const resolveLocale = (options: {
   if (isSupportedLocale(options.cookieValue)) return options.cookieValue;
   return resolveLocaleFromAcceptLanguage(options.acceptLanguage);
 };
+
+/**
+ * Whether the proxy should write the locale cookie for a request that
+ * resolved to a locale path.
+ *
+ * Pure decision function extracted from src/proxy.ts so it can be unit
+ * tested (the proxy itself is an edge module and cannot run under
+ * node:test). The rule is the fix for a real bug: the router's background
+ * prefetch of the language-switcher link used to hit the proxy, look like
+ * a navigation to the other locale, and silently overwrite the visitor's
+ * language choice.
+ *
+ *  - A prefetch must never write the cookie: the visitor is still reading
+ *    the page they are on and has chosen nothing.
+ *  - A navigation to a locale path sets the cookie, except when it already
+ *    holds the same value, so repeat visits keep responses cacheable.
+ */
+export const shouldSetLocaleCookie = (input: {
+  isPrefetch: boolean;
+  stored?: string | null | undefined;
+  target: Locale;
+}): boolean => {
+  if (input.isPrefetch) return false;
+  return input.stored !== input.target;
+};

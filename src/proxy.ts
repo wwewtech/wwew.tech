@@ -4,6 +4,7 @@ import {
   LOCALE_COOKIE,
   locales,
   resolveLocale,
+  shouldSetLocaleCookie,
   type Locale,
 } from '@/i18n/locales';
 
@@ -32,6 +33,40 @@ function getPathLocale(pathname: string): Locale | null {
   return null;
 }
 
+/**
+ * True for the background prefetch requests the router issues for <Link>s.
+ *
+ * NOTE: in Next 16 the proxy receives a sanitised request. Verified
+ * empirically with debug headers on a live prefetch: the ?_rsc query
+ * parameter, request.nextUrl.search, request.url, and the
+ * RSC / Next-Router-Prefetch headers are ALL stripped before the proxy
+ * runs. There is currently no way to detect a prefetch from the proxy.
+ *
+ * The function is kept anyway (checking every marker that exists) so that
+ * the fix starts working automatically if a future Next version exposes
+ * any of them again. The practical protection today comes from the other
+ * half of the fix: prefetch={false} on the language switcher means the
+ * router no longer issues these requests at all.
+ *
+ * Why this matters: prefetch requests must NOT write the locale cookie.
+ * The visitor has not navigated anywhere - they are still reading the page
+ * they are on. Writing the cookie on prefetch was a real bug: loading /ru
+ * made the browser prefetch /en, which set locale=en, so the visitor's
+ * next visit to the bare root redirected them to the wrong language
+ * without them ever choosing it. Reproduced before the fix, regression
+ * tests added with it.
+ */
+const isRouterPrefetch = (request: NextRequest): boolean => {
+  if (request.url.includes('_rsc=')) return true;
+  if (request.nextUrl.searchParams.has('_rsc')) return true;
+  const h = request.headers;
+  return (
+    h.get('rsc') === '1' &&
+    (h.get('next-router-prefetch') === '1' ||
+      h.get('next-router-segment-prefetch') === '1')
+  );
+};
+
 export default function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -46,9 +81,11 @@ export default function proxy(request: NextRequest) {
   }
 
   const pathLocale = getPathLocale(pathname);
+  const prefetch = isRouterPrefetch(request);
 
   // The path already carries a locale: this is an explicit choice, so we keep
-  // it and remember it for future requests to the bare root.
+  // it and remember it for future requests to the bare root - but only for
+  // real navigations, never for background prefetches.
   if (pathLocale) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(LOCALE_HEADER, pathLocale);
@@ -56,10 +93,10 @@ export default function proxy(request: NextRequest) {
     const response = NextResponse.next({
       request: { headers: requestHeaders },
     });
+    // The decision lives in i18n/locales.ts as a pure function so it is
+    // unit-tested; see shouldSetLocaleCookie for why prefetches are excluded.
     const stored = request.cookies.get(LOCALE_COOKIE)?.value;
-    // Only write the cookie when it actually changes, so that repeat visits
-    // do not add a Set-Cookie header to an otherwise cacheable response.
-    if (stored !== pathLocale) {
+    if (shouldSetLocaleCookie({ isPrefetch: prefetch, stored, target: pathLocale })) {
       response.cookies.set(LOCALE_COOKIE, pathLocale, {
         path: '/',
         maxAge: ONE_YEAR,

@@ -131,9 +131,17 @@ export const Navbar = () => {
               </button>
 
               {/* Language Toggle */}
+              {/* prefetch={false}: the target is a static page behind the CDN,
+                  so the navigation is instant without a prefetch, and the
+                  router's background prefetch for this link carried a real
+                  bug - it hit the proxy and rewrote the visitor's locale
+                  cookie just from the page being loaded (see src/proxy.ts).
+                  Disabling the prefetch removes both the wasted request and
+                  the whole class of problems. */}
               <Link
                 href={targetLangUrl}
                 scroll={false}
+                prefetch={false}
                 className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200"
                 aria-label={`${language.toUpperCase()} — ${language === 'ru' ? 'сменить язык' : 'switch language'}`}
               >
@@ -171,9 +179,13 @@ export const Navbar = () => {
 
             {/* Mobile: Theme, Language & Menu Toggle */}
             <div className="md:hidden flex items-center gap-1 justify-self-end">
+              {/* prefetch={false}: same reasoning as the desktop switcher -
+                  static page behind the CDN, and the background prefetch was
+                  rewriting the visitor's locale cookie (see src/proxy.ts). */}
               <Link
                 href={targetLangUrl}
                 scroll={false}
+                prefetch={false}
                 className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200"
                 aria-label={`${language.toUpperCase()} — ${language === 'ru' ? 'сменить язык' : 'switch language'}`}
               >
