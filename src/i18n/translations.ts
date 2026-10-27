@@ -9,8 +9,8 @@ export const ru = {
   'nav.stack': 'Стек',
   'nav.contact': 'Контакты',
   'nav.contactBtn': 'Связаться',
-  'nav.cursorOn': 'Эффект вкл',
-  'nav.cursorOff': 'Эффект выкл',
+  'nav.cursorOn': 'Включить эффект',
+  'nav.cursorOff': 'Выключить эффект',
 
   // Hero
   'hero.title1': 'Разработка',
@@ -67,8 +67,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'nav.stack': 'Stack',
     'nav.contact': 'Contact',
     'nav.contactBtn': 'Contact',
-    'nav.cursorOn': 'Effect on',
-    'nav.cursorOff': 'Effect off',
+    'nav.cursorOn': 'Turn effect on',
+    'nav.cursorOff': 'Turn effect off',
 
     // Hero
     'hero.title1': 'Build',

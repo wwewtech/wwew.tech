@@ -121,6 +121,9 @@ export const Navbar = () => {
                 className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200"
                 aria-label="Toggle fluid cursor"
                 aria-pressed={isFluidCursorEnabled}
+                // The title answers "what will this click do?", so it shows the
+                // action, not the current state. The previous logic showed the
+                // opposite of what the click would do, which read as broken.
                 title={isFluidCursorEnabled ? t('nav.cursorOff') : t('nav.cursorOn')}
               >
                 {isFluidCursorEnabled ? (

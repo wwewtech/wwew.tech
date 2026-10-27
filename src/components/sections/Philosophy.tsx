@@ -36,8 +36,8 @@ export const Philosophy = () => {
   // bottom-of-page scroll) while adding a second WebGL context alive for the
   // whole page lifetime. The observer-triggered lazy mount - the original
   // behaviour - measured no worse, keeps the memory profile of the hero
-  // page clean, and is what this restores. See the commit message for the
-  // full measurement table.
+  // page clean, and is what this restores. The full measurement comparison
+  // lives in the commit message.
   useEffect(() => {
     if (isInView && !SceneComponent) {
       import('@/components/ui/HolographicScene')
