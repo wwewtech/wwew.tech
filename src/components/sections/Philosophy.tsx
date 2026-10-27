@@ -1,20 +1,19 @@
 'use client';
 
-import { useRef, useEffect, useState, ComponentType } from 'react';
-import { useLanguage, useTheme } from '@/context/AppContext';
+import { useRef, useEffect, useState, type ComponentType } from 'react';
+import { useLanguage } from '@/context/AppContext';
 
 export const Philosophy = () => {
   const ref = useRef<HTMLElement>(null);
   const [isInView, setIsInView] = useState(false);
   const [SceneComponent, setSceneComponent] = useState<ComponentType<{ key?: string; className?: string }> | null>(null);
   const { t } = useLanguage();
-  const { theme } = useTheme();
 
   // IntersectionObserver
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsInView(true);
           observer.disconnect();
         }
@@ -32,9 +31,13 @@ export const Philosophy = () => {
   // Dynamically load heavy 3D scene ONLY after section is in view
   useEffect(() => {
     if (isInView && !SceneComponent) {
-      import('@/components/ui/HolographicScene').then((mod) => {
-        setSceneComponent(() => mod.HolographicScene);
-      });
+      import('@/components/ui/HolographicScene')
+        .then((mod) => {
+          setSceneComponent(() => mod.HolographicScene);
+        })
+        // A failed chunk load must not surface as an unhandled rejection;
+        // the section simply keeps its placeholder.
+        .catch(() => {});
     }
   }, [isInView, SceneComponent]);
 
@@ -60,7 +63,7 @@ export const Philosophy = () => {
           className="relative order-2 lg:order-1"
         >
           {SceneComponent ? (
-            <SceneComponent key={theme} />
+            <SceneComponent />
           ) : (
             <div className="aspect-square max-w-lg mx-auto flex items-center justify-center">
               <div className="w-32 h-32 rounded-full border border-(--border) opacity-20" />

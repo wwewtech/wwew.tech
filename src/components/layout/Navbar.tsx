@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Menu, X, ArrowUpRight, Sun, Moon, Languages, Droplet, DropletOff } from 'lucide-react';
@@ -9,6 +9,8 @@ import { useLanguage, useTheme, useFluidCursor } from '@/context/AppContext';
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const menuPanelRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const { language, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
@@ -21,13 +23,21 @@ export const Navbar = () => {
   ];
 
   useEffect(() => {
-    const handleScroll = () => {
+    let ticking = false;
+    const update = () => {
       const nativeRoot = document.getElementById('native-scroll-root');
       const scrollY = nativeRoot ? Math.max(window.scrollY, nativeRoot.scrollTop) : window.scrollY;
       setIsScrolled(scrollY > 20);
+      ticking = false;
+    };
+    const handleScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
     };
 
-    handleScroll();
+    update();
 
     document.addEventListener('scroll', handleScroll, { capture: true, passive: true });
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -37,6 +47,26 @@ export const Navbar = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  // Escape закрывает мобильное меню и возвращает фокус на кнопку
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isMobileMenuOpen]);
+
+  // При открытии переводим фокус в меню
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      menuPanelRef.current?.querySelector<HTMLAnchorElement>('a')?.focus();
+    }
+  }, [isMobileMenuOpen]);
 
   const currentLangInUrl = pathname.startsWith('/en') ? 'en' : pathname.startsWith('/ru') ? 'ru' : language;
   const targetLang = currentLangInUrl === 'ru' ? 'en' : 'ru';
@@ -90,6 +120,7 @@ export const Navbar = () => {
                 onClick={toggleFluidCursor}
                 className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200"
                 aria-label="Toggle fluid cursor"
+                aria-pressed={isFluidCursorEnabled}
                 title={isFluidCursorEnabled ? t('nav.cursorOff') : t('nav.cursorOn')}
               >
                 {isFluidCursorEnabled ? (
@@ -104,7 +135,7 @@ export const Navbar = () => {
                 href={targetLangUrl}
                 scroll={false}
                 className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200"
-                aria-label="Toggle language"
+                aria-label={`${language.toUpperCase()} — ${language === 'ru' ? 'сменить язык' : 'switch language'}`}
               >
                 <Languages className="w-4 h-4" />
                 <span className="uppercase font-medium">
@@ -117,6 +148,7 @@ export const Navbar = () => {
                 onClick={toggleTheme}
                 className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200 theme-toggle"
                 aria-label="Toggle theme"
+                aria-pressed={theme === 'light'}
               >
                 {theme === 'dark' ? (
                   <Sun className="w-5 h-5" />
@@ -143,7 +175,7 @@ export const Navbar = () => {
                 href={targetLangUrl}
                 scroll={false}
                 className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200"
-                aria-label="Toggle language"
+                aria-label={`${language.toUpperCase()} — ${language === 'ru' ? 'сменить язык' : 'switch language'}`}
               >
                 <Languages className="w-4 h-4" />
                 <span className="uppercase font-medium">
@@ -155,6 +187,7 @@ export const Navbar = () => {
                 onClick={toggleTheme}
                 className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-all duration-200 theme-toggle"
                 aria-label="Toggle theme"
+                aria-pressed={theme === 'light'}
               >
                 {theme === 'dark' ? (
                   <Sun className="w-5 h-5" />
@@ -164,9 +197,12 @@ export const Navbar = () => {
               </button>
 
               <button
+                ref={menuButtonRef}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-full text-(--muted) hover:text-foreground hover:bg-(--border-subtle) transition-colors"
-                aria-label={isMobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+                aria-label={isMobileMenuOpen ? (language === 'ru' ? 'Закрыть меню' : 'Close menu') : (language === 'ru' ? 'Открыть меню' : 'Open menu')}
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-menu"
               >
                 {isMobileMenuOpen ? (
                   <X className="w-5 h-5" />
@@ -187,6 +223,8 @@ export const Navbar = () => {
             onClick={() => setIsMobileMenuOpen(false)}
           />
           <div
+            id="mobile-menu"
+            ref={menuPanelRef}
             className="absolute top-16 left-0 right-0 p-6 bg-background/95 backdrop-blur-xl border-b border-(--border) shadow-2xl"
             style={{
               animation: 'fadeIn 0.2s ease',

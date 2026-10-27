@@ -48,7 +48,6 @@ const teamContacts = [
 
 export const ContactHub = () => {
   const ref = useRef<HTMLElement>(null);
-  const switcherRef = useRef<HTMLDivElement>(null);
   const personalBtnRef = useRef<HTMLButtonElement>(null);
   const teamBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -67,7 +66,7 @@ export const ContactHub = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsInView(true);
           observer.disconnect();
         }
@@ -199,7 +198,6 @@ export const ContactHub = () => {
 
           {/* Interactive Drag & Click Switcher Container */}
           <div
-            ref={switcherRef}
             onPointerDown={handlePointerDown}
             className={`relative inline-flex items-center p-1.5 rounded-full border border-(--border) bg-(--border-subtle)/60 backdrop-blur-md mb-12 shadow-sm select-none touch-none ${
               isDragging ? 'cursor-grabbing' : 'cursor-grab'

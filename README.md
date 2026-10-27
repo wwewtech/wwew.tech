@@ -53,7 +53,7 @@
 
 **wwew.tech** is a full-stack developer's personal landing page — a single-page experience designed around three principles: *speed*, *restraint*, and *craft*. The site is built on the Next.js App Router with React Server Components, a Lenis-driven smooth-scroll pipeline, a Three.js holographic scene, and a bilingual (RU / EN) copy system that stays hydration-safe.
 
-> Not a template. Every section — from the shiny-text hero to the fluid cursor — is written in-house.
+> Every section is built in-house — the 3D holographic scene, the shiny-text hero, the fluid cursor engine (a React/Tailwind adaptation of the open-source [WebGL-Fluid-Simulation](https://github.com/PavelDoGreat/WebGL-Fluid-Simulation) by Pavel Dobryakov, MIT), the bento stack grid and the drag switcher.
 
 Live at **[wwew.tech](https://wwew.tech)**.
 
@@ -78,12 +78,13 @@ Live at **[wwew.tech](https://wwew.tech)**.
 
 ### Engineering
 
-- **App Router** — React Server Components, streaming, typed metadata
-- **SSR skeleton** — Hero text rendered on the server for instant LCP
+- **App Router** — React Server Components, typed metadata
+- **SSG hero** — complete hero text prerendered at build time for instant LCP
 - **Lazy loading** — Below-the-fold sections code-split and deferred
 - **Tree shaking** — `optimizePackageImports` for three, drei, lucide, lenis
 - **Hardened headers** — DNS prefetch, X-Content-Type-Options, aggressive asset caching
 - **SEO & AI** — Open Graph + Twitter cards, JSON-LD Person schema, sitemap, robots, manifest, llms.txt
+- **Branded 404** — a themed, translated not-found page instead of the framework default
 
 </td>
 </tr>
@@ -95,7 +96,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
 
 | Layer          | Technology                                                               |
 | :------------- | :----------------------------------------------------------------------- |
-| Framework      | **Next.js 16** (App Router, RSC, streaming)                              |
+| Framework      | **Next.js 16** (App Router, RSC)                                           |
 | Language       | **TypeScript 5** (strict)                                                |
 | Styling        | **Tailwind CSS v4** with CSS-variable design tokens                      |
 | Animation      | **Hand-crafted CSS animations** + Houdini `@property` keyframes          |
@@ -104,7 +105,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
 | Icons          | **Lucide React**                                                         |
 | Fonts          | **Geist Sans** (`next/font`, preloaded, fallback-adjusted)               |
 | CI             | **GitHub Actions** (lint · typecheck · build)                            |
-| Hosting        | **Vercel** (edge runtime, automatic AVIF/WebP)                           |
+| Hosting        | **Vercel** (Node.js runtime + CDN, automatic AVIF/WebP)                    |
 
 ---
 
@@ -128,7 +129,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
                                  │
                                  ▼
                      ┌──────────────────────┐
-                     │ app/[locale]/page.tsx│  ←  SSR hero skeleton & LCP tokens
+                     │ app/[locale]/page.tsx│  ←  SSG hero markup & LCP tokens
                      └──────────────────────┘
                                  │
                                  ▼
@@ -142,7 +143,7 @@ Live at **[wwew.tech](https://wwew.tech)**.
                   (Three.js + GLSL)
 ```
 
-**Rendering strategy.** The hero is server-rendered as a skeleton for an instant LCP, then `ClientHomePage` hydrates on top of it. `FluidCursorWrapper` mounts a canvas deferred behind `requestIdleCallback`, and heavy below-the-fold components (`HolographicScene`, `StackGrid`) are dynamically imported.
+**Rendering strategy.** Both locales are prerendered as static HTML at build time (SSG via `generateStaticParams`), so the hero ships as complete server-rendered markup for an instant LCP — no skeleton swap, the H1 text is present in the first HTML response. `ClientHomePage` hydrates on top of it. `FluidCursorWrapper` mounts a canvas only after the user enables the effect, and heavy below-the-fold components (`HolographicScene`, `StackGrid`) are dynamically imported.
 
 ---
 
@@ -152,9 +153,11 @@ Live at **[wwew.tech](https://wwew.tech)**.
 src/
 ├── app/
 │   ├── layout.tsx            Root metadata layout
+│   ├── global-not-found.tsx  Branded 404 for unmatched URLs · own document shell
 │   ├── [locale]/
 │   │   ├── layout.tsx        Locale root layout · metadata · JSON-LD · providers
-│   │   └── page.tsx          SSR entry · hero skeleton
+│   │   ├── page.tsx          SSG entry · hero markup
+│   │   └── not-found.tsx     Branded 404 inside the locale layout
 │   ├── opengraph-image.tsx   Dynamic OG image
 │   ├── twitter-image.tsx     Dynamic Twitter card
 │   ├── sitemap.ts            Sitemap generation
@@ -165,14 +168,25 @@ src/
 │   ├── ClientHomePage.tsx    Client shell that composes sections
 │   ├── layout/               Navbar · Footer
 │   ├── providers/            LenisProvider · FluidCursorWrapper
-│   ├── sections/             Hero · Philosophy · ContactHub
+│   ├── sections/             Hero · Philosophy · ContactHub · NotFoundView
 │   └── ui/                   HolographicScene · FluidCursor · ShinyText · StackGrid
 │
 ├── context/
-│   └── AppContext.tsx        Language context · RU/EN translation dictionary
+│   └── AppContext.tsx        Language / theme / fluid-cursor contexts
+│
+├── i18n/
+│   ├── content.ts            Bilingual marketing copy for metadata & JSON-LD
+│   ├── locales.ts            Locale negotiation · Accept-Language parsing
+│   └── translations.ts       RU/EN UI dictionary
 │
 ├── lib/
-│   └── utils.ts              cn() and shared helpers
+│   ├── device.ts             Device & reduced-motion detection
+│   ├── fluidGL.ts            WebGL helpers · FBO/program disposal
+│   ├── fluidShaders.ts       GLSL sources for the fluid simulation
+│   ├── fluidSim.ts           Fluid simulation step / render / splat
+│   └── metrika.ts            Yandex Metrika id & init snippet
+│
+├── __tests__/                Unit tests (Node's built-in runner)
 │
 └── proxy.ts                  Locale routing & i18n redirect handler
 ```
@@ -183,7 +197,7 @@ src/
 
 ### Prerequisites
 
-- **Node.js** ≥ 18
+- **Node.js** ≥ 20
 - **npm**, **yarn**, or **pnpm**
 
 ### Install
@@ -220,7 +234,21 @@ No environment variables are required. Optionally set `NEXT_PUBLIC_SITE_URL` to 
 | `npm run build`  | Create an optimized production build            |
 | `npm run start`  | Serve the production build on port 3000         |
 | `npm run lint`   | Run ESLint with the Next.js config              |
-| `npx tsc --noEmit` | Type-check the project without emitting files  |
+| `npm run typecheck` | Type-check the project without emitting files |
+| `npm test`       | Run the unit tests (Node's built-in runner)     |
+
+### Tests
+
+Unit tests use the Node.js built-in test runner — no test framework dependency.
+Node strips TypeScript types natively (enabled by default since v22.18.0), so
+`npm test` runs `.ts` files directly.
+
+```bash
+npm test
+```
+
+Covered: locale negotiation (`Accept-Language` parsing, cookie override) and
+the translation dictionaries.
 
 ---
 
@@ -231,7 +259,7 @@ The site is engineered for sub-second interaction on mid-range mobile hardware.
 - **LCP-first hero** — plain-text H1 rendered server-side, zero animation on the critical path
 - **Code splitting** — `HolographicScene`, `FluidCursor`, and `StackGrid` are dynamic imports
 - **Font strategy** — `next/font` with `display: swap`, `adjustFontFallback`, and preload
-- **Image pipeline** — AVIF → WebP fallback, custom `deviceSizes`, immutable 1-year cache on hashed assets
+- **GPU hygiene** — the fluid cursor releases its textures, programs and context on teardown, and a theme switch updates uniforms instead of recreating the WebGL context
 - **Bundle size** — `optimizePackageImports` applied to `three`, `@react-three/*`, `lucide-react`, `lenis`
 - **Source maps** — disabled in production to shrink artifacts
 - **Caching headers** — `public, max-age=31536000, immutable` for static assets and `/_next/static/*`
@@ -242,11 +270,27 @@ The site is engineered for sub-second interaction on mid-range mobile hardware.
 
 Language state is managed by a lightweight context in [src/context/AppContext.tsx](src/context/AppContext.tsx):
 
-- Translation dictionaries for **Russian** and **English** live inline — no network round-trip
-- The default language is rendered in SSR so the first paint is never empty
-- The toggle persists to `localStorage` and updates `<html lang>` on the client
+- Translation dictionaries for **Russian** and **English** live in [src/i18n/translations.ts](src/i18n/translations.ts) — no network round-trip
+- The active locale is rendered in SSR so the first paint is never empty
+- The language toggle swaps the locale route; theme and fluid-cursor preferences persist to `localStorage`
 
-Adding a locale is a matter of extending the `translations` record and the `Language` union.
+Adding a locale is a matter of extending the `translations` record in [src/i18n/translations.ts](src/i18n/translations.ts) and the `Language` union.
+
+### Locale negotiation
+
+Requests to a URL without a locale are resolved by the proxy in
+[src/proxy.ts](src/proxy.ts), using the logic in
+[src/i18n/locales.ts](src/i18n/locales.ts):
+
+1. The `locale` cookie — an explicit choice made by the visitor, remembered for
+   a year. A visit to `/en` sets it, so the bare root keeps leading to the
+   language the visitor picked.
+2. The `Accept-Language` header — parsed properly, with `q`-weights honoured
+   and only the primary language subtag compared.
+3. `ru` as the fallback.
+
+The redirect uses `307`, because the target now depends on the visitor and is
+therefore not a permanent mapping.
 
 ---
 
@@ -271,7 +315,7 @@ Issues and pull requests are welcome. Please:
 
 1. Open an issue first for non-trivial changes — templates are in [.github/ISSUE_TEMPLATE](.github/ISSUE_TEMPLATE)
 2. Keep commits focused and write meaningful messages
-3. Make sure `npm run lint` and `npx tsc --noEmit` both pass
+3. Make sure `npm run lint` and `npm run typecheck` both pass
 4. Follow the existing style — no comment noise, no speculative abstractions
 
 ---

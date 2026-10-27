@@ -3,7 +3,24 @@
 import React, { useRef, useMemo, Suspense, useCallback, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
-import * as THREE from 'three';
+// Named imports instead of `import * as THREE`: the namespace form pulls in
+// every export of three, and since three declares sideEffects only for
+// ./src/nodes/**, the bundler keeps modules like audio and loaders that this
+// scene never touches. Named imports keep the intent explicit even though
+// @react-three/fiber itself imports the namespace (see the commit message
+// for the measured effect - or lack of it).
+import {
+  AdditiveBlending,
+  BackSide,
+  Color,
+  DoubleSide,
+  Group,
+  NoToneMapping,
+  Points,
+  ShaderMaterial,
+  type IUniform,
+  type WebGLRenderer,
+} from 'three';
 import { useTheme } from '@/context/AppContext';
 
 /* ══════════════════════════════════════════════════
@@ -24,7 +41,7 @@ const useVisibility = (containerRef: React.RefObject<HTMLDivElement | null>) => 
     if (!el) return () => document.removeEventListener('visibilitychange', onVisChange);
 
     const io = new IntersectionObserver(
-      ([e]) => setVisible(!document.hidden && e.isIntersecting),
+      ([e]) => setVisible(!document.hidden && Boolean(e?.isIntersecting)),
       { threshold: 0.05 },
     );
     io.observe(el);
@@ -174,9 +191,29 @@ const fragmentShader = /* glsl */ `
    TorusKnot — главная фигура
    ══════════════════════════════════════════════════ */
 
+/**
+ * The uniform names the knot shader declares, with the value type of each.
+ *
+ * Typing them means the compiler checks every access: a renamed or misspelled
+ * uniform becomes a type error instead of a silent `undefined` at runtime.
+ */
+interface KnotUniforms {
+  uTime: IUniform<number>;
+  uIsDark: IUniform<number>;
+  uBaseColor: IUniform<Color>;
+  uDeepColor: IUniform<Color>;
+  uAccent: IUniform<Color>;
+  uSpecColor: IUniform<Color>;
+  // The index signature keeps the type assignable to three's
+  // `{ [uniform: string]: IUniform }` while the named entries stay checked.
+  [uniform: string]: IUniform;
+}
+
+type KnotMaterial = ShaderMaterial & { uniforms: KnotUniforms };
+
 const KnotShape = ({ isDark }: { isDark: boolean }) => {
-  const groupRef = useRef<THREE.Group>(null);
-  const matRef = useRef<THREE.ShaderMaterial>(null);
+  const groupRef = useRef<Group>(null);
+  const matRef = useRef<KnotMaterial>(null);
   const { pointer } = useThree();
   // Accumulated time — only ticks when frame actually renders (no jump after tab switch)
   const accTime = useRef(0);
@@ -185,17 +222,31 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
   const smoothTiltX = useRef(0);
   const smoothTiltY = useRef(0);
 
-  const uniforms = useMemo(
+  const uniforms = useMemo<KnotUniforms>(
     () => ({
       uTime:      { value: 0 },
       uIsDark:    { value: isDark ? 1.0 : 0.0 },
-      uBaseColor: { value: new THREE.Color(isDark ? '#1a1a2e' : '#eff3ff') },
-      uDeepColor: { value: new THREE.Color(isDark ? '#08081a' : '#8b99cc') },
-      uAccent:    { value: new THREE.Color(isDark ? '#B5FF6D' : '#3db0ff') },
-      uSpecColor: { value: new THREE.Color(isDark ? '#7788ee' : '#4f69e0') },
+      uBaseColor: { value: new Color(isDark ? '#1a1a2e' : '#eff3ff') },
+      uDeepColor: { value: new Color(isDark ? '#08081a' : '#8b99cc') },
+      uAccent:    { value: new Color(isDark ? '#B5FF6D' : '#3db0ff') },
+      uSpecColor: { value: new Color(isDark ? '#7788ee' : '#4f69e0') },
     }),
     [isDark],
   );
+
+  // Синхронизируем uniform'ы с материалом при смене темы.
+  // R3F не применяет новый объект uniforms к уже созданному ShaderMaterial,
+  // поэтому без этого эффект остался бы в палитре предыдущей темы.
+  useEffect(() => {
+    const material = matRef.current;
+    if (!material) return;
+    material.uniforms.uIsDark.value = isDark ? 1.0 : 0.0;
+    material.uniforms.uBaseColor.value.set(isDark ? '#1a1a2e' : '#eff3ff');
+    material.uniforms.uDeepColor.value.set(isDark ? '#08081a' : '#8b99cc');
+    material.uniforms.uAccent.value.set(isDark ? '#B5FF6D' : '#3db0ff');
+    material.uniforms.uSpecColor.value.set(isDark ? '#7788ee' : '#4f69e0');
+    material.needsUpdate = true;
+  }, [isDark]);
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
@@ -240,7 +291,7 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
             vertexShader={vertexShader}
             fragmentShader={fragmentShader}
             transparent
-            side={THREE.DoubleSide}
+            side={DoubleSide}
             depthWrite
           />
         </mesh>
@@ -250,7 +301,7 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
           <torusKnotGeometry args={[1, 0.4, 80, 24, 2, 3]} />
           <shaderMaterial
             uniforms={{
-              uColor: { value: new THREE.Color(isDark ? '#4455cc' : '#7f98ff') },
+              uColor: { value: new Color(isDark ? '#4455cc' : '#7f98ff') },
             }}
             vertexShader={`
               varying vec3 vNormal;
@@ -272,7 +323,7 @@ const KnotShape = ({ isDark }: { isDark: boolean }) => {
               }
             `}
             transparent
-            side={THREE.BackSide}
+            side={BackSide}
             depthWrite={false}
           />
         </mesh>
@@ -315,23 +366,31 @@ const makeDustPositions = (count: number): Float32Array => {
   return a;
 };
 
-const DUST_POSITIONS = makeDustPositions(DUST_COUNT);
-
 const Dust = ({ isDark }: { isDark: boolean }) => {
-  const ref = useRef<THREE.Points>(null);
+  const ref = useRef<Points>(null);
   const count = DUST_COUNT;
   const accTime = useRef(0);
-  const positions = DUST_POSITIONS;
+
+  // Позиции создаются на каждый экземпляр компонента. Раньше массив был
+  // общим для всего модуля и мутировался в useFrame, из-за чего частицы
+  // накапливали смещение между инстансами и не сбрасывались при HMR.
+  const positions = useMemo(() => makeDustPositions(DUST_COUNT), []);
 
   useFrame((_, delta) => {
-    if (!ref.current) return;
+    const points = ref.current;
+    if (!points) return;
+    const position = points.geometry.attributes.position;
+    if (!position) return;
+
     const dt = Math.min(delta, 0.05);
     accTime.current += dt;
-    const p = ref.current.geometry.attributes.position.array as Float32Array;
+    const p = position.array as Float32Array;
     for (let i = 0; i < count; i++) {
-      p[i * 3 + 1] += Math.sin(accTime.current * 0.25 + i) * 0.0006;
+      const y = i * 3 + 1;
+      if (y >= p.length) break;
+      p[y] = (p[y] ?? 0) + Math.sin(accTime.current * 0.25 + i) * 0.0006;
     }
-    ref.current.geometry.attributes.position.needsUpdate = true;
+    position.needsUpdate = true;
   });
 
   return (
@@ -345,7 +404,7 @@ const Dust = ({ isDark }: { isDark: boolean }) => {
         transparent
         opacity={0.2}
         sizeAttenuation
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
         depthWrite={false}
       />
     </points>
@@ -363,9 +422,9 @@ export const HolographicScene = ({ className = '' }: { className?: string }) => 
   const containerRef = useRef<HTMLDivElement>(null);
   const isVisible = useVisibility(containerRef);
 
-  const onCreated = useCallback(({ gl }: { gl: THREE.WebGLRenderer }) => {
+  const onCreated = useCallback(({ gl }: { gl: WebGLRenderer }) => {
     gl.setClearColor(0x000000, 0);
-    gl.toneMapping = THREE.NoToneMapping;
+    gl.toneMapping = NoToneMapping;
     setReady(true);
   }, []);
 

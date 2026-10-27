@@ -24,7 +24,6 @@ export const Footer = () => {
               href="https://get.tech" 
               target="_blank" 
               rel="noopener noreferrer"
-              aria-label="Get .tech domain"
               className="text-xs hover:text-foreground transition-colors"
             >
               get.tech
@@ -33,7 +32,6 @@ export const Footer = () => {
               href="https://github.com/wwewtech/wwew.tech" 
               target="_blank" 
               rel="noopener noreferrer"
-              aria-label="View source code on GitHub"
               className="text-xs hover:text-foreground transition-colors"
             >
               ★ star on github

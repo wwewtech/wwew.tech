@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 
 interface LenisProviderProps {
   children: ReactNode;
@@ -90,21 +90,30 @@ export const LenisProvider = ({ children }: LenisProviderProps) => {
 
     let cleanup: (() => void) | undefined;
 
-    const timerId = setTimeout(() => {
-      if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(() => {
-          if (!isDisposed) {
-            initLenis().then((result) => { cleanup = result; });
-          }
-        });
-      } else {
-        initLenis().then((result) => { cleanup = result; });
-      }
-    }, 1500);
+    // Initialise as soon as the browser is idle, without the previous fixed
+    // 1500 ms delay: requestIdleCallback already yields to hydration, so the
+    // delay only postponed smooth scroll. The rejection handler keeps a
+    // failed dynamic import from becoming an unhandled rejection; cleanup
+    // simply never runs in that case.
+    const start = () => {
+      if (isDisposed) return;
+      initLenis().then((result) => { cleanup = result; }).catch(() => {});
+    };
+
+    let idleId: number;
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(start);
+    } else {
+      idleId = window.setTimeout(start, 200);
+    }
 
     return () => {
       isDisposed = true;
-      clearTimeout(timerId);
+      if (typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId);
+      } else {
+        clearTimeout(idleId);
+      }
       cleanup?.();
     };
   }, []);

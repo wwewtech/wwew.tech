@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
   --muted: #404040;
@@ -16,6 +17,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: #050505;
   --foreground: #ededed;
   --muted: #b3b3b3;
@@ -65,21 +67,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Decorative curved lines background */
-.bg-lines {
-  position: relative;
-}
-
-.bg-lines::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 300 Q 400 100, 800 300 T 1600 300' stroke='rgba(255,255,255,0.03)' fill='none' stroke-width='1'/%3E%3Cpath d='M0 500 Q 400 300, 800 500 T 1600 500' stroke='rgba(255,255,255,0.02)' fill='none' stroke-width='1'/%3E%3Cpath d='M0 700 Q 400 500, 800 700 T 1600 700' stroke='rgba(255,255,255,0.03)' fill='none' stroke-width='1'/%3E%3C/svg%3E");
-  background-size: cover;
-  pointer-events: none;
-  opacity: 0.5;
 }
 
 /* Smooth scroll - DISABLED globally to prevent conflict with Lenis */
@@ -173,42 +160,6 @@ a *::selection {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.25);
-}
-
-/* Pill badge - v2RayTun style with glow */
-.pill-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1.25rem;
-  border-radius: 9999px;
-  border: 1px solid var(--border);
-  background: var(--border-subtle);
-  font-size: 0.875rem;
-  color: var(--muted);
-  backdrop-filter: blur(8px);
-  pointer-events: none;
-}
-
-/* Grid dividers - Vercel style */
-.grid-dividers {
-  background-image: 
-    linear-gradient(var(--border-subtle) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
-  background-size: 1px 100%, 100% 1px;
-}
-
-/*
- * ShinyText Fallback for SSR/LCP - HIGH CONTRAST visible text
- * This class is applied during SSR and before hydration to ensure
- * Lighthouse can detect the text as the LCP element.
- *
- * CRITICAL: Using solid foreground color, NOT transparent!
- */
-.shiny-text-fallback {
-  display: inline-block;
-  color: var(--foreground);
-  transition: color 0.3s ease, opacity 0.3s ease;
 }
 
 /* GPU-compositable background-position via CSS Houdini @property */
@@ -320,21 +271,6 @@ a *::selection {
 }
 
 
-/* Section divider line */
-.section-divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border), transparent);
-}
-
-/* Ambient blob */
-.ambient-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
-  pointer-events: none;
-  z-index: -1;
-}
-
 /* Theme toggle animation */
 .theme-toggle {
   transition: transform 0.3s ease, opacity 0.2s ease;
@@ -344,31 +280,6 @@ a *::selection {
   .theme-toggle:hover {
     transform: rotate(15deg);
   }
-}
-
-/* Language switcher */
-.lang-switch {
-  position: relative;
-  overflow: hidden;
-}
-
-.lang-switch span {
-  display: block;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Slow bounce animation for scroll indicator */
-@keyframes bounce-slow {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(8px);
-  }
-}
-
-.animate-bounce-slow {
-  animation: bounce-slow 2s ease-in-out infinite;
 }
 
 /* Reduced motion - отключаем анимации для пользователей с prefers-reduced-motion */
@@ -382,8 +293,7 @@ a *::selection {
     scroll-behavior: auto !important;
   }
   
-  .animate-ping,
-  .animate-bounce-slow {
+  .animate-ping {
     animation: none !important;
   }
 }
@@ -427,3 +337,18 @@ a *::selection {
 .animate-hero-fade-in {
   animation: hero-fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/* LCP-safe entrance: только transform — элемент остаётся видимым с первого кадра (LCP) */
+@keyframes hero-rise {
+  from {
+    transform: translateY(16px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-rise {
+  animation: hero-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+

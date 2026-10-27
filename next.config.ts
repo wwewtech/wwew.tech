@@ -3,7 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Включить сжатие для production
   compress: true,
-  
+
+  // Убрать заголовок X-Powered-By
+  poweredByHeader: false,
+
   // Source maps отключены в production для уменьшения размера артефактов
   productionBrowserSourceMaps: false,
   
@@ -47,6 +50,14 @@ const nextConfig: NextConfig = {
           {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), payment=()",
           },
         ],
       },

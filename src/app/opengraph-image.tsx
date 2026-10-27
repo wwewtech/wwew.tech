@@ -1,7 +1,5 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
-
 export const alt = 'wwew.tech | Full-Stack Developer';
 export const size = {
   width: 1200,
@@ -42,13 +40,15 @@ export default async function Image() {
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'baseline',
             justifyContent: 'center',
             marginBottom: '40px',
           }}
         >
           <div
             style={{
+              display: 'flex',
+              alignItems: 'baseline',
               fontSize: '80px',
               fontWeight: 700,
               color: '#ededed',
