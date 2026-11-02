@@ -1,13 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useSyncExternalStore, ReactNode } from 'react';
 
 // ========== LANGUAGE CONTEXT ==========
 type Language = 'ru' | 'en';
 
 interface LanguageContextType {
   language: Language;
-  setLanguage: (lang: Language) => void;
   t: (key: string) => string;
 }
 
@@ -129,6 +128,50 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 // ========== THEME CONTEXT ==========
 type Theme = 'dark' | 'light';
 
+const THEME_STORAGE_KEY = 'theme';
+const themeListeners = new Set<() => void>();
+
+const getStoredTheme = (): Theme => {
+  if (typeof window === 'undefined') return 'dark';
+  return localStorage.getItem(THEME_STORAGE_KEY) === 'light' ? 'light' : 'dark';
+};
+
+const subscribeToTheme = (onStoreChange: () => void) => {
+  themeListeners.add(onStoreChange);
+  window.addEventListener('storage', onStoreChange);
+  return () => {
+    themeListeners.delete(onStoreChange);
+    window.removeEventListener('storage', onStoreChange);
+  };
+};
+
+const writeTheme = (theme: Theme) => {
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+  themeListeners.forEach((listener) => listener());
+};
+
+const CURSOR_STORAGE_KEY = 'fluidCursor';
+const cursorListeners = new Set<() => void>();
+
+const getStoredCursor = () => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(CURSOR_STORAGE_KEY) === 'true';
+};
+
+const subscribeToCursor = (onStoreChange: () => void) => {
+  cursorListeners.add(onStoreChange);
+  window.addEventListener('storage', onStoreChange);
+  return () => {
+    cursorListeners.delete(onStoreChange);
+    window.removeEventListener('storage', onStoreChange);
+  };
+};
+
+const writeCursor = (enabled: boolean) => {
+  localStorage.setItem(CURSOR_STORAGE_KEY, String(enabled));
+  cursorListeners.forEach((listener) => listener());
+};
+
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
@@ -163,6 +206,24 @@ const checkReducedMotion = () => {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 };
 
+const subscribeToNothing = () => () => {};
+
+const subscribeToMobile = (onStoreChange: () => void) => {
+  const mediaQuery = window.matchMedia('(max-width: 768px)');
+  mediaQuery.addEventListener('change', onStoreChange);
+  window.addEventListener('resize', onStoreChange);
+  return () => {
+    mediaQuery.removeEventListener('change', onStoreChange);
+    window.removeEventListener('resize', onStoreChange);
+  };
+};
+
+const subscribeToReducedMotion = (onStoreChange: () => void) => {
+  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  mediaQuery.addEventListener('change', onStoreChange);
+  return () => mediaQuery.removeEventListener('change', onStoreChange);
+};
+
 // ========== PROVIDER ==========
 interface AppProviderProps {
   children: ReactNode;
@@ -170,57 +231,22 @@ interface AppProviderProps {
 }
 
 export const AppProvider = ({ children, initialLanguage = 'ru' }: AppProviderProps) => {
-  const [language, setLanguage] = useState<Language>(initialLanguage);
-  const [theme, setTheme] = useState<Theme>('dark');
-  const [isFluidCursorEnabled, setFluidCursorEnabled] = useState(false); // Выключен по умолчанию
-  const [mounted, setMounted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    // Hydration-safe client-only initialization: these setState calls run once
-    // on mount to read window-only values that can't be computed during SSR.
-    setMounted(true);
-
-    // Определяем мобильное устройство и reduced motion
-    const mobile = isMobileDevice();
-    const reducedMotion = checkReducedMotion();
-    setIsMobile(mobile);
-    setPrefersReducedMotion(reducedMotion);
-    
-    // Load from localStorage
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    const savedCursor = localStorage.getItem('fluidCursor');
-    if (savedTheme) setTheme(savedTheme);
-    
-    // На мобильных и при reduced motion всегда отключён
-    if (mobile || reducedMotion) {
-      setFluidCursorEnabled(false);
-    } else if (savedCursor !== null) {
-      // Загружаем сохранённое значение только если оно есть
-      setFluidCursorEnabled(savedCursor === 'true');
-    }
-    // Если нет сохранённого значения - оставляем выключенным (дефолт)
-    
-    // Слушаем изменения prefers-reduced-motion
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      setPrefersReducedMotion(e.matches);
-      if (e.matches) setFluidCursorEnabled(false);
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  // Keep language state in sync with initialLanguage prop from route params
-  useEffect(() => {
-    setLanguage(initialLanguage);
-  }, [initialLanguage]);
+  const language = initialLanguage;
+  const theme = useSyncExternalStore(subscribeToTheme, getStoredTheme, () => 'dark' as Theme);
+  const setTheme = writeTheme;
+  const mounted = useSyncExternalStore(subscribeToNothing, () => true, () => false);
+  const isMobile = useSyncExternalStore(subscribeToMobile, isMobileDevice, () => false);
+  const prefersReducedMotion = useSyncExternalStore(
+    subscribeToReducedMotion,
+    checkReducedMotion,
+    () => false,
+  );
+  const storedCursor = useSyncExternalStore(subscribeToCursor, getStoredCursor, () => false);
+  const isFluidCursorEnabled = storedCursor && !isMobile && !prefersReducedMotion;
+  const setFluidCursorEnabled = writeCursor;
 
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem('theme', theme);
       document.documentElement.classList.remove('light', 'dark');
       document.documentElement.classList.add(theme);
     }
@@ -231,19 +257,15 @@ export const AppProvider = ({ children, initialLanguage = 'ru' }: AppProviderPro
   };
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    writeTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   const toggleFluidCursor = () => {
-    setFluidCursorEnabled(prev => {
-      const newValue = !prev;
-      if (mounted) localStorage.setItem('fluidCursor', String(newValue));
-      return newValue;
-    });
+    writeCursor(!storedCursor);
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, t }}>
       <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
         <FluidCursorContext.Provider value={{ 
           isFluidCursorEnabled, 
