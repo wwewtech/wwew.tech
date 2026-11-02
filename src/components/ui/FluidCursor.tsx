@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useSyncExternalStore } from 'react';
 import { useFluidCursor, useTheme } from '@/context/AppContext';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -83,6 +83,16 @@ const isMobileDevice = () => {
     || 'ontouchstart' in window;
 };
 
+const subscribeToMobile = (onStoreChange: () => void) => {
+  const mediaQuery = window.matchMedia('(max-width: 768px)');
+  mediaQuery.addEventListener('change', onStoreChange);
+  window.addEventListener('resize', onStoreChange);
+  return () => {
+    mediaQuery.removeEventListener('change', onStoreChange);
+    window.removeEventListener('resize', onStoreChange);
+  };
+};
+
 export const FluidCursor: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
@@ -90,13 +100,8 @@ export const FluidCursor: React.FC = () => {
   const colorIndexRef = useRef(0);
   const { isFluidCursorEnabled } = useFluidCursor();
   const { theme } = useTheme();
-  const [isMobile, setIsMobile] = React.useState(false);
+  const isMobile = useSyncExternalStore(subscribeToMobile, isMobileDevice, () => false);
   const [isReady, setIsReady] = React.useState(false);
-
-  // Проверяем мобильное устройство после монтирования
-  useEffect(() => {
-    setIsMobile(isMobileDevice());
-  }, []);
 
   // Небольшая задержка для плавного появления
   useEffect(() => {
